@@ -1,0 +1,29 @@
+services:
+  solr:
+    image: solr:9.4
+    container_name: solr_server
+    ports:
+      - "8983:8983"
+    volumes:
+      - solr_data:/var/solr
+      - ./docker/solr/configsets:/configsets
+    command:
+      - solr-precreate
+      - documents
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8983/solr/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    environment:
+      SOLR_OPTS: "-Dsolr.jetty.request.header.size=65535"
+    networks:
+      - app_network
+
+networks:
+  app_network:
+    driver: bridge
+
+volumes:
+  solr_data:
+    driver: local
