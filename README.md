@@ -15,6 +15,20 @@ ASRA ist eine moderne Webapplikation für die Dokumentensuche, die Apache Solr a
 - **Paginierung**: Unterstützung für große Ergebnismengen mit einer intuitiven Paginierung
 - **Responsive Design**: Optimiert für Desktop, Tablet und Mobilgeräte
 
+## Screenshots
+
+### Hauptansicht
+![ASRA Hauptansicht](docs/images/asra-ui-screenshot.png)
+*Die modernisierte Benutzeroberfläche von ASRA mit Navbar, Suchleiste und Ergebnisanzeige*
+
+### Suchfunktionalität
+![ASRA Suche](docs/images/asra-search-screenshot.png)
+*Suchergebnisse mit Highlighting und Metadatenanzeige*
+
+### Responsive Design
+![ASRA Mobile](docs/images/asra-mobile-screenshot.png)
+*ASRA auf einem mobilen Gerät*
+
 ## Installation
 
 ### Voraussetzungen
