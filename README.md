@@ -10,6 +10,10 @@ ASRA ist eine moderne Webapplikation für die Dokumentensuche, die Apache Solr a
 - **Solr-Integration**: Nahtlose Integration mit Apache Solr über REST-API
 - **Docker-Integration**: Vollständige Containerisierung mit Docker Compose für Frontend und Solr-Backend
 - **CORS-freie Architektur**: Vermeidung von Cross-Origin-Problemen durch integrierte Reverse-Proxy-Konfiguration
+- **Entwickler-Modus**: Mock-Modus für Entwicklung und Tests, der ohne Solr-Backend funktioniert
+- **Fortgeschrittene Suchoptionen**: Suche in bestimmten Feldern (Titel, Inhalt, Alle)
+- **Paginierung**: Unterstützung für große Ergebnismengen mit einer intuitiven Paginierung
+- **Responsive Design**: Optimiert für Desktop, Tablet und Mobilgeräte
 
 ## Installation
 
@@ -115,6 +119,14 @@ Für eine manuelle Installation ohne Docker:
 - `npm run build`: Erstellt eine optimierte Produktions-Build
 - `npm run preview`: Startet einen lokalen Server für die Vorschau des Builds
 
+### Mock-Modus
+
+Die Anwendung bietet einen Mock-Modus, der ohne Solr-Backend funktioniert:
+
+1. Starte die Anwendung im Entwicklungsmodus: `npm run dev`
+2. Klicke in der Navigationsleiste auf "Mock-Modus (Aus)", um ihn zu aktivieren
+3. Mock-Daten werden für alle Suchanfragen verwendet, ideal für UI-Entwicklung
+
 ### Architektur
 
 Die Anwendung folgt einer modularen Architektur:
@@ -135,6 +147,50 @@ Die Anwendung besteht aus zwei Docker-Containern:
 ## Versionierung
 
 Dieses Projekt verwendet semantische Versionierung (SemVer). Alle Änderungen werden in der [CHANGELOG.md](CHANGELOG.md) dokumentiert.
+
+## Für neue Entwickler
+
+### Schnellstart
+
+1. Klone das Repository und installiere die Abhängigkeiten:
+   ```bash
+   git clone https://github.com/username/asra.git
+   cd asra
+   npm install
+   ```
+
+2. Starte die Anwendung im Entwicklungsmodus:
+   ```bash
+   npm run dev
+   ```
+
+3. Aktiviere den Mock-Modus in der Navbar, wenn du ohne Solr-Backend entwickeln möchtest.
+
+### Wichtige Dateien und Komponenten
+
+- `src/App.jsx`: Hauptkomponente der Anwendung
+- `src/components/`: UI-Komponenten
+  - `SearchBar.jsx`: Suchleiste mit Filteroptionen
+  - `ResultsDisplay.jsx`: Anzeige der Suchergebnisse
+  - `Pagination.jsx`: Seitennavigation für Ergebnisse
+  - `Navbar.jsx`: Navigationsleiste mit Mock-Umschalter
+  - `Sidebar.jsx`: Seitenleiste mit Filtern (noch nicht dynamisch)
+  - `Footer.jsx`: Fußzeile mit Links und Projektinfo
+- `src/services/solrService.js`: API-Verbindung zu Solr und Mock-Funktionalität
+- `vite.config.js`: Konfiguration des Entwicklungsservers und Proxy
+- `tailwind.config.js`: Anpassungen des Designs und der Farben
+
+### Entwicklungshinweise
+
+1. **Komponenten**: Halte Komponenten klein und fokussiert. Verwende funktionale Komponenten mit Hooks.
+2. **Styling**: Nutze Tailwind-Klassen direkt in JSX für das Styling.
+3. **API-Aufrufe**: Alle Solr-Interaktionen sollten über `solrService.js` erfolgen.
+4. **Fehlerbehandlung**: Implementiere try/catch-Blöcke für alle asynchronen Operationen.
+5. **Dokumentation**: Füge JSDoc-Kommentare zu allen Funktionen und Komponenten hinzu.
+
+### Aktuelle Arbeitsschwerpunkte
+
+Siehe [TASK.md](TASK.md) für eine vollständige Liste der anstehenden Aufgaben.
 
 ## Lizenz
 

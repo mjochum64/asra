@@ -31,16 +31,21 @@
 - [x] Korrektur der Umgebungserkennung für Vite-Anwendungen (`import.meta.env.MODE`)
 - [x] Implementierung des korrekten Pfads zum Solr-Core (`documents/select`)
 
-## 5. UI/UX-Verbesserungen (In Bearbeitung)
+## 5. UI/UX-Verbesserungen (Abgeschlossen)
 
-- [ ] Erweiterte Suchfilter implementieren
-- [ ] Facettennavigation hinzufügen
-- [ ] Paginierung für größere Ergebnismengen
-- [ ] Suchvorschläge basierend auf Eingabe
-- [ ] Verbesserte Ergebnisdarstellung mit Hervorhebungen
+- [x] Modernisierung des UI-Designs implementiert (18.05.2025)
+- [x] Responsives Layout mit Sidebar für Filter erstellt (18.05.2025)
+- [x] Paginierung für größere Ergebnismengen (18.05.2025)
+- [x] Verbesserte Ergebnisdarstellung mit Hervorhebungen (18.05.2025)
+- [x] Einfache Suchfilter (Suche nach Titel/Inhalt) implementiert (18.05.2025)
+- [x] Entwickler-Modus mit Mock-Daten für einfacheres Testen (18.05.2025)
+- [x] CORS-Problem im Entwicklungsmodus durch Proxy gelöst (18.05.2025)
+- [x] Grundlegende Filter-UI in Sidebar implementiert (18.05.2025)
 
 ## 6. Erweiterte Features (Geplant)
 
+- [ ] Erweiterte Facettennavigation mit Solr-Integration für dynamische Filter
+- [ ] Suchvorschläge basierend auf Eingabe hinzufügen
 - [ ] Benutzerverwaltung und Authentifizierung
 - [ ] Gespeicherte Suchanfragen für angemeldete Benutzer
 - [ ] Dokumentenvorschau im Browser
@@ -83,6 +88,10 @@
 - [x] Verbindungsprobleme bei langsamen Netzwerken erfordern verbesserte Timeout-Behandlung (18.05.2025) - Gelöst durch konfigurierbare Timeouts in Nginx
 - [x] Bedarf an einer konfigurierbaren Solr-URL für verschiedene Umgebungen (18.05.2025) - Implementiert mit Umgebungsvariablen
 - [x] Fehler in der Umgebungserkennung von Vite und im Solr-Core-Pfad (18.05.2025) - Gelöst durch Anpassung von solrService.js
-- [ ] Optimierung der Ladezeiten durch Implementierung von Code-Splitting erforderlich (18.05.2025)
-- [ ] Bessere Fehlerbehandlung für Netzwerkprobleme einbauen (18.05.2025)
-- [ ] Solr-Schema-Aktualisierungen ohne Container-Neustart ermöglichen (18.05.2025)
+- [x] CORS-Probleme im Entwicklungsmodus (18.05.2025) - Gelöst durch Einrichtung eines Proxys in der Vite-Konfiguration
+- [ ] (HOCH) Optimierung der Ladezeiten durch Implementierung von Code-Splitting erforderlich (18.05.2025)
+- [ ] (HOCH) Bessere Fehlerbehandlung für Netzwerkprobleme einbauen (18.05.2025)
+- [ ] (MITTEL) Solr-Schema-Aktualisierungen ohne Container-Neustart ermöglichen (18.05.2025)
+- [ ] (MITTEL) Integration der Sidebar-Filter mit Solr-Facetten für dynamische Filterung (19.05.2025)
+- [ ] (NIEDRIG) Möglichkeit zum Exportieren von Suchergebnissen als CSV oder JSON (19.05.2025)
+- [ ] (NIEDRIG) Implementierung eines Theme-Wechslers für hellen/dunklen Modus (19.05.2025)

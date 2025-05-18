@@ -8,17 +8,46 @@ und dieses Projekt folgt [Semantischer Versionierung](https://semver.org/lang/de
 ## [Unreleased]
 
 ### Geplant
-- Erweiterte Suchfilter
-- Facettennavigation
-- Paginierung für größere Ergebnismengen
+- Vollständige Facettennavigation mit Solr-Integration
 - Suchvorschläge während der Eingabe
+- Dokumentvorschau
+- Code-Splitting zur Optimierung der Ladezeiten
+- Verbesserte Fehlerbehandlung für Netzwerkprobleme
+- Hot-Reload für Solr-Schema-Aktualisierungen
+- Theme-Wechsler für hellen/dunklen Modus
 
-## [0.2.1] - 2025-05-18
+## [0.3.1] - 2025-05-18
+
+### Hinzugefügt
+- Mock-Modus für Entwicklungs- und Testzwecke
+- Erweitertes Logging für die Fehlerdiagnose
+- Verbesserte Mock-Daten mit Highlighting und Metadaten
+
+### Geändert
+- Vite-Konfiguration mit Proxy für Solr-Anfragen im Entwicklungsmodus
+- Verbessertes Error-Handling im Solr-Service
 
 ### Behoben
-- Fehler in der Solr-Service-Konfiguration behoben, der die Umgebungserkennung in Vite betraf
-- Korrekten Pfad zum Solr-Core implementiert (`documents/select`)
-- Umgebungserkennung von `process.env.NODE_ENV` auf `import.meta.env.MODE` umgestellt, um korrekte Funktion in Vite zu gewährleisten
+- CORS-Probleme im Entwicklungsmodus durch Einrichtung eines Vite-Proxys
+- Verbesserte Error-Handling und Debug-Ausgaben im Solr-Service
+
+## [0.3.0] - 2025-05-18
+
+### Hinzugefügt
+- Modernes UI-Design mit verbesserter Benutzererfahrung
+- Neue Komponenten: Navbar, Sidebar, Footer, Pagination
+- Erweiterte Suchfilter (Suche nach Titel/Inhalt)
+- Paginierung für große Ergebnismengen
+- Ergebnishervorhebung für Suchbegriffe
+- Verbesserte Darstellung der Dokumente mit Metadaten
+- Responsives Layout mit Sidebar für Desktop-Ansicht
+
+### Geändert
+- Überarbeitete SearchBar mit zusätzlichen Suchoptionen
+- Erweiterte ResultsDisplay-Komponente mit Sortieroptionen
+- Verbesserte Fehler- und Leerzustandsbehandlung
+- Optimierte solrService.js für verschiedene Suchmodi
+- Umfassende Modernisierung des Layouts und der visuellen Gestaltung
 
 ## [0.2.1] - 2025-05-18
 
