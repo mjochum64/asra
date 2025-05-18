@@ -19,6 +19,22 @@ services:
       SOLR_OPTS: "-Dsolr.jetty.request.header.size=65535"
     networks:
       - app_network
+      
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: asra_frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      solr:
+        condition: service_healthy
+    networks:
+      - app_network
+    # Für Entwicklung können wir das Volumen einkommentieren
+    # volumes:
+    #  - ./src:/app/src
 
 networks:
   app_network:

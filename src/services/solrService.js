@@ -1,13 +1,32 @@
 import axios from 'axios';
 
+// Konfigurierbare Solr-URL basierend auf der Umgebung
+// Im Produktionsbetrieb mit Docker wird "/solr/" verwendet (relativ zur gleichen Domain wie Frontend)
+// Grund: Vermeidet CORS-Probleme durch Proxying über Nginx
+const getSolrBaseUrl = () => {
+  // In einer Produktionsumgebung verwenden wir den relativen Pfad
+  // Vite verwendet import.meta.env.MODE statt process.env.NODE_ENV
+  if (import.meta.env.MODE === 'production') {
+    return '/solr/';
+  }
+  
+  // In der Entwicklung können wir die Umgebungsvariable verwenden (falls gesetzt)
+  if (import.meta.env.VITE_SOLR_URL) {
+    return import.meta.env.VITE_SOLR_URL;
+  }
+  
+  // Fallback für lokale Entwicklung
+  return 'http://localhost:8983/solr/';
+};
+
 const solrClient = axios.create({
-  baseURL: 'http://solar.saaro.net:8983/solr/',
+  baseURL: getSolrBaseUrl(),
   timeout: 10000,
 });
 
 export const searchDocuments = async (query) => {
   try {
-    const response = await solrClient.get('select', {
+    const response = await solrClient.get('documents/select', {
       params: {
         q: query,
         wt: 'json',
