@@ -81,13 +81,38 @@
 - [x] 400 Bad Request Fehler bei Leerzeichen in Abkürzungen behoben
 - [x] Minimale URL-Kodierung implementiert: nur Leerzeichen werden kodiert, Solr-Syntax bleibt intakt
 
-### 7.3 Erweiterte Suchoptionen
+### 7.3 Konfigurierbare UI-Struktur (🚀 NEUE PRIORITÄT - 08.06.2025) ✅ VOLLSTÄNDIG ABGESCHLOSSEN
+- [x] **PROBLEM**: Aktuelle dynamische Schema-Generierung ist zu komplex für normale Benutzer (37+ Suchfelder)
+- [x] **LÖSUNG**: Strukturierte UI-Konfigurationsdatei mit drei Bereichen:
+  - [x] **SUCHE**: Reduzierte, benutzerfreundliche Suchfelder mit Beschreibungen
+  - [x] **TREFFERLISTE**: Konfigurierbare Anzeige relevanter Felder mit Highlighting-Optionen
+  - [x] **VOLLTEXT**: Strukturierte Dokumentenansicht mit Header, Content und Sidebar
+- [x] **UI-Modi implementieren**:
+  - [x] Normal-Modus: Vereinfachte Suche für allgemeine Benutzer
+  - [x] Experten-Modus: Vollzugriff auf alle Solr-Felder (wie aktuell)
+- [x] **uiConfig.js erstellt** ✅ - Konfigurationsdatei mit strukturierter Definition aller UI-Bereiche
+- [x] **Komponenten-Integration**:
+  - [x] DynamicSearchBar: UI-Konfiguration für Suchfelder verwenden ✅ (08.06.2025)
+  - [x] DynamicResultsDisplay: Konfigurierbare Ergebnis-Anzeige implementieren ✅ (08.06.2025)
+  - [x] DynamicSidebar: UI-konfigurierte Filter mit Modus-Unterstützung ✅ (08.06.2025)
+  - [x] Neue Komponente: DocumentFullView für Volltext-Ansicht ✅ (bereits vorhanden)
+- [x] **Mode-Switcher**: Toggle zwischen Normal- und Expertensuche ✅ (08.06.2025)
+- [x] **Formatierungs-Helper**: Feldwerte nach Konfiguration formatieren (Datum, Sprache, etc.) ✅ (08.06.2025)
+
+**🎉 IMPLEMENTIERUNG VOLLSTÄNDIG**: Die konfigurierbare UI-Struktur ist erfolgreich implementiert!
+- **Normal-Modus**: Zeigt nur 5 benutzerfreundliche Suchfelder + 3 primäre Filter
+- **Experten-Modus**: Bietet Vollzugriff auf alle Solr-Felder + erweiterte Filter
+- **Alle Komponenten** verwenden jetzt die zentrale UI-Konfiguration aus `uiConfig.js`
+- **Mode-Switcher** ermöglicht einfachen Toggle zwischen den Modi
+- **Icons und Labels** verbessern die Benutzerfreundlichkeit erheblich
+
+### 7.4 Erweiterte Suchoptionen
 - [ ] Auto-Suggest / Autocomplete-Funktionalität
 - [ ] Erweiterte Sortieroptionen (Relevanz, Datum, Titel)
 - [ ] Wildcards und Boolean-Operatoren in Suche
 - [ ] Suchhistorie und gespeicherte Suchen
 
-### 7.3 Dokumentvorschau und -interaktion
+### 7.5 Dokumentvorschau und -interaktion
 - [x] Highlight-Funktion für Suchbegriffe im Volltext (✅ ABGESCHLOSSEN - 07.06.2025)
 - [ ] Modal für Dokumentvorschau implementieren
 - [ ] Dokumenten-Download-Funktionalität

@@ -1,49 +1,43 @@
 import React, { useState, useEffect } from 'react';
-import { getDisplayFields } from '../services/schemaService';
+import { uiHelpers } from '../config/uiConfig';
+import DocumentFullView from './DocumentFullView';
 
 /**
- * Schema-driven ResultsDisplay - automatisch basierend auf verfügbaren Anzeigefeldern
+ * UI-konfigurierte ResultsDisplay - basierend auf UI-Konfiguration statt dynamischem Schema
  */
 export default function DynamicResultsDisplay({ 
   results = [], 
   isLoading = false, 
   searchQuery = '', 
   totalResults = 0,
-  error = null 
+  error = null,
+  uiMode = 'normal'
 }) {
-  const [displayFields, setDisplayFields] = useState([]);
-  const [fieldLabels, setFieldLabels] = useState({});
+  const [resultConfig, setResultConfig] = useState({ primary: [], secondary: [], metadata: [] });
+  const [selectedDocument, setSelectedDocument] = useState(null);
 
   useEffect(() => {
     loadDisplayConfiguration();
-  }, []);
+  }, [uiMode]);
 
-  const loadDisplayConfiguration = async () => {
+  const loadDisplayConfiguration = () => {
     try {
-      const fields = await getDisplayFields();
-      setDisplayFields(fields);
-      
-      // Erstelle benutzerfreundliche Labels für Felder
-      const labels = {};
-      fields.forEach(field => {
-        labels[field] = formatFieldLabel(field);
-      });
-      setFieldLabels(labels);
+      const config = uiHelpers.getResultFields(uiMode);
+      setResultConfig(config);
     } catch (error) {
-      console.error('Failed to load display configuration:', error);
-      // Fallback zu deutschen Rechtsdokument-Feldern und Standard-Feldern
-      setDisplayFields(['kurzue', 'langue', 'text_content', 'amtabk', 'jurabk', 'document_type', 'title', 'content', 'author', 'category']);
-      setFieldLabels({
-        kurzue: 'Kurztitel',
-        langue: 'Langtitel', 
-        text_content: 'Gesetzestext',
-        amtabk: 'Amtliche Abkürzung',
-        jurabk: 'Juristische Abkürzung',
-        document_type: 'Dokumenttyp',
-        title: 'Titel',
-        content: 'Inhalt', 
-        author: 'Autor',
-        category: 'Kategorie'
+      console.error('Failed to load UI result configuration:', error);
+      // Fallback-Konfiguration
+      setResultConfig({
+        primary: [
+          { solrField: 'kurzue', label: 'Kurztitel', highlight: true, priority: 1 },
+          { solrField: 'text_content', label: 'Inhalt', highlight: true, maxLength: 200, priority: 2 }
+        ],
+        secondary: [
+          { solrField: 'amtabk', label: 'Abkürzung', display: 'badge' }
+        ],
+        metadata: [
+          { solrField: 'document_type', label: 'Typ' }
+        ]
       });
     }
   };
@@ -184,6 +178,33 @@ export default function DynamicResultsDisplay({
     return importance[field] || 0;
   };
 
+  // Helper-Funktionen für Text-Verarbeitung
+  const highlightSearchTerms = (text, searchQuery) => {
+    if (!searchQuery || !text) return text;
+    
+    // Entferne bereits vorhandene <mark> Tags um Dopplungen zu vermeiden
+    const cleanText = text.replace(/<\/?mark[^>]*>/g, '');
+    
+    // Erstelle Regex für Suchbegriffe (case insensitive)
+    const searchTerms = searchQuery.split(/\s+/).filter(term => term.length > 2);
+    if (searchTerms.length === 0) return cleanText;
+    
+    const pattern = new RegExp(`(${searchTerms.map(term => 
+      term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    ).join('|')})`, 'gi');
+    
+    return cleanText.replace(pattern, '<mark class="bg-yellow-200 px-1 rounded">$1</mark>');
+  };
+
+  const truncateText = (text, maxLength = null) => {
+    if (!text) return '';
+    if (!maxLength) return text;
+    
+    return text.length > maxLength 
+      ? text.substring(0, maxLength) + '...'
+      : text;
+  };
+
   if (isLoading) {
     return (
       <div className="space-y-6">
@@ -232,10 +253,16 @@ export default function DynamicResultsDisplay({
     );
   }
 
-  // Sortiere Felder nach Wichtigkeit für die Anzeige
-  const sortedDisplayFields = [...displayFields].sort((a, b) => 
-    getFieldImportance(b) - getFieldImportance(a)
-  );
+  // Erstelle eine flache Liste aller konfigurierten Felder für Kompatibilität
+  const getAllConfiguredFields = () => {
+    return [
+      ...resultConfig.primary.map(f => f.solrField),
+      ...resultConfig.secondary.map(f => f.solrField),
+      ...resultConfig.metadata.map(f => f.solrField)
+    ];
+  };
+
+  const configuredFields = getAllConfiguredFields();
 
   return (
     <div className="space-y-6">
@@ -245,31 +272,55 @@ export default function DynamicResultsDisplay({
           <h2 className="text-lg font-semibold text-gray-900">
             {totalResults} Ergebnis{totalResults !== 1 ? 'se' : ''} für "{searchQuery}"
           </h2>
-          <div className="text-sm text-gray-600 mt-1">
-            Anzeige: {sortedDisplayFields.map(f => fieldLabels[f] || f).join(', ')}
+          <div className="text-sm text-gray-600 mt-1 flex items-center">
+            <span className="text-solr-primary font-medium mr-2">
+              {uiMode === 'expert' ? '🔧 Experte' : '👤 Normal'}
+            </span>
+            {configuredFields.length} konfigurierte Anzeigefelder
           </div>
         </div>
       )}
 
-      {/* Dynamische Ergebnisliste */}
+      {/* UI-konfigurierte Ergebnisliste */}
       {results.map((result, index) => (
         <div key={result.id || index} className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300">
-          {/* Hauptfelder (title, content) */}
+          
+          {/* Primäre Felder */}
           <div className="mb-4">
-            {sortedDisplayFields.filter(field => getFieldImportance(field) >= 2).map(field => (
-              result[field] && (
-                <div key={field} className={field === 'title' ? 'mb-3' : 'mb-2'}>
-                  {field === 'title' ? (
-                    <h3 
-                      className="text-xl font-semibold text-gray-900 mb-2" 
-                      dangerouslySetInnerHTML={{ __html: formatFieldValue(field, result[field]) }}
-                    />
+            {resultConfig.primary.map(fieldConfig => (
+              result[fieldConfig.solrField] && (
+                <div key={fieldConfig.solrField} className="mb-3">
+                  {fieldConfig.priority === 1 ? (
+                    <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                      {fieldConfig.highlight ? (
+                        <span dangerouslySetInnerHTML={{ 
+                          __html: highlightSearchTerms(
+                            truncateText(result[fieldConfig.solrField], fieldConfig.maxLength),
+                            searchQuery
+                          )
+                        }} />
+                      ) : (
+                        truncateText(result[fieldConfig.solrField], fieldConfig.maxLength)
+                      )}
+                      {fieldConfig.display === 'badge' && (
+                        <span className="ml-2 px-2 py-1 bg-solr-primary text-white text-xs rounded">
+                          {fieldConfig.label}
+                        </span>
+                      )}
+                    </h3>
                   ) : (
-                    <div>
-                      <div 
-                        className="text-gray-700 leading-relaxed"
-                        dangerouslySetInnerHTML={{ __html: formatFieldValue(field, result[field]) }}
-                      />
+                    <div className="text-gray-700 leading-relaxed">
+                      <span className="font-medium text-gray-500 mr-2">{fieldConfig.label}:</span>
+                      {fieldConfig.highlight ? (
+                        <span dangerouslySetInnerHTML={{ 
+                          __html: highlightSearchTerms(
+                            truncateText(result[fieldConfig.solrField], fieldConfig.maxLength),
+                            searchQuery
+                          )
+                        }} />
+                      ) : (
+                        truncateText(result[fieldConfig.solrField], fieldConfig.maxLength)
+                      )}
                     </div>
                   )}
                 </div>
@@ -277,37 +328,84 @@ export default function DynamicResultsDisplay({
             ))}
           </div>
 
-          {/* Metadaten */}
-          <div className="border-t border-gray-100 pt-3">
-            <div className="flex flex-wrap gap-4 text-sm text-gray-600">
-              {sortedDisplayFields.filter(field => getFieldImportance(field) < 2).map(field => (
-                result[field] && (
-                  <div key={field} className="flex items-center">
-                    <span className="font-medium text-gray-500 mr-2">
-                      {fieldLabels[field] || field}:
-                    </span>
-                    <span>{formatFieldValue(field, result[field])}</span>
-                  </div>
-                )
-              ))}
+          {/* Sekundäre Felder */}
+          {resultConfig.secondary.length > 0 && (
+            <div className="mb-3 border-t border-gray-100 pt-3">
+              <div className="space-y-2">
+                {resultConfig.secondary.map(fieldConfig => (
+                  result[fieldConfig.solrField] && (
+                    <div key={fieldConfig.solrField} className="text-sm text-gray-600">
+                      <span className="font-medium text-gray-500 mr-2">{fieldConfig.label}:</span>
+                      {fieldConfig.display === 'badge' ? (
+                        <span className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded">
+                          {result[fieldConfig.solrField]}
+                        </span>
+                      ) : (
+                        <span>
+                          {uiHelpers.formatFieldValue(result[fieldConfig.solrField], fieldConfig.format)}
+                        </span>
+                      )}
+                    </div>
+                  )
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
-          {/* Schema Info */}
-          <div className="mt-2 pt-2 border-t border-gray-50">
+          {/* Metadaten (nur im Experten-Modus) */}
+          {uiMode === 'expert' && resultConfig.metadata.length > 0 && (
+            <div className="border-t border-gray-100 pt-3">
+              <div className="flex flex-wrap gap-4 text-xs text-gray-500">
+                {resultConfig.metadata.map(fieldConfig => (
+                  result[fieldConfig.solrField] && (
+                    <div key={fieldConfig.solrField} className="flex items-center">
+                      <span className="font-medium mr-1">{fieldConfig.label}:</span>
+                      <span>
+                        {uiHelpers.formatFieldValue(result[fieldConfig.solrField], fieldConfig.format)}
+                      </span>
+                    </div>
+                  )
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Volltext-Button */}
+          <div className="mt-4 pt-3 border-t border-gray-50 flex items-center justify-between">
+            <button
+              onClick={() => setSelectedDocument(result)}
+              className="text-solr-primary hover:text-solr-secondary font-medium text-sm transition-colors"
+            >
+              📄 Volltext anzeigen
+            </button>
             <div className="text-xs text-gray-400">
-              ID: {result.id} • {Object.keys(result).length} Felder verfügbar
+              ID: {result.id}
             </div>
           </div>
         </div>
       ))}
 
-      {/* Schema-Footer */}
+      {/* UI-Konfiguration Footer */}
       <div className="bg-gray-50 p-4 rounded-lg text-center">
-        <div className="text-xs text-gray-500">
-          Schema-basierte Anzeige • {displayFields.length} konfigurierte Anzeigefeld{displayFields.length !== 1 ? 'er' : ''}
+        <div className="text-xs text-gray-500 flex items-center justify-center space-x-4">
+          <span>UI-konfigurierte Anzeige</span>
+          <span>•</span>
+          <span>{configuredFields.length} Anzeigefelder</span>
+          <span>•</span>
+          <span className="text-solr-primary font-medium">
+            {uiMode === 'expert' ? '🔧 Experten-Modus' : '👤 Normal-Modus'}
+          </span>
         </div>
       </div>
+
+      {/* DocumentFullView Modal */}
+      {selectedDocument && (
+        <DocumentFullView
+          document={selectedDocument}
+          onClose={() => setSelectedDocument(null)}
+          searchQuery={searchQuery}
+        />
+      )}
     </div>
   );
 }
