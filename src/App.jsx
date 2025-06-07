@@ -4,23 +4,30 @@ const ResultsDisplay = React.lazy(() => import('./components/ResultsDisplay'));
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
 import Footer from './components/Footer';
-import { searchDocuments, mockSearch } from './services/solrService';
+import { searchDocuments, mockSearch, mockSearchWithFilters } from './services/solrService';
 
 export default function App() {
   const [results, setResults] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [lastQuery, setLastQuery] = useState('');
-  const [useMock, setUseMock] = useState(false);
+  const [useMock, setUseMock] = useState(true);
+  const [activeFilters, setActiveFilters] = useState({ categories: [], authors: [] });
   
-  const handleSearch = async (query, searchMode = 'all') => {
+  const handleSearch = async (query, searchMode = 'all', customFilters = null) => {
     setIsLoading(true);
     setError(null);
     setLastQuery(query);
     
     try {
-      // Verwende die Mock-Suche, wenn useMock aktiviert ist
-      const data = useMock ? await mockSearch(query) : await searchDocuments(query, searchMode);
+      // Verwende customFilters falls übergeben, sonst activeFilters aus dem State
+      const filtersToUse = customFilters !== null ? customFilters : activeFilters;
+      
+      // Verwende die Mock-Suche mit Filtern, wenn useMock aktiviert ist
+      const data = useMock 
+        ? await mockSearchWithFilters(query, filtersToUse)
+        : await searchDocuments(query, searchMode, filtersToUse);
+      
       setResults(data);
     } catch (err) {
       console.error("Search error:", err);
@@ -28,6 +35,17 @@ export default function App() {
       setResults([]);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // Behandle Filter-Änderungen
+  const handleFiltersChange = (filters) => {
+    setActiveFilters(filters);
+    
+    // Führe erneute Suche durch, wenn bereits eine Suche stattgefunden hat
+    // Übergebe die neuen Filter direkt, um Race-Conditions zu vermeiden
+    if (lastQuery) {
+      handleSearch(lastQuery, 'all', filters);
     }
   };
 
@@ -60,9 +78,13 @@ export default function App() {
           <SearchBar onSearch={handleSearch} />
           
           <div className="flex flex-col md:flex-row gap-6">
-            {/* Sidebar on larger screens */}
-            <div className="hidden md:block md:w-1/4">
-              <Sidebar />
+            {/* Sidebar - now visible on all screen sizes */}
+            <div className="w-full md:w-1/4">
+              <Sidebar 
+                onFiltersChange={handleFiltersChange}
+                useMock={useMock}
+                activeFilters={activeFilters}
+              />
             </div>
             
             {/* Main content area */}
@@ -71,7 +93,31 @@ export default function App() {
                 <div className="mb-4 px-2">
                   <p className="text-sm text-gray-600">
                     Suchergebnisse für <span className="font-semibold">"{lastQuery}"</span>
+                    {(activeFilters.categories?.length > 0 || activeFilters.authors?.length > 0) && (
+                      <span className="ml-2 text-xs">
+                        mit {activeFilters.categories?.length + activeFilters.authors?.length} Filtern
+                      </span>
+                    )}
                   </p>
+                  
+                  {/* Aktive Filter mobil anzeigen */}
+                  {(activeFilters.categories?.length > 0 || activeFilters.authors?.length > 0) && (
+                    <div className="mt-2 md:hidden">
+                      <div className="text-xs text-gray-500 mb-1">Aktive Filter:</div>
+                      <div className="flex flex-wrap gap-1">
+                        {activeFilters.categories?.map(cat => (
+                          <span key={cat} className="inline-block bg-solr-primary text-white px-2 py-0.5 rounded text-xs">
+                            {cat}
+                          </span>
+                        ))}
+                        {activeFilters.authors?.map(author => (
+                          <span key={author} className="inline-block bg-solr-accent text-white px-2 py-0.5 rounded text-xs">
+                            {author}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
               

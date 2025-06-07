@@ -50,12 +50,14 @@
 
 ## 7. Erweiterte Suchfunktionalitäten (In Bearbeitung - Phase 1)
 
-### 7.1 Facetten-Filter (Nächste Priorität)
-- [ ] Dynamische Facetten aus Solr-Daten abrufen
-- [ ] Kategorie-Filter in Sidebar implementieren
-- [ ] Autor-Filter mit Zählern hinzufügen
-- [ ] Datum-Range-Filter implementieren
-- [ ] Filter-State-Management zwischen Suchanfragen
+### 7.1 Facetten-Filter (Abgeschlossen - 07.06.2025)
+- [x] Dynamische Facetten aus Solr-Daten abrufen (mit Mock-Fallback)
+- [x] Kategorie-Filter in Sidebar implementiert
+- [x] Autor-Filter mit Zählern hinzugefügt
+- [x] Filter-State-Management zwischen Suchanfragen
+- [x] Filter-Bug behoben: Race-Condition zwischen State-Updates und Suchfunktion gelöst (07.06.2025)
+- [x] Filter funktionieren jetzt sofort nach Auswahl ohne manuellen Suchklick (07.06.2025)
+- [ ] Datum-Range-Filter implementieren (zukünftige Aufgabe)
 
 ### 7.2 Erweiterte Suchoptionen
 - [ ] Auto-Suggest / Autocomplete-Funktionalität
