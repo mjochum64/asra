@@ -31,20 +31,26 @@ export default function DynamicResultsDisplay({
       setFieldLabels(labels);
     } catch (error) {
       console.error('Failed to load display configuration:', error);
-      // Fallback zu Standard-Feldern
-      setDisplayFields(['title', 'content', 'author', 'category', 'created_date']);
+      // Fallback zu deutschen Rechtsdokument-Feldern und Standard-Feldern
+      setDisplayFields(['kurzue', 'langue', 'text_content', 'amtabk', 'jurabk', 'document_type', 'title', 'content', 'author', 'category']);
       setFieldLabels({
+        kurzue: 'Kurztitel',
+        langue: 'Langtitel', 
+        text_content: 'Gesetzestext',
+        amtabk: 'Amtliche Abkürzung',
+        jurabk: 'Juristische Abkürzung',
+        document_type: 'Dokumenttyp',
         title: 'Titel',
         content: 'Inhalt', 
         author: 'Autor',
-        category: 'Kategorie',
-        created_date: 'Erstellt'
+        category: 'Kategorie'
       });
     }
   };
 
   const formatFieldLabel = (fieldName) => {
     const labels = {
+      // Standard englische Felder
       title: 'Titel',
       content: 'Inhalt',
       author: 'Autor',
@@ -53,7 +59,26 @@ export default function DynamicResultsDisplay({
       last_modified: 'Geändert',
       tags: 'Tags',
       content_type: 'Typ',
-      description: 'Beschreibung'
+      description: 'Beschreibung',
+      
+      // Deutsche Rechtsdokument-Felder
+      kurzue: 'Kurztitel',
+      langue: 'Langtitel',
+      amtabk: 'Amtliche Abkürzung',
+      jurabk: 'Juristische Abkürzung',
+      text_content: 'Gesetzestext',
+      fussnoten_content: 'Fußnoten',
+      table_content: 'Inhaltsverzeichnis',
+      document_type: 'Dokumenttyp',
+      xml_lang: 'Sprache',
+      fundstelle_periodikum: 'Fundstelle (Periodikum)',
+      fundstelle_zitstelle: 'Fundstelle (Zitstelle)',
+      standangabe_kommentar: 'Standangabe',
+      ausfertigung_datum_manuell: 'Ausfertigung (manuell)',
+      text_format: 'Textformat',
+      fussnoten_format: 'Fußnotenformat',
+      builddate: 'Erstellungsdatum',
+      id: 'Dokument-ID'
     };
     
     return labels[fieldName] || fieldName
@@ -72,6 +97,7 @@ export default function DynamicResultsDisplay({
     switch (field) {
       case 'created_date':
       case 'last_modified':
+      case 'builddate':
         try {
           return new Date(value).toLocaleDateString('de-DE', {
             year: 'numeric',
@@ -85,18 +111,41 @@ export default function DynamicResultsDisplay({
         }
       
       case 'content':
+      case 'text_content':
         // Kürze Content-Felder für bessere Lesbarkeit, aber behalte Highlighting-Tags
         // Entferne nur andere HTML-Tags, nicht <mark> Tags für Highlighting
         const contentWithHighlights = value.replace(/<(?!\/?(mark)\b)[^>]*>/g, '');
-        return contentWithHighlights.length > 200 
-          ? contentWithHighlights.substring(0, 200) + '...' 
+        return contentWithHighlights.length > 300 
+          ? contentWithHighlights.substring(0, 300) + '...' 
           : contentWithHighlights;
       
+      case 'fussnoten_content':
+        // Fußnoten kürzer darstellen
+        const footnotesWithHighlights = value.replace(/<(?!\/?(mark)\b)[^>]*>/g, '');
+        return footnotesWithHighlights.length > 150 
+          ? footnotesWithHighlights.substring(0, 150) + '...' 
+          : footnotesWithHighlights;
+      
+      case 'table_content':
+        // Tabellencontent als Liste formatieren
+        if (Array.isArray(value)) {
+          return value.slice(0, 3).join(' • ') + (value.length > 3 ? '...' : '');
+        }
+        return value.length > 200 ? value.substring(0, 200) + '...' : value;
+      
       case 'category':
+      case 'document_type':
         // Kapitalisiere erste Buchstaben
         return Array.isArray(value) 
           ? value.map(v => v.charAt(0).toUpperCase() + v.slice(1)).join(', ')
           : value.charAt(0).toUpperCase() + value.slice(1);
+      
+      case 'ausfertigung_datum_manuell':
+        return value ? 'Ja' : 'Nein';
+      
+      case 'xml_lang':
+        const langMap = { 'de': 'Deutsch', 'en': 'Englisch', 'fr': 'Französisch' };
+        return langMap[value] || value;
       
       default:
         // Handhabe Arrays
@@ -110,12 +159,27 @@ export default function DynamicResultsDisplay({
   const getFieldImportance = (field) => {
     // Bestimme die Wichtigkeit von Feldern für das Layout
     const importance = {
+      // Standard englische Felder
       title: 3,
       content: 2,
       author: 1,
       category: 1,
       created_date: 1,
-      last_modified: 0
+      last_modified: 0,
+      
+      // Deutsche Rechtsdokument-Felder
+      kurzue: 3,           // Kurztitel - höchste Priorität
+      langue: 2,           // Langtitel - hohe Priorität  
+      text_content: 2,     // Gesetzestext - hohe Priorität
+      amtabk: 1,           // Amtliche Abkürzung - mittlere Priorität
+      jurabk: 1,           // Juristische Abkürzung - mittlere Priorität
+      fussnoten_content: 1, // Fußnoten - mittlere Priorität
+      document_type: 1,    // Dokumenttyp - mittlere Priorität
+      fundstelle_periodikum: 0, // Fundstelle - niedrige Priorität
+      standangabe_kommentar: 0, // Standangabe - niedrige Priorität
+      xml_lang: 0,         // Sprache - niedrige Priorität
+      text_format: 0,      // Format - niedrige Priorität
+      builddate: 0         // Erstellungsdatum - niedrige Priorität
     };
     return importance[field] || 0;
   };

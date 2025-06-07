@@ -155,6 +155,54 @@
 
 **Sprint-Ergebnis**: Vollständig funktionsfähige dynamische Facetten mit kontextueller Filterung
 
+### 7.4 Deutsche Rechtsdokument-Unterstützung (✅ VOLLSTÄNDIG ABGESCHLOSSEN - 12.01.2025)
+- [x] **Problem-Diagnose**: Deutsche Rechtsdokumente wurden bei spezifischen Suchen nicht gefunden (nur bei *:* Wildcard)
+- [x] **Schema-Analyse**: Deutsche Rechtsdokument-Felder identifiziert:
+  - `kurzue`, `langue`, `text_content`: `text_de` (deutsche Textanalyse)
+  - `amtabk`, `jurabk`: `string` (exakte Strings)
+- [x] **Schema-Service erweitert** (`schemaService.js`):
+  - `analyzeSchemaForUI()` erkennt `text_de` und `text_de_exact` Feldtypen
+  - `getDisplayFields()` priorisiert deutsche Rechtsdokument-Felder
+  - `getContextualFacets()` verwendet deutsche Felder in expliziter OR-Query
+- [x] **Solr-Service angepasst** (`solrService.js`):
+  - Explizite OR-Query für kombinierte Text- und String-Feld-Suche
+  - Text-Felder: `kurzue:(query) OR langue:(query) OR text_content:(query)`
+  - String-Felder: `amtabk:*query* OR jurabk:*query*`
+  - Highlighting-Felder um deutsche Felder erweitert
+- [x] **URL-Kodierungsprobleme behoben**: 400 Bad Request Fehler durch korrekte `encodeURIComponent()` Verwendung
+- [x] **Query-Syntax optimiert**: Von DisMax/eDisMax zu expliziter OR-Query für bessere String-Feld-Kontrolle
+- [x] **Erfolgreiche Suche**: Suche nach "BImSchV" und anderen deutschen Rechtsbegriffen funktioniert vollständig
+- [x] **Feldspezifische Wildcard-Unterstützung**: String-Felder (`amtabk`, `jurabk`) verwenden Wildcard-Matching
+
+**Ergebnis**: Deutsche Rechtsdokument-Suche vollständig funktionsfähig mit korrekter Feldpriorisierung und Wildcard-Unterstützung
+
+### 7.5 Deutsche Rechtsdokument-Abkürzungen Fix (✅ VOLLSTÄNDIG ABGESCHLOSSEN - 12.01.2025)
+- [x] **Problem identifiziert**: Komplette deutsche Rechtsabkürzungen wie "1. BImSchV" lieferten keine Suchergebnisse
+- [x] **Filter-Problem diagnostiziert**: Filter funktionierten nur im "Alle Felder" Modus, nicht bei feldspezifischen Suchen
+- [x] **Root-Cause-Analyse**: Wildcard-Queries mit Leerzeichen (`amtabk:*1. BImSchV*`) scheitern in Solr String-Feldern
+- [x] **Solr-Query-Tests**: Validierung verschiedener Query-Muster:
+  - `amtabk:"1. BImSchV"` (exakt) ✅
+  - `amtabk:*BImSchV*` (einfach) ✅
+  - `amtabk:*1.*` (einfach) ✅ 
+  - `amtabk:*1. BImSchV*` (mit Leerzeichen) ❌
+  - `amtabk:*1.* AND amtabk:*BImSchV*` (compound AND) ✅
+- [x] **Helper-Funktion implementiert**: `buildGermanLegalQuery()` in beiden Services:
+  - Erkennt Leerzeichen in Queries automatisch
+  - Splittet Queries mit Leerzeichen in compound AND-Patterns
+  - Unterstützt sowohl exakte Matches als auch Wildcard-Varianten
+- [x] **SolrService aktualisiert**: 
+  - Feldspezifische Suchen für `amtabk` und `jurabk` verwenden compound queries
+  - Allgemeine Suche nutzt Helper-Funktion für deutsche Rechtsfelder
+  - Kombiniert exakte und Wildcard-Ansätze: `exact OR wildcard`
+- [x] **SchemaService aktualisiert**:
+  - Gleiche Helper-Funktion für Konsistenz implementiert
+  - `getContextualFacets()` nutzt Helper-Funktion für deutsche Rechtsfelder
+- [x] **UI-Tests erfolgreich**: Web-Interface zeigt korrekte Suchergebnisse für "1. BImSchV"
+- [x] **Filter-Funktionalität validiert**: Filter arbeiten korrekt in feldspezifischen Modi
+
+**Query-Pattern-Lösung**: `amtabk:*1.* AND amtabk:*BImSchV*` für Queries mit Leerzeichen
+**Ergebnis**: Deutsche Rechtsabkürzungen mit Leerzeichen funktionieren vollständig in allen Suchmodi
+
 ### Sprint 2: Auto-Suggest und Sortierung (KW 25-26)
 **Ziel**: Verbesserte Benutzererfahrung bei der Suche
 

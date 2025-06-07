@@ -20,6 +20,7 @@ chmod +x ./docker/solr/load_sample_data.py
 # Load sample data
 echo "Loading sample data into Solr..."
 python ./docker/solr/load_sample_data.py
+python ./docker/solr/solr_import.py demodata --verbose
 
 # Start the frontend container
 echo "Starting frontend container..."

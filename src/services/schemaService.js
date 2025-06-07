@@ -1,5 +1,28 @@
 import axios from 'axios';
 
+// Helper function to build German legal abbreviation queries
+// Grund: Wildcard queries with spaces fail in Solr, so we split them into compound AND queries
+const buildGermanLegalQuery = (fieldName, query, isWildcard = false) => {
+  if (!query || query.trim() === '') {
+    return `${fieldName}:*`;
+  }
+  
+  // If the query contains spaces and we're doing a wildcard search,
+  // split it into separate terms and combine with AND
+  if (isWildcard && query.includes(' ')) {
+    const terms = query.trim().split(/\s+/);
+    const wildcardTerms = terms.map(term => `${fieldName}:*${term}*`);
+    return wildcardTerms.join(' AND ');
+  }
+  
+  // For exact match or simple wildcard (no spaces)
+  if (isWildcard) {
+    return `${fieldName}:*${query}*`;
+  } else {
+    return `${fieldName}:"${query}"`;
+  }
+};
+
 // Schema Discovery Service für dynamische Solr-Integration
 // Dieser Service liest das Solr-Schema aus und erstellt automatisch UI-Konfigurationen
 
@@ -50,12 +73,12 @@ export const analyzeSchemaForUI = async () => {
       };
       
       // Bestimme, ob Feld durchsuchbar ist (indexed + text oder string type)
-      if (field.indexed && (field.type === 'text_general' || field.type === 'string')) {
+      if (field.indexed && (field.type === 'text_general' || field.type === 'text_de' || field.type === 'text_de_exact' || field.type === 'string')) {
         config.searchableFields.push(fieldConfig);
       }
       
       // Bestimme, ob Feld filterbar ist (indexed + nicht-text types oder string)
-      if (field.indexed && field.type !== 'text_general') {
+      if (field.indexed && field.type !== 'text_general' && field.type !== 'text_de') {
         config.filterableFields.push(fieldConfig);
         
         // String-Felder eignen sich gut für Facetten
@@ -65,7 +88,7 @@ export const analyzeSchemaForUI = async () => {
       }
       
       // Bestimme, ob Feld sortierbar ist (indexed + einfache Typen)
-      if (field.indexed && ['string', 'int', 'long', 'float', 'double', 'pdate'].includes(field.type)) {
+      if (field.indexed && ['string', 'int', 'long', 'float', 'double', 'pdate', 'text_de_exact'].includes(field.type)) {
         config.sortableFields.push(fieldConfig);
       }
       
@@ -198,10 +221,23 @@ export const getContextualFacets = async (query = '*:*', searchMode = 'all', cur
     } else if (searchMode === 'category') {
       // Verwende die gleiche Syntax wie in solrService.js  
       solrQuery = isWildcardQuery ? 'category:*' : `category:"${query}" OR category:*${query}*`;
-    } else if (searchMode === 'content') {
-      solrQuery = isWildcardQuery ? 'content:*' : `content:(${query})`;
+    } else if (searchMode === 'kurzue') {
+      // Deutsche Rechtsdokument: Kurztitel
+      solrQuery = isWildcardQuery ? 'kurzue:*' : `kurzue:(${query})`;
+    } else if (searchMode === 'langue') {
+      // Deutsche Rechtsdokument: Langtitel
+      solrQuery = isWildcardQuery ? 'langue:*' : `langue:(${query})`;
+    } else if (searchMode === 'jurabk') {
+      // Deutsche Rechtsdokument: Juristische Abkürzung
+      solrQuery = isWildcardQuery ? 'jurabk:*' : `${buildGermanLegalQuery('jurabk', query, false)} OR ${buildGermanLegalQuery('jurabk', query, true)}`;
+    } else if (searchMode === 'amtabk') {
+      // Deutsche Rechtsdokument: Amtliche Abkürzung
+      solrQuery = isWildcardQuery ? 'amtabk:*' : `${buildGermanLegalQuery('amtabk', query, false)} OR ${buildGermanLegalQuery('amtabk', query, true)}`;
+    } else if (searchMode === 'text_content') {
+      // Deutsche Rechtsdokument: Textinhalt
+      solrQuery = isWildcardQuery ? 'text_content:*' : `text_content:(${query})`;
     } else {
-      // 'all' mode - verwende DisMax für bessere Mehrfeld-Suche
+      // 'all' mode - verwende explizite OR-Query für bessere Mehrfeld-Suche
       if (isWildcardQuery) {
         solrQuery = '*:*';
       } else {
@@ -225,9 +261,18 @@ export const getContextualFacets = async (query = '*:*', searchMode = 'all', cur
     
     let fullUrl = `${baseUrl}?q=${encodeURIComponent(solrQuery)}&wt=json&rows=0&facet=true&${facetFieldParams}&facet.limit=50&facet.mincount=1`;
     
-    // Füge DisMax-Parameter für 'all' mode hinzu
+    // Füge Query-Parameter für 'all' mode hinzu
     if (searchMode === 'all' && !isWildcardQuery) {
-      fullUrl += '&defType=dismax&qf=title^2.0+content^1.0+author^1.5+category^1.2';
+      // Verwende explizite OR-Query statt DisMax für bessere String-Feld-Kontrolle
+      const textFieldQuery = `kurzue:(${query}) OR langue:(${query}) OR text_content:(${query})`;
+      const amtabkQuery = `${buildGermanLegalQuery('amtabk', query, false)} OR ${buildGermanLegalQuery('amtabk', query, true)}`;
+      const jurabkQuery = `${buildGermanLegalQuery('jurabk', query, false)} OR ${buildGermanLegalQuery('jurabk', query, true)}`;
+      const stringFieldQuery = `(${amtabkQuery}) OR (${jurabkQuery})`;
+      const combinedQuery = `(${textFieldQuery}) OR (${stringFieldQuery})`;
+      
+      // Überschreibe die ursprüngliche Query
+      const queryParam = encodeURIComponent(combinedQuery);
+      fullUrl = fullUrl.replace(`q=${encodeURIComponent(solrQuery)}`, `q=${queryParam}`);
     }
     
     // Füge Filter-Queries hinzu
@@ -345,19 +390,41 @@ export const getDisplayFields = async () => {
     const uiConfig = await analyzeSchemaForUI();
     
     // Priorisiere bestimmte Feldtypen für die Anzeige
+    // Standard englische Felder
     const priorityFields = ['title', 'name', 'subject'];
     const contentFields = ['content', 'description', 'body', 'text'];
     const metaFields = ['author', 'category', 'created_date', 'last_modified'];
     
+    // Deutsche Rechtsdokument-Felder
+    const germanLegalTitleFields = ['kurzue', 'langue', 'amtabk', 'jurabk'];
+    const germanLegalContentFields = ['text_content', 'fussnoten_content', 'table_content'];
+    const germanLegalMetaFields = ['document_type', 'xml_lang', 'fundstelle_periodikum', 'standangabe_kommentar'];
+    
     const displayFields = [];
     
-    // Füge Titel-ähnliche Felder hinzu
-    priorityFields.forEach(fieldName => {
+    // Füge deutsche Rechtsdokument-Titel-Felder hinzu (höchste Priorität)
+    germanLegalTitleFields.forEach(fieldName => {
       const field = uiConfig.displayFields.find(f => f.name === fieldName);
       if (field) displayFields.push(field.name);
     });
     
-    // Füge Content-Felder hinzu
+    // Füge Standard-Titel-ähnliche Felder hinzu
+    priorityFields.forEach(fieldName => {
+      const field = uiConfig.displayFields.find(f => f.name === fieldName);
+      if (field && !displayFields.includes(field.name)) {
+        displayFields.push(field.name);
+      }
+    });
+    
+    // Füge deutsche Rechtsdokument-Content-Felder hinzu
+    germanLegalContentFields.forEach(fieldName => {
+      const field = uiConfig.displayFields.find(f => f.name === fieldName);
+      if (field && !displayFields.includes(field.name)) {
+        displayFields.push(field.name);
+      }
+    });
+    
+    // Füge Standard-Content-Felder hinzu
     contentFields.forEach(fieldName => {
       const field = uiConfig.displayFields.find(f => f.name === fieldName);
       if (field && !displayFields.includes(field.name)) {
@@ -365,7 +432,15 @@ export const getDisplayFields = async () => {
       }
     });
     
-    // Füge Metadaten-Felder hinzu
+    // Füge deutsche Rechtsdokument-Metadaten hinzu
+    germanLegalMetaFields.forEach(fieldName => {
+      const field = uiConfig.displayFields.find(f => f.name === fieldName);
+      if (field && !displayFields.includes(field.name)) {
+        displayFields.push(field.name);
+      }
+    });
+    
+    // Füge Standard-Metadaten-Felder hinzu
     metaFields.forEach(fieldName => {
       const field = uiConfig.displayFields.find(f => f.name === fieldName);
       if (field && !displayFields.includes(field.name)) {
@@ -373,10 +448,12 @@ export const getDisplayFields = async () => {
       }
     });
     
+    console.log('Debug - Display fields resolved:', displayFields);
+    
     return displayFields;
   } catch (error) {
     console.error('Failed to get display fields:', error);
-    // Fallback zu Standard-Feldern
-    return ['title', 'content', 'author', 'category', 'created_date'];
+    // Fallback zu deutschen Rechtsdokument-Feldern und Standard-Feldern
+    return ['kurzue', 'langue', 'text_content', 'amtabk', 'jurabk', 'document_type', 'title', 'content', 'author', 'category'];
   }
 };

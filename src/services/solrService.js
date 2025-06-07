@@ -1,6 +1,29 @@
 import axios from 'axios';
 import { getContextualFacets } from './schemaService';
 
+// Helper function to build German legal abbreviation queries
+// Grund: Wildcard queries with spaces fail in Solr, so we split them into compound AND queries
+const buildGermanLegalQuery = (fieldName, query, isWildcard = false) => {
+  if (!query || query.trim() === '') {
+    return `${fieldName}:*`;
+  }
+  
+  // If the query contains spaces and we're doing a wildcard search,
+  // split it into separate terms and combine with AND
+  if (isWildcard && query.includes(' ')) {
+    const terms = query.trim().split(/\s+/);
+    const wildcardTerms = terms.map(term => `${fieldName}:*${term}*`);
+    return wildcardTerms.join(' AND ');
+  }
+  
+  // For exact match or simple wildcard (no spaces)
+  if (isWildcard) {
+    return `${fieldName}:*${query}*`;
+  } else {
+    return `${fieldName}:"${query}"`;
+  }
+};
+
 // Konfigurierbare Solr-URL basierend auf der Umgebung
 // Im Produktionsbetrieb mit Docker wird "/solr/" verwendet (relativ zur gleichen Domain wie Frontend)
 // Grund: Vermeidet CORS-Probleme durch Proxying über Nginx
@@ -71,6 +94,41 @@ export const searchDocuments = async (query, searchMode = 'all', filters = {}) =
         wt: 'json',
         rows: 20
       };
+    } else if (searchMode === 'kurzue') {
+      // Deutsche Rechtsdokument: Kurztitel
+      queryParams = {
+        q: isWildcardQuery ? 'kurzue:*' : `kurzue:(${query})`,
+        wt: 'json',
+        rows: 20
+      };
+    } else if (searchMode === 'langue') {
+      // Deutsche Rechtsdokument: Langtitel
+      queryParams = {
+        q: isWildcardQuery ? 'langue:*' : `langue:(${query})`,
+        wt: 'json',
+        rows: 20
+      };
+    } else if (searchMode === 'jurabk') {
+      // Deutsche Rechtsdokument: Juristische Abkürzung
+      queryParams = {
+        q: isWildcardQuery ? 'jurabk:*' : `${buildGermanLegalQuery('jurabk', query, false)} OR ${buildGermanLegalQuery('jurabk', query, true)}`,
+        wt: 'json',
+        rows: 20
+      };
+    } else if (searchMode === 'amtabk') {
+      // Deutsche Rechtsdokument: Amtliche Abkürzung
+      queryParams = {
+        q: isWildcardQuery ? 'amtabk:*' : `${buildGermanLegalQuery('amtabk', query, false)} OR ${buildGermanLegalQuery('amtabk', query, true)}`,
+        wt: 'json',
+        rows: 20
+      };
+    } else if (searchMode === 'text_content') {
+      // Deutsche Rechtsdokument: Textinhalt
+      queryParams = {
+        q: isWildcardQuery ? 'text_content:*' : `text_content:(${query})`,
+        wt: 'json',
+        rows: 20
+      };
     } else {
       // Für allgemeine Suche
       if (isWildcardQuery) {
@@ -80,21 +138,27 @@ export const searchDocuments = async (query, searchMode = 'all', filters = {}) =
           rows: 20
         };
       } else {
-        // DisMax Query Parser für bessere Relevanz
+        // eDisMax Query Parser für bessere Relevanz mit String-Feld-Unterstützung
+        // Verwende explizite OR-Query für String-Felder statt boost query
+        const textFieldQuery = `kurzue:(${query}) OR langue:(${query}) OR text_content:(${query})`;
+        const amtabkQuery = `${buildGermanLegalQuery('amtabk', query, false)} OR ${buildGermanLegalQuery('amtabk', query, true)}`;
+        const jurabkQuery = `${buildGermanLegalQuery('jurabk', query, false)} OR ${buildGermanLegalQuery('jurabk', query, true)}`;
+        const stringFieldQuery = `(${amtabkQuery}) OR (${jurabkQuery})`;
+        const combinedQuery = `(${textFieldQuery}) OR (${stringFieldQuery})`;
+        
         queryParams = {
-          q: query,
+          q: combinedQuery,
           wt: 'json',
           rows: 20,
-          defType: 'dismax',
-          qf: 'title^2 content author category',  // Query Fields mit Boosting
-          mm: '1'  // Minimum Should Match
+          // Keine DisMax nötig, da wir explizite Query verwenden
+          // mm: '1'  // Minimum Should Match
         };
       }
     }
     
     // Füge Highlighting hinzu (für alle Suchmodi)
     queryParams.hl = 'true';
-    queryParams['hl.fl'] = 'title,content';
+    queryParams['hl.fl'] = 'kurzue,langue,amtabk,jurabk,text_content';
     queryParams['hl.simple.pre'] = '<mark>';
     queryParams['hl.simple.post'] = '</mark>';
     queryParams['hl.fragsize'] = 200;
