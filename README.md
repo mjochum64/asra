@@ -17,16 +17,17 @@ ASRA ist eine moderne Webapplikation für die Dokumentensuche, die Apache Solr a
 - **Responsive Design**: Optimiert für Desktop, Tablet und Mobilgeräte
 - **Code-Splitting**: Lazy Loading für optimierte Performance und kleinere Bundle-Größen
 - **Professional UI**: Moderne Navbar, Sidebar und Footer für eine professionelle Benutzererfahrung
+- **Dynamische Facetten-Filter**: Kontextuelle Filter für Kategorien und Autoren basierend auf Suchergebnissen
+- **Content-Highlighting**: Hervorhebung von Suchbegriffen in den Ergebnissen
+- **Filter-State-Management**: Intelligente Filterung, die sich automatisch an Suchergebnisse anpasst
 
 ### 🚧 In Entwicklung (Phase 1 - Juni 2025)
-- **Dynamische Facetten-Filter**: Integration mit Solr für echte Kategorie-, Autor- und Datumsfilter
 - **Auto-Suggest**: Suchvorschläge basierend auf vorhandenen Dokumenten
 - **Erweiterte Sortierung**: Sortierung nach Relevanz, Datum und Titel
-- **Filter-State-Management**: Beibehaltung der Filter zwischen Suchanfragen
+- **Datum-Range-Filter**: Zeitbasierte Filterung von Dokumenten
 
 ### 🎯 Geplante Features (Phase 2+)
 - **Dokumentvorschau**: Modal-Ansicht für Dokumenteninhalte
-- **Highlighting**: Hervorhebung von Suchbegriffe im Volltext
 - **Webcrawler-Integration**: Automatischer Import von Daten aus gesetze-im-internet.de
 - **Erweiterte Authentifizierung**: Benutzerkonten und gespeicherte Suchen
 - **Export-Funktionen**: PDF- und CSV-Export von Suchergebnissen
@@ -162,10 +163,19 @@ Die Anwendung bietet einen Mock-Modus, der ohne Solr-Backend funktioniert:
 Die Anwendung folgt einer modularen Architektur:
 
 - React-Komponenten in `/src/components`
+  - **Dynamic Components**: `DynamicApp.jsx`, `DynamicSearchBar.jsx`, `DynamicSidebar.jsx`, `DynamicResultsDisplay.jsx` - Hauptkomponenten mit voller Solr-Integration
+  - **Static Components**: `Navbar.jsx`, `Footer.jsx`, `Pagination.jsx` - Wiederverwendbare UI-Komponenten
 - Dienste für API-Interaktionen in `/src/services`
+  - `solrService.js` - Hauptschnittstelle zu Apache Solr mit Mock-Fallback
+  - `schemaService.js` - Dynamische Facetten und Schema-Management
 - Docker-Konfiguration in `/docker`
   - Nginx als Reverse-Proxy und statischer Dateiserver in `/docker/nginx`
   - Solr-Konfiguration in `/docker/solr`
+
+#### Neue Architektur-Features (Juni 2025)
+- **Kontextuelle Facetten**: Filter werden dynamisch basierend auf aktuellen Suchergebnissen generiert
+- **Unified Search Response**: Eine einzige API-Antwort enthält sowohl Suchergebnisse als auch passende Filter
+- **Content Highlighting**: Automatische Hervorhebung von Suchbegriffen in Volltext-Ergebnissen
 
 ### Docker-Container
 
@@ -198,15 +208,19 @@ Dieses Projekt verwendet semantische Versionierung (SemVer). Alle Änderungen we
 
 ### Wichtige Dateien und Komponenten
 
-- `src/App.jsx`: Hauptkomponente der Anwendung
+- `src/DynamicApp.jsx`: Hauptkomponente der Anwendung mit vollständiger Solr-Integration
 - `src/components/`: UI-Komponenten
-  - `SearchBar.jsx`: Suchleiste mit Filteroptionen
-  - `ResultsDisplay.jsx`: Anzeige der Suchergebnisse
-  - `Pagination.jsx`: Seitennavigation für Ergebnisse
-  - `Navbar.jsx`: Navigationsleiste mit Mock-Umschalter
-  - `Sidebar.jsx`: Seitenleiste mit Filtern (noch nicht dynamisch)
-  - `Footer.jsx`: Fußzeile mit Links und Projektinfo
-- `src/services/solrService.js`: API-Verbindung zu Solr und Mock-Funktionalität
+  - **Dynamic Components** (mit Solr-Integration):
+    - `DynamicSearchBar.jsx`: Suchleiste mit erweiterten Filteroptionen
+    - `DynamicResultsDisplay.jsx`: Anzeige der Suchergebnisse mit Content-Highlighting
+    - `DynamicSidebar.jsx`: Dynamische Seitenleiste mit kontextuellen Facetten-Filtern
+  - **Static Components**:
+    - `Navbar.jsx`: Navigationsleiste mit Mock-Umschalter
+    - `Footer.jsx`: Fußzeile mit Links und Projektinfo
+    - `Pagination.jsx`: Seitennavigation für Ergebnisse
+- `src/services/`: API-Services
+  - `solrService.js`: Hauptschnittstelle zu Solr mit Mock-Funktionalität
+  - `schemaService.js`: Dynamische Facetten und Schema-Management
 - `vite.config.js`: Konfiguration des Entwicklungsservers und Proxy
 - `tailwind.config.js`: Anpassungen des Designs und der Farben
 

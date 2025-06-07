@@ -15,8 +15,10 @@ export default function DynamicApp() {
   const [error, setError] = useState(null);
   const [activeFilters, setActiveFilters] = useState({});
   const [lastSearchQuery, setLastSearchQuery] = useState('');
+  const [lastSearchMode, setLastSearchMode] = useState('all');
   const [schemaInfo, setSchemaInfo] = useState(null);
   const [totalResults, setTotalResults] = useState(0);
+  const [currentFacets, setCurrentFacets] = useState({});
 
   // Lade Schema-Informationen beim Mount
   useEffect(() => {
@@ -38,18 +40,21 @@ export default function DynamicApp() {
       setIsLoading(true);
       setError(null);
       setLastSearchQuery(query);
+      setLastSearchMode(searchMode);
       
       console.log('Dynamic search:', { query, searchMode, searchFields, activeFilters });
       
-      // Führe Suche durch
-      const results = await searchDocuments(query, searchMode, activeFilters);
-      setSearchResults(results);
-      setTotalResults(results.length); // In echten Apps würde dies von Solr kommen
+      // Führe Suche durch - jetzt gibt searchDocuments ein Objekt mit results, facets und total zurück
+      const searchResponse = await searchDocuments(query, searchMode, activeFilters);
+      setSearchResults(searchResponse.results);
+      setCurrentFacets(searchResponse.facets);
+      setTotalResults(searchResponse.total);
       
     } catch (err) {
       console.error('Search failed:', err);
       setError(err.message || 'Suche fehlgeschlagen');
       setSearchResults([]);
+      setCurrentFacets({});
       setTotalResults(0);
     } finally {
       setIsLoading(false);
@@ -63,9 +68,10 @@ export default function DynamicApp() {
     if (lastSearchQuery) {
       try {
         setIsLoading(true);
-        const results = await searchDocuments(lastSearchQuery, 'all', newFilters);
-        setSearchResults(results);
-        setTotalResults(results.length);
+        const searchResponse = await searchDocuments(lastSearchQuery, lastSearchMode, newFilters);
+        setSearchResults(searchResponse.results);
+        setCurrentFacets(searchResponse.facets);
+        setTotalResults(searchResponse.total);
       } catch (err) {
         console.error('Filter search failed:', err);
         setError(err.message || 'Filterung fehlgeschlagen');
@@ -141,6 +147,8 @@ export default function DynamicApp() {
             <DynamicSidebar
               onFiltersChange={handleFiltersChange}
               activeFilters={activeFilters}
+              facets={currentFacets}
+              schemaInfo={schemaInfo}
             />
             
             {/* Debug-Info (nur in Entwicklung) */}

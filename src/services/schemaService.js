@@ -167,6 +167,121 @@ export const getDynamicFacets = async () => {
 };
 
 /**
+ * Holt Facetten basierend auf aktuellen Suchparametern (kontextuelle Facetten)
+ * Dies zeigt nur die Filter-Optionen, die in den aktuellen Suchergebnissen verfügbar sind
+ * @param {string} query - Aktueller Suchterm
+ * @param {string} searchMode - Suchmodus (all, title, etc.)
+ * @param {Object} currentFilters - Bereits angewendete Filter
+ * @returns {Promise<Object>} Kontextuelle Facetten basierend auf Suchergebnissen
+ */
+export const getContextualFacets = async (query = '*:*', searchMode = 'all', currentFilters = {}) => {
+  try {
+    const uiConfig = await analyzeSchemaForUI();
+    const fieldsToQuery = uiConfig.facetableFields.map(field => field.name);
+    
+    if (fieldsToQuery.length === 0) {
+      console.warn('No facetable fields found in schema');
+      return {};
+    }
+    
+    console.log('Getting contextual facets for query:', query, 'mode:', searchMode, 'filters:', currentFilters);
+    
+    // Baue die Solr-Query basierend auf den aktuellen Suchparametern
+    let solrQuery;
+    const isWildcardQuery = query === '*' || query === '*:*' || query.trim() === '';
+    
+    if (searchMode === 'title') {
+      solrQuery = isWildcardQuery ? 'title:*' : `title:(${query})`;
+    } else if (searchMode === 'author') {
+      // Verwende die gleiche Syntax wie in solrService.js
+      solrQuery = isWildcardQuery ? 'author:*' : `author:"${query}" OR author:*${query}*`;
+    } else if (searchMode === 'category') {
+      // Verwende die gleiche Syntax wie in solrService.js  
+      solrQuery = isWildcardQuery ? 'category:*' : `category:"${query}" OR category:*${query}*`;
+    } else if (searchMode === 'content') {
+      solrQuery = isWildcardQuery ? 'content:*' : `content:(${query})`;
+    } else {
+      // 'all' mode - verwende DisMax für bessere Mehrfeld-Suche
+      if (isWildcardQuery) {
+        solrQuery = '*:*';
+      } else {
+        solrQuery = query;
+      }
+    }
+    
+    // Baue Filter-Queries basierend auf aktuellen Filtern
+    const filterQueries = [];
+    Object.keys(currentFilters).forEach(fieldName => {
+      const filterValues = currentFilters[fieldName];
+      if (filterValues && filterValues.length > 0) {
+        const fieldFilter = filterValues.map(value => `${fieldName}:"${value}"`).join(' OR ');
+        filterQueries.push(`(${fieldFilter})`);
+      }
+    });
+    
+    // Baue die URL manuell für korrekte Parameter-Serialisierung
+    const baseUrl = '/solr/documents/select';
+    const facetFieldParams = fieldsToQuery.map(field => `facet.field=${encodeURIComponent(field)}`).join('&');
+    
+    let fullUrl = `${baseUrl}?q=${encodeURIComponent(solrQuery)}&wt=json&rows=0&facet=true&${facetFieldParams}&facet.limit=50&facet.mincount=1`;
+    
+    // Füge DisMax-Parameter für 'all' mode hinzu
+    if (searchMode === 'all' && !isWildcardQuery) {
+      fullUrl += '&defType=dismax&qf=title^2.0+content^1.0+author^1.5+category^1.2';
+    }
+    
+    // Füge Filter-Queries hinzu
+    if (filterQueries.length > 0) {
+      const filterParams = filterQueries.map(fq => `fq=${encodeURIComponent(fq)}`).join('&');
+      fullUrl += `&${filterParams}`;
+    }
+    
+    console.log('Debug - Contextual facets URL:', fullUrl);
+    
+    const response = await axios.get(fullUrl);
+    
+    console.log('Debug - Contextual facet response:', response.data.facet_counts);
+    
+    const solrFacetFields = response.data.facet_counts?.facet_fields || {};
+    const processedFacets = {};
+    
+    // Konvertiere Solr-Facetten-Format
+    Object.keys(solrFacetFields).forEach(field => {
+      const facetArray = solrFacetFields[field];
+      const facetItems = [];
+      
+      console.log(`Debug - Processing contextual field '${field}':`, facetArray);
+      
+      if (Array.isArray(facetArray) && facetArray.length > 0) {
+        for (let i = 0; i < facetArray.length; i += 2) {
+          if (i + 1 < facetArray.length) {
+            facetItems.push({
+              value: facetArray[i],
+              count: facetArray[i + 1]
+            });
+          }
+        }
+      }
+      
+      if (facetItems.length > 0) {
+        processedFacets[field] = facetItems;
+      }
+      
+      console.log(`Debug - Processed contextual '${field}':`, facetItems);
+    });
+    
+    console.log('Debug - Final contextual facets:', processedFacets);
+    
+    return processedFacets;
+  } catch (error) {
+    console.error('Failed to get contextual facets:', error);
+    
+    // Fallback: Verwende die statischen Facetten
+    return await getDynamicFacets();
+  }
+};
+
+/**
  * Erstellt automatisch Suchfeld-Konfiguration basierend auf Schema
  * @returns {Promise<Array>} Array von Suchfeld-Optionen für die UI
  */

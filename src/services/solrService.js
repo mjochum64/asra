@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { getContextualFacets } from './schemaService';
 
 // Konfigurierbare Solr-URL basierend auf der Umgebung
 // Im Produktionsbetrieb mit Docker wird "/solr/" verwendet (relativ zur gleichen Domain wie Frontend)
@@ -96,6 +97,9 @@ export const searchDocuments = async (query, searchMode = 'all', filters = {}) =
     queryParams['hl.fl'] = 'title,content';
     queryParams['hl.simple.pre'] = '<mark>';
     queryParams['hl.simple.post'] = '</mark>';
+    queryParams['hl.fragsize'] = 200;
+    queryParams['hl.maxAnalyzedChars'] = 1000000;
+    queryParams['hl.snippets'] = 3;  // Mehr Snippets für bessere Highlighting-Abdeckung
     
     // Füge Filter-Queries hinzu
     const filterQueries = [];
@@ -142,12 +146,36 @@ export const searchDocuments = async (query, searchMode = 'all', filters = {}) =
       console.log('Final URL params:', searchParams.toString());
       
       const response = await solrClient.get(`documents/select?${searchParams.toString()}`);
-      return processSearchResponse(response);
+      
+      // Hole kontextuelle Facetten basierend auf den Suchparametern
+      const contextualFacets = await getContextualFacets(query, searchMode, filters);
+      
+      // Verarbeite die Suchergebnisse
+      const searchResults = processSearchResponse(response);
+      
+      // Gebe sowohl Suchergebnisse als auch kontextuelle Facetten zurück
+      return {
+        results: searchResults,
+        facets: contextualFacets,
+        total: response.data.response.numFound
+      };
     } else {
       const response = await solrClient.get('documents/select', {
         params: queryParams
       });
-      return processSearchResponse(response);
+      
+      // Hole kontextuelle Facetten basierend auf den Suchparametern
+      const contextualFacets = await getContextualFacets(query, searchMode, filters);
+      
+      // Verarbeite die Suchergebnisse
+      const searchResults = processSearchResponse(response);
+      
+      // Gebe sowohl Suchergebnisse als auch kontextuelle Facetten zurück
+      return {
+        results: searchResults,
+        facets: contextualFacets,
+        total: response.data.response.numFound
+      };
     }
   } catch (error) {
     console.error('Solr API Error:', error);
@@ -187,7 +215,13 @@ function processSearchResponse(response) {
     }
     
     if (docHighlights.content && docHighlights.content.length > 0) {
+      // Verwende das erste und beste Highlight-Snippet für content
       normalizedDoc.content = docHighlights.content[0];
+      
+      // Falls mehrere Snippets vorhanden sind, zeige sie zusammen
+      if (docHighlights.content.length > 1) {
+        normalizedDoc.contentSnippets = docHighlights.content;
+      }
     }
     
     return normalizedDoc;

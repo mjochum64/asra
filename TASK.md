@@ -50,7 +50,7 @@
 
 ## 7. Erweiterte Suchfunktionalitäten (In Bearbeitung - Phase 1)
 
-### 7.1 Facetten-Filter (Vollständig abgeschlossen - 07.06.2025)
+### 7.1 Facetten-Filter (✅ VOLLSTÄNDIG ABGESCHLOSSEN - 07.06.2025)
 - [x] Dynamische Facetten aus Solr-Daten abrufen (mit Mock-Fallback)
 - [x] Kategorie-Filter in Sidebar implementiert
 - [x] Autor-Filter mit Zählern hinzugefügt
@@ -61,7 +61,16 @@
 - [x] Solr Array-Feld-Normalisierung implementiert (07.06.2025)
 - [x] Kategorie-Mapping von Englisch (Solr) zu Deutsch (UI) implementiert (07.06.2025)
 - [x] Code-Bereinigung: Debug-Logs entfernt (07.06.2025)
-- [ ] Datum-Range-Filter implementieren (zukünftige Aufgabe)
+- [x] **KRITISCHE PROBLEME BEHOBEN (07.06.2025)**:
+  - [x] Dynamische, kontextuelle Filter statt statische Filter-Anzeige
+  - [x] Content-Highlighting funktioniert korrekt
+  - [x] Autor-Filter verschwinden nicht mehr
+  - [x] Einheitliche Suchsyntax zwischen Hauptsuche und Facetten
+- [x] **ARCHITEKTUR-ÜBERARBEITUNG (07.06.2025)**:
+  - [x] Kontextuelle Facetten-Funktion `getContextualFacets()` implementiert
+  - [x] Unified Search Response mit `{results, facets, total}` Struktur
+  - [x] Komponentenarchitektur auf Props-basierte Facetten umgestellt
+- [ ] Datum-Range-Filter implementieren (→ Sprint 3)
 
 ### 7.2 Erweiterte Suchoptionen
 - [ ] Auto-Suggest / Autocomplete-Funktionalität
@@ -70,8 +79,8 @@
 - [ ] Suchhistorie und gespeicherte Suchen
 
 ### 7.3 Dokumentvorschau und -interaktion
+- [x] Highlight-Funktion für Suchbegriffe im Volltext (✅ ABGESCHLOSSEN - 07.06.2025)
 - [ ] Modal für Dokumentvorschau implementieren
-- [ ] Highlight-Funktion für Suchbegriffe im Volltext
 - [ ] Dokumenten-Download-Funktionalität
 - [ ] Related Documents Feature
 
@@ -123,27 +132,28 @@
 - [x] (HOCH) Optimierung der Ladezeiten durch Implementierung von Code-Splitting erforderlich (18.05.2025) - **Abgeschlossen (07.06.2025)**
 - [ ] (HOCH) Bessere Fehlerbehandlung für Netzwerkprobleme einbauen (18.05.2025)
 - [ ] (MITTEL) Solr-Schema-Aktualisierungen ohne Container-Neustart ermöglichen (18.05.2025)
-- [x] (MITTEL) Integration der Sidebar-Filter mit Solr-Facetten für dynamische Filterung (19.05.2025) - **In Bearbeitung Phase 1 (07.06.2025)**
+- [x] (MITTEL) Integration der Sidebar-Filter mit Solr-Facetten für dynamische Filterung (19.05.2025) - **✅ VOLLSTÄNDIG ABGESCHLOSSEN (07.06.2025)**
 - [ ] (NIEDRIG) Möglichkeit zum Exportieren von Suchergebnissen als CSV oder JSON (19.05.2025)
 - [ ] (NIEDRIG) Implementierung eines Theme-Wechslers für hellen/dunklen Modus (19.05.2025)
 
 ## Aktuelle Sprint-Planung (Juni 2025)
 
-### Sprint 1: Facetten-Filter (KW 23-24) - ✅ ABGESCHLOSSEN
+### Sprint 1: Facetten-Filter (KW 23-24) - ✅ VOLLSTÄNDIG ABGESCHLOSSEN
 **Ziel**: Dynamische Filter-Funktionalität mit Solr-Integration
 
-**Priorität 1 (Abgeschlossen)**:
+**Alle Prioritäten erfolgreich abgeschlossen**:
 - [x] Solr-Facetten-API-Endpunkt implementiert
 - [x] Kategorie-Filter in Sidebar mit echten Daten
+- [x] Autor-Filter mit Dokumentzählern
 - [x] Filter-State-Management für Suchanfragen
 - [x] Filter-Race-Condition-Bug behoben
 - [x] Solr DisMax Query Integration
 - [x] Array-Feld-Normalisierung für Solr-Antworten
-
-**Priorität 2 (Teilweise abgeschlossen)**:
-- [x] Autor-Filter mit Dokumentzählern
-- [ ] Datum-Range-Filter mit Kalenderfunktion (→ Sprint 3)
 - [x] Multi-Filter-Kombinationen
+- [x] **KRITISCHE BUGFIXES**: Kontextuelle Filter, Content-Highlighting, Filter-Persistenz
+- [x] **ARCHITEKTUR-VERBESSERUNG**: Unified Search Response, Props-basierte Facetten
+
+**Sprint-Ergebnis**: Vollständig funktionsfähige dynamische Facetten mit kontextueller Filterung
 
 ### Sprint 2: Auto-Suggest und Sortierung (KW 25-26)
 **Ziel**: Verbesserte Benutzererfahrung bei der Suche

@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { getDynamicFacets } from '../services/schemaService';
 
 /**
  * Schema-driven Sidebar - automatisch basierend auf verfügbaren Solr-Feldern
+ * Jetzt mit kontextuellen Facetten, die sich basierend auf Suchergebnissen anpassen
  */
-export default function DynamicSidebar({ onFiltersChange, activeFilters = {} }) {
-  const [facets, setFacets] = useState({});
-  const [isLoading, setIsLoading] = useState(true);
+export default function DynamicSidebar({ onFiltersChange, activeFilters = {}, facets = {}, schemaInfo = null }) {
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [selectedFilters, setSelectedFilters] = useState(activeFilters);
 
@@ -14,30 +13,6 @@ export default function DynamicSidebar({ onFiltersChange, activeFilters = {} }) 
   useEffect(() => {
     setSelectedFilters(activeFilters);
   }, [activeFilters]);
-
-  // Lade dynamische Facetten beim Mount
-  useEffect(() => {
-    loadDynamicFacets();
-  }, []);
-
-  const loadDynamicFacets = async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      
-      const facetData = await getDynamicFacets();
-      setFacets(facetData);
-      
-      if (Object.keys(facetData).length === 0) {
-        setError('Keine filterbaren Felder im Schema gefunden');
-      }
-    } catch (err) {
-      console.error('Failed to load dynamic facets:', err);
-      setError('Fehler beim Laden der Filter');
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const handleFilterChange = (fieldName, value, isChecked) => {
     const newFilters = { ...selectedFilters };
@@ -104,33 +79,28 @@ export default function DynamicSidebar({ onFiltersChange, activeFilters = {} }) 
     );
   }
 
-  if (error) {
-    return (
-      <div className="bg-white p-6 rounded-lg shadow-md">
-        <div className="text-center">
-          <div className="text-red-500 mb-2">
-            <svg className="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16c-.77.833.192 2.5 1.732 2.5z" />
-            </svg>
-          </div>
-          <p className="text-gray-600 text-sm mb-4">{error}</p>
-          <button
-            onClick={loadDynamicFacets}
-            className="px-4 py-2 bg-solr-primary text-white rounded hover:bg-solr-accent transition-colors"
-          >
-            Erneut versuchen
-          </button>
-        </div>
-      </div>
-    );
-  }
-
+  // Verwende die übergebenen Facetten oder zeige eine Meldung an
   const fieldEntries = Object.entries(facets);
 
   if (fieldEntries.length === 0) {
     return (
       <div className="bg-white p-6 rounded-lg shadow-md">
-        <p className="text-gray-500 text-center">Keine Filter verfügbar</p>
+        <div className="bg-solr-primary text-white p-4 -m-6 mb-4">
+          <h3 className="text-lg font-semibold">Filter</h3>
+        </div>
+        <div className="text-center py-8">
+          <div className="text-gray-400 mb-2">
+            <svg className="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+            </svg>
+          </div>
+          <p className="text-gray-500 text-sm">
+            {schemaInfo && Object.keys(facets).length === 0 ? 
+              'Keine Filter verfügbar für die aktuellen Suchergebnisse' : 
+              'Führen Sie eine Suche durch, um Filter zu sehen'
+            }
+          </p>
+        </div>
       </div>
     );
   }

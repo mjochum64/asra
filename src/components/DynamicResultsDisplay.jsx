@@ -85,11 +85,12 @@ export default function DynamicResultsDisplay({
         }
       
       case 'content':
-        // Kürze Content-Felder für bessere Lesbarkeit
-        const cleanContent = value.replace(/<[^>]*>/g, ''); // Entferne HTML-Tags
-        return cleanContent.length > 200 
-          ? cleanContent.substring(0, 200) + '...' 
-          : cleanContent;
+        // Kürze Content-Felder für bessere Lesbarkeit, aber behalte Highlighting-Tags
+        // Entferne nur andere HTML-Tags, nicht <mark> Tags für Highlighting
+        const contentWithHighlights = value.replace(/<(?!\/?(mark)\b)[^>]*>/g, '');
+        return contentWithHighlights.length > 200 
+          ? contentWithHighlights.substring(0, 200) + '...' 
+          : contentWithHighlights;
       
       case 'category':
         // Kapitalisiere erste Buchstaben
