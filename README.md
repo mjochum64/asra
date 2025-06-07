@@ -4,6 +4,7 @@ ASRA ist eine moderne Webapplikation für die Dokumentensuche, die Apache Solr a
 
 ## Funktionen
 
+### ✅ Implementierte Features
 - **Echtzeit-Suche**: Schnelle Dokumentensuche mit sofortigen Ergebnissen
 - **Benutzerfreundliche Oberfläche**: Modernes, responsives UI mit React und Tailwind CSS
 - **Fehlerbehandlung**: Robuste Fehlerbehandlung und Ladezustände für eine bessere Benutzererfahrung
@@ -14,6 +15,21 @@ ASRA ist eine moderne Webapplikation für die Dokumentensuche, die Apache Solr a
 - **Fortgeschrittene Suchoptionen**: Suche in bestimmten Feldern (Titel, Inhalt, Alle)
 - **Paginierung**: Unterstützung für große Ergebnismengen mit einer intuitiven Paginierung
 - **Responsive Design**: Optimiert für Desktop, Tablet und Mobilgeräte
+- **Code-Splitting**: Lazy Loading für optimierte Performance und kleinere Bundle-Größen
+- **Professional UI**: Moderne Navbar, Sidebar und Footer für eine professionelle Benutzererfahrung
+
+### 🚧 In Entwicklung (Phase 1 - Juni 2025)
+- **Dynamische Facetten-Filter**: Integration mit Solr für echte Kategorie-, Autor- und Datumsfilter
+- **Auto-Suggest**: Suchvorschläge basierend auf vorhandenen Dokumenten
+- **Erweiterte Sortierung**: Sortierung nach Relevanz, Datum und Titel
+- **Filter-State-Management**: Beibehaltung der Filter zwischen Suchanfragen
+
+### 🎯 Geplante Features (Phase 2+)
+- **Dokumentvorschau**: Modal-Ansicht für Dokumenteninhalte
+- **Highlighting**: Hervorhebung von Suchbegriffe im Volltext
+- **Webcrawler-Integration**: Automatischer Import von Daten aus gesetze-im-internet.de
+- **Erweiterte Authentifizierung**: Benutzerkonten und gespeicherte Suchen
+- **Export-Funktionen**: PDF- und CSV-Export von Suchergebnissen
 
 ## Screenshots
 
@@ -202,9 +218,24 @@ Dieses Projekt verwendet semantische Versionierung (SemVer). Alle Änderungen we
 4. **Fehlerbehandlung**: Implementiere try/catch-Blöcke für alle asynchronen Operationen.
 5. **Dokumentation**: Füge JSDoc-Kommentare zu allen Funktionen und Komponenten hinzu.
 
-### Aktuelle Arbeitsschwerpunkte
+### Aktuelle Arbeitsschwerpunkte (Juni 2025)
 
-Siehe [TASK.md](TASK.md) für eine vollständige Liste der anstehenden Aufgaben.
+**Sprint 1 (KW 23-24): Facetten-Filter-Implementation**
+- Dynamische Solr-Facetten-Integration für Kategorien, Autoren und Datum
+- Filter-State-Management zwischen Suchanfragen
+- Erweiterte Sidebar-Funktionalität mit echten Daten
+
+**Sprint 2 (KW 25-26): Auto-Suggest und Sortierung** 
+- Autocomplete-Funktionalität basierend auf Solr-Begriffen
+- Erweiterte Sortieroptionen in der Ergebnisanzeige
+- Suchhistorie mit LocalStorage
+
+**Langfristige Roadmap**:
+- Webcrawler-Implementation für automatischen Datenimport aus gesetze-im-internet.de
+- Dokumentvorschau und -interaktion
+- Erweiterte Authentifizierung und Benutzerverwaltung
+
+Siehe [TASK.md](TASK.md) für eine vollständige Liste der anstehenden Aufgaben und detaillierte Sprint-Planung.
 
 ## Lizenz
 

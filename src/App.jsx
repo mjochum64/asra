@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import SearchBar from './components/SearchBar';
-import ResultsDisplay from './components/ResultsDisplay';
+const ResultsDisplay = React.lazy(() => import('./components/ResultsDisplay'));
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
 import Footer from './components/Footer';
@@ -75,11 +75,18 @@ export default function App() {
                 </div>
               )}
               
-              <ResultsDisplay 
-                results={results} 
-                isLoading={isLoading} 
-                error={error} 
-              />
+              <Suspense fallback={
+                <div className="flex items-center justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-solr-primary"></div>
+                  <span className="ml-3 text-gray-600">Lade Suchergebnisse...</span>
+                </div>
+              }>
+                <ResultsDisplay 
+                  results={results} 
+                  isLoading={isLoading} 
+                  error={error} 
+                />
+              </Suspense>
             </div>
           </div>
         </div>
