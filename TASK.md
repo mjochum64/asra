@@ -72,7 +72,16 @@
   - [x] Komponentenarchitektur auf Props-basierte Facetten umgestellt
 - [ ] Datum-Range-Filter implementieren (→ Sprint 3)
 
-### 7.2 Erweiterte Suchoptionen
+### 7.2 Deutsche Rechtsabkürzungen-Suche (✅ VOLLSTÄNDIG ABGESCHLOSSEN - 08.06.2025)
+- [x] **KRITISCHES PROBLEM BEHOBEN**: Operator-Präzedenz-Fehler bei deutschen Rechtsabkürzungen mit Leerzeichen
+- [x] Queries wie "1. BImSchV" generieren jetzt korrekte Solr-Syntax mit Klammern: `(amtabk:"1. BImSchV" OR (amtabk:*1* AND amtabk:*BImSchV*))`
+- [x] URL-Kodierungsproblem bei axios-Requests gelöst
+- [x] `buildGermanLegalQuery()` Helper-Funktion für konsistente Abfrageerstellung implementiert
+- [x] Amtliche Abkürzungen (amtabk) und Juristische Abkürzungen (jurabk) funktionieren korrekt
+- [x] 400 Bad Request Fehler bei Leerzeichen in Abkürzungen behoben
+- [x] Minimale URL-Kodierung implementiert: nur Leerzeichen werden kodiert, Solr-Syntax bleibt intakt
+
+### 7.3 Erweiterte Suchoptionen
 - [ ] Auto-Suggest / Autocomplete-Funktionalität
 - [ ] Erweiterte Sortieroptionen (Relevanz, Datum, Titel)
 - [ ] Wildcards und Boolean-Operatoren in Suche

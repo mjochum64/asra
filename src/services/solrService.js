@@ -8,19 +8,25 @@ const buildGermanLegalQuery = (fieldName, query, isWildcard = false) => {
     return `${fieldName}:*`;
   }
   
+  // Escape special characters for Solr queries
+  const escapedQuery = query.replace(/[+\-&|!(){}[\]^"~*?:\\]/g, '\\$&');
+  
   // If the query contains spaces and we're doing a wildcard search,
   // split it into separate terms and combine with AND
   if (isWildcard && query.includes(' ')) {
     const terms = query.trim().split(/\s+/);
-    const wildcardTerms = terms.map(term => `${fieldName}:*${term}*`);
-    return wildcardTerms.join(' AND ');
+    const wildcardTerms = terms.map(term => {
+      const escapedTerm = term.replace(/[+\-&|!(){}[\]^"~*?:\\]/g, '\\$&');
+      return `${fieldName}:*${escapedTerm}*`;
+    });
+    return `(${wildcardTerms.join(' AND ')})`;
   }
   
   // For exact match or simple wildcard (no spaces)
   if (isWildcard) {
-    return `${fieldName}:*${query}*`;
+    return `${fieldName}:*${escapedQuery}*`;
   } else {
-    return `${fieldName}:"${query}"`;
+    return `${fieldName}:"${escapedQuery}"`;
   }
 };
 
@@ -110,15 +116,25 @@ export const searchDocuments = async (query, searchMode = 'all', filters = {}) =
       };
     } else if (searchMode === 'jurabk') {
       // Deutsche Rechtsdokument: Juristische Abkürzung
+      // Grund: Verwende buildGermanLegalQuery für bessere Behandlung von Leerzeichen
+      const jurabkQuery = isWildcardQuery ? 'jurabk:*' : 
+        query.includes(' ') ? 
+          `(${buildGermanLegalQuery('jurabk', query, false)} OR ${buildGermanLegalQuery('jurabk', query, true)})` :
+          buildGermanLegalQuery('jurabk', query, false);
       queryParams = {
-        q: isWildcardQuery ? 'jurabk:*' : `${buildGermanLegalQuery('jurabk', query, false)} OR ${buildGermanLegalQuery('jurabk', query, true)}`,
+        q: jurabkQuery,
         wt: 'json',
         rows: 20
       };
     } else if (searchMode === 'amtabk') {
       // Deutsche Rechtsdokument: Amtliche Abkürzung
+      // Grund: Verwende buildGermanLegalQuery für bessere Behandlung von Leerzeichen
+      const amtabkQuery = isWildcardQuery ? 'amtabk:*' : 
+        query.includes(' ') ? 
+          `(${buildGermanLegalQuery('amtabk', query, false)} OR ${buildGermanLegalQuery('amtabk', query, true)})` :
+          buildGermanLegalQuery('amtabk', query, false);
       queryParams = {
-        q: isWildcardQuery ? 'amtabk:*' : `${buildGermanLegalQuery('amtabk', query, false)} OR ${buildGermanLegalQuery('amtabk', query, true)}`,
+        q: amtabkQuery,
         wt: 'json',
         rows: 20
       };
@@ -138,32 +154,29 @@ export const searchDocuments = async (query, searchMode = 'all', filters = {}) =
           rows: 20
         };
       } else {
-        // eDisMax Query Parser für bessere Relevanz mit String-Feld-Unterstützung
-        // Verwende explizite OR-Query für String-Felder statt boost query
-        const textFieldQuery = `kurzue:(${query}) OR langue:(${query}) OR text_content:(${query})`;
-        const amtabkQuery = `${buildGermanLegalQuery('amtabk', query, false)} OR ${buildGermanLegalQuery('amtabk', query, true)}`;
-        const jurabkQuery = `${buildGermanLegalQuery('jurabk', query, false)} OR ${buildGermanLegalQuery('jurabk', query, true)}`;
-        const stringFieldQuery = `(${amtabkQuery}) OR (${jurabkQuery})`;
-        const combinedQuery = `(${textFieldQuery}) OR (${stringFieldQuery})`;
-        
+        // eDisMax Query Parser für bessere Relevanz
+        // Grund: Verwende einfachere Struktur ohne übermäßig komplexe verschachtelte Queries
         queryParams = {
-          q: combinedQuery,
+          defType: 'edismax',
+          q: query,
+          qf: 'kurzue langue text_content title content amtabk jurabk',
           wt: 'json',
           rows: 20,
-          // Keine DisMax nötig, da wir explizite Query verwenden
-          // mm: '1'  // Minimum Should Match
+          mm: '1'  // Minimum Should Match
         };
       }
     }
     
-    // Füge Highlighting hinzu (für alle Suchmodi)
+    // Füge vereinfachtes Highlighting hinzu (für alle Suchmodi)
     queryParams.hl = 'true';
-    queryParams['hl.fl'] = 'kurzue,langue,amtabk,jurabk,text_content';
+    queryParams['hl.fl'] = 'kurzue,langue,amtabk,jurabk,text_content,title,content';
     queryParams['hl.simple.pre'] = '<mark>';
     queryParams['hl.simple.post'] = '</mark>';
     queryParams['hl.fragsize'] = 200;
-    queryParams['hl.maxAnalyzedChars'] = 1000000;
-    queryParams['hl.snippets'] = 3;  // Mehr Snippets für bessere Highlighting-Abdeckung
+    queryParams['hl.maxAnalyzedChars'] = 100000;
+    queryParams['hl.snippets'] = 1;  // Reduzierte Snippets für Stabilität
+    
+    // Grund: Vereinfachtes Highlighting ohne komplexe Parameter für bessere Kompatibilität
     
     // Füge Filter-Queries hinzu
     const filterQueries = [];
@@ -195,6 +208,12 @@ export const searchDocuments = async (query, searchMode = 'all', filters = {}) =
     
     console.log('Query parameters:', queryParams);
     
+    // Debug: Show exactly what buildGermanLegalQuery is returning
+    if (searchMode === 'amtabk' && !isWildcardQuery) {
+      console.log('German legal query for amtabk:', buildGermanLegalQuery('amtabk', query, false));
+      console.log('Original query input:', query);
+    }
+    
     // Verwende URLSearchParams für korrekte Kodierung bei Filter-Queries
     let finalParams;
     if (queryParams.fq && Array.isArray(queryParams.fq)) {
@@ -224,8 +243,26 @@ export const searchDocuments = async (query, searchMode = 'all', filters = {}) =
         total: response.data.response.numFound
       };
     } else {
+      // Einfache Lösung: Verwende axios params aber mit spezieller Behandlung der Query
+      console.log('Query params (no filters):', queryParams);
+      
+      // Erstelle eine vereinfachte Version der Query mit minimaler Kodierung
+      const simpleQuery = queryParams.q.replace(/ /g, '%20');
+      
+      console.log('Simplified query:', simpleQuery);
+      
       const response = await solrClient.get('documents/select', {
-        params: queryParams
+        params: {
+          q: simpleQuery,
+          wt: 'json',
+          rows: 20
+        },
+        // Verwende custom parameter serializer um double encoding zu vermeiden
+        paramsSerializer: function(params) {
+          return Object.keys(params)
+            .map(key => `${key}=${params[key]}`)
+            .join('&');
+        }
       });
       
       // Hole kontextuelle Facetten basierend auf den Suchparametern
@@ -247,8 +284,13 @@ export const searchDocuments = async (query, searchMode = 'all', filters = {}) =
     if (error.response) {
       console.error('Response data:', error.response.data);
       console.error('Response status:', error.response.status);
+      console.error('Response headers:', error.response.headers);
+      console.error('Request URL:', error.config?.url);
+      console.error('Request method:', error.config?.method);
+      console.error('Request params:', error.config?.params);
     } else if (error.request) {
       console.error('No response received');
+      console.error('Request details:', error.request);
     }
     throw error;
   }
@@ -270,7 +312,13 @@ function processSearchResponse(response) {
       category: Array.isArray(doc.category) ? doc.category[0] : doc.category,
       author: Array.isArray(doc.author) ? doc.author[0] : doc.author,
       created_date: Array.isArray(doc.created_date) ? doc.created_date[0] : doc.created_date,
-      last_modified: Array.isArray(doc.last_modified) ? doc.last_modified[0] : doc.last_modified
+      last_modified: Array.isArray(doc.last_modified) ? doc.last_modified[0] : doc.last_modified,
+      // Deutsche Rechtsfelder hinzufügen
+      kurzue: Array.isArray(doc.kurzue) ? doc.kurzue[0] : doc.kurzue,
+      langue: Array.isArray(doc.langue) ? doc.langue[0] : doc.langue,
+      amtabk: Array.isArray(doc.amtabk) ? doc.amtabk[0] : doc.amtabk,
+      jurabk: Array.isArray(doc.jurabk) ? doc.jurabk[0] : doc.jurabk,
+      text_content: Array.isArray(doc.text_content) ? doc.text_content[0] : doc.text_content
     };
     
     // Ersetze Inhalte mit hervorgehobenem Text, falls verfügbar
@@ -285,6 +333,32 @@ function processSearchResponse(response) {
       // Falls mehrere Snippets vorhanden sind, zeige sie zusammen
       if (docHighlights.content.length > 1) {
         normalizedDoc.contentSnippets = docHighlights.content;
+      }
+    }
+    
+    // Deutsche Rechtsfelder mit Highlighting unterstützen
+    if (docHighlights.kurzue && docHighlights.kurzue.length > 0) {
+      normalizedDoc.kurzue = docHighlights.kurzue[0];
+    }
+    
+    if (docHighlights.langue && docHighlights.langue.length > 0) {
+      normalizedDoc.langue = docHighlights.langue[0];
+    }
+    
+    if (docHighlights.amtabk && docHighlights.amtabk.length > 0) {
+      normalizedDoc.amtabk = docHighlights.amtabk[0];
+    }
+    
+    if (docHighlights.jurabk && docHighlights.jurabk.length > 0) {
+      normalizedDoc.jurabk = docHighlights.jurabk[0];
+    }
+    
+    if (docHighlights.text_content && docHighlights.text_content.length > 0) {
+      normalizedDoc.text_content = docHighlights.text_content[0];
+      
+      // Falls text_content das Hauptinhaltfeld ist, überschreibe auch content
+      if (!normalizedDoc.content || normalizedDoc.content === normalizedDoc.text_content) {
+        normalizedDoc.content = docHighlights.text_content[0];
       }
     }
     

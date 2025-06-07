@@ -229,10 +229,18 @@ export const getContextualFacets = async (query = '*:*', searchMode = 'all', cur
       solrQuery = isWildcardQuery ? 'langue:*' : `langue:(${query})`;
     } else if (searchMode === 'jurabk') {
       // Deutsche Rechtsdokument: Juristische Abkürzung
-      solrQuery = isWildcardQuery ? 'jurabk:*' : `${buildGermanLegalQuery('jurabk', query, false)} OR ${buildGermanLegalQuery('jurabk', query, true)}`;
+      // Grund: Verwende buildGermanLegalQuery für bessere Behandlung von Leerzeichen
+      solrQuery = isWildcardQuery ? 'jurabk:*' : 
+        query.includes(' ') ? 
+          `(${buildGermanLegalQuery('jurabk', query, false)} OR ${buildGermanLegalQuery('jurabk', query, true)})` :
+          buildGermanLegalQuery('jurabk', query, false);
     } else if (searchMode === 'amtabk') {
       // Deutsche Rechtsdokument: Amtliche Abkürzung
-      solrQuery = isWildcardQuery ? 'amtabk:*' : `${buildGermanLegalQuery('amtabk', query, false)} OR ${buildGermanLegalQuery('amtabk', query, true)}`;
+      // Grund: Verwende buildGermanLegalQuery für bessere Behandlung von Leerzeichen
+      solrQuery = isWildcardQuery ? 'amtabk:*' : 
+        query.includes(' ') ? 
+          `(${buildGermanLegalQuery('amtabk', query, false)} OR ${buildGermanLegalQuery('amtabk', query, true)})` :
+          buildGermanLegalQuery('amtabk', query, false);
     } else if (searchMode === 'text_content') {
       // Deutsche Rechtsdokument: Textinhalt
       solrQuery = isWildcardQuery ? 'text_content:*' : `text_content:(${query})`;
@@ -263,11 +271,9 @@ export const getContextualFacets = async (query = '*:*', searchMode = 'all', cur
     
     // Füge Query-Parameter für 'all' mode hinzu
     if (searchMode === 'all' && !isWildcardQuery) {
-      // Verwende explizite OR-Query statt DisMax für bessere String-Feld-Kontrolle
+      // Verwende vereinfachte OR-Query für alle deutschen Rechtsfelder
       const textFieldQuery = `kurzue:(${query}) OR langue:(${query}) OR text_content:(${query})`;
-      const amtabkQuery = `${buildGermanLegalQuery('amtabk', query, false)} OR ${buildGermanLegalQuery('amtabk', query, true)}`;
-      const jurabkQuery = `${buildGermanLegalQuery('jurabk', query, false)} OR ${buildGermanLegalQuery('jurabk', query, true)}`;
-      const stringFieldQuery = `(${amtabkQuery}) OR (${jurabkQuery})`;
+      const stringFieldQuery = `amtabk:"${query}" OR jurabk:"${query}"`;
       const combinedQuery = `(${textFieldQuery}) OR (${stringFieldQuery})`;
       
       // Überschreibe die ursprüngliche Query
