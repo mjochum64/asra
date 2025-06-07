@@ -10,6 +10,7 @@ services:
     command:
       - solr-precreate
       - documents
+      - /configsets/documents
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8983/solr/"]
       interval: 10s
