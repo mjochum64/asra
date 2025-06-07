@@ -1,6 +1,6 @@
 # Projektstatusbericht: ASRA (Apache Solr Research Application)
 
-Datum: 19. Mai 2025
+Datum: 7. Juni 2025
 
 ## 1. Aktueller Projektstand
 
@@ -8,18 +8,29 @@ Datum: 19. Mai 2025
 
 - **UI-Modernisierung abgeschlossen**:
   - Neue Navbar mit Logo und Navigation erfolgreich implementiert
-  - Sidebar für Filter hinzugefügt (noch ohne aktive Filter-Funktionalität)
+  - Sidebar für Filter hinzugefügt mit vollständig funktionsfähigen dynamischen Filtern
   - Pagination-Komponente für größere Ergebnismengen implementiert
   - Footer-Komponente mit Projekt-Informationen hinzugefügt
   - SearchBar verbessert mit zusätzlichen Suchoptionen (Titel/Inhalt/Alle)
   - ResultsDisplay-Komponente mit besserer Darstellung und Sortierung aktualisiert
   - Responsives Layout mit Mobile-First-Design umgesetzt
 
+- **Dynamische Facetten-Filter vollständig implementiert (7. Juni 2025)**:
+  - Solr-Facetten-Integration mit echten Daten aus dem Solr-Index
+  - Kategorie- und Autor-Filter mit Live-Dokumentzählern
+  - Filter-Race-Condition-Bug behoben - Filter funktionieren sofort nach Auswahl
+  - DisMax Query Parser für verbesserte Volltextsuche implementiert
+  - Solr Array-Feld-Normalisierung für korrekte Datenverarbeitung
+  - Kategorie-Mapping von Englisch (Solr) zu Deutsch (UI-Anzeige)
+  - Multi-Filter-Kombinationen möglich (Kategorie + Autor gleichzeitig)
+  - Fallback auf Mock-Daten wenn Solr-Facetten nicht verfügbar sind
+
 - **Technische Verbesserungen**:
   - Mock-Modus für Entwicklung und Tests implementiert, aktivierbar über Navbar
   - CORS-Problem im Entwicklungsmodus durch Proxy in Vite-Konfiguration gelöst
   - Verbesserte Fehlerbehandlung und Logging im solrService implementiert
   - Solr-Service verwendet jetzt konfigurierbare Umgebungsvariablen
+  - Code-Splitting mit React.lazy für bessere Performance implementiert
 
 - **Dokumentation**:
   - TASK.md mit aktualisiertem Projektstatus
@@ -28,19 +39,21 @@ Datum: 19. Mai 2025
 
 ### Aktuelle Projektversion
 
-Die aktuelle Produktionsversion ist **0.3.1**. Die wichtigsten Änderungen umfassen:
+Die aktuelle Produktionsversion ist **0.4.0**. Die wichtigsten Änderungen umfassen:
+- Vollständig funktionsfähige dynamische Facetten-Filter mit Solr-Integration
 - Verbessertes UI mit modernem, responsivem Design
-- Erweiterte Suchfunktionalität mit Filtering-Optionen
-- Debugging-Modus zur vereinfachten Entwicklung
-- Optimierte Solr-Verbindung mit Fehlerbehebungen
+- Erweiterte Suchfunktionalität mit sofortigen Filter-Reaktionen
+- Performance-Optimierungen durch Code-Splitting
+- Robuste Solr-Verbindung mit DisMax Query Parser
 
 ## 2. Kommende Aufgaben mit Prioritäten
 
 ### Hohe Priorität (Nächste 2 Wochen)
 
-1. **Performance-Optimierung**:
-   - Code-Splitting implementieren für schnellere Ladezeiten und bessere Nutzererfahrung
-   - Lazy-Loading für Komponenten, die nicht sofort benötigt werden
+1. **Auto-Suggest und erweiterte Suchfunktionen**:
+   - Autocomplete-Funktionalität während der Eingabe implementieren
+   - Erweiterte Sortieroptionen (Relevanz, Datum, Titel) hinzufügen
+   - Suchhistorie mit LocalStorage implementieren
 
 2. **Verbesserte Fehlerbehandlung**:
    - Robuste Netzwerkfehlerbehandlung hinzufügen
@@ -50,13 +63,14 @@ Die aktuelle Produktionsversion ist **0.3.1**. Die wichtigsten Änderungen umfas
 ### Mittlere Priorität (Nächste 4 Wochen)
 
 1. **Erweiterte Suchfunktionen**:
-   - Integration der Sidebar-Filter mit Solr-Facetten für dynamische Filterung
-   - Suchvorschläge während der Eingabe (Autosuggest/Typeahead)
-   - Hot-Reload für Solr-Schema-Aktualisierungen ohne Container-Neustart
+   - Datum-Range-Filter für Zeitraum-basierte Suchen
+   - Boolean-Operatoren und Wildcards in der Suche
+   - Related Documents Feature basierend auf Kategorien
 
 2. **Dokumentvorschau**:
    - Implementierung einer Vorschau für Dokumente im Browser
    - Unterstützung verschiedener Dateiformate (PDF, Text, DOCX)
+   - Modal-Fenster für erweiterte Dokumentansicht
 
 ### Niedrige Priorität (Langfristig)
 
@@ -95,6 +109,12 @@ Die aktuelle Produktionsversion ist **0.3.1**. Die wichtigsten Änderungen umfas
 
 ## 5. Fazit
 
-Das ASRA-Projekt hat erfolgreich die UI-Modernisierung abgeschlossen und wichtige technische Verbesserungen implementiert. Die Anwendung bietet jetzt eine professionellere und benutzerfreundlichere Oberfläche mit grundlegenden Suchfunktionen.
+Das ASRA-Projekt hat erfolgreich **Sprint 1** abgeschlossen und die dynamischen Facetten-Filter vollständig implementiert. Die Anwendung bietet jetzt eine professionelle und voll funktionsfähige Suchoberfläche mit:
 
-Der Schwerpunkt für die kommenden Wochen sollte auf der Verbesserung der Performance, der Implementierung der Facettensuche mit Solr-Integration und der Erweiterung der Suchfunktionalität liegen.
+- **Sofort reagierenden Filtern** - Keine manuellen Suchklicks mehr nötig
+- **Echten Solr-Daten** - Facetten werden direkt aus dem Solr-Index generiert
+- **Robuster Error-Handling** - Fallback auf Mock-Daten bei Solr-Problemen
+- **Besserer Suchqualität** - DisMax Query Parser für relevantere Ergebnisse
+- **Performance-Optimierungen** - Code-Splitting für schnellere Ladezeiten
+
+Der **Schwerpunkt für Sprint 2** sollte auf der Implementierung von Auto-Suggest-Funktionalität, erweiterten Sortieroptionen und der Suchhistorie liegen, um die Benutzererfahrung weiter zu verbessern.

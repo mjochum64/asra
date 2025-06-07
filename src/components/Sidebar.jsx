@@ -108,12 +108,16 @@ export default function Sidebar({ onFiltersChange, useMock = true, activeFilters
   // Erzeuge Kategorie-Items mit deutschen Labels
   const getCategoryDisplayName = (category) => {
     const categoryMap = {
-      'technologie': 'Technologie',
-      'programmierung': 'Programmierung',
-      'datenbank': 'Datenbank',
+      'technology': 'Technologie',
+      'programming': 'Programmierung', 
+      'database': 'Datenbank',
       'devops': 'DevOps',
       'api': 'API',
-      'cloud': 'Cloud'
+      'cloud': 'Cloud',
+      // Fallback für deutsche Bezeichnungen (Mock-Modus Kompatibilität)
+      'technologie': 'Technologie',
+      'programmierung': 'Programmierung',
+      'datenbank': 'Datenbank'
     };
     return categoryMap[category] || category;
   };

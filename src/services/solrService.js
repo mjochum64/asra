@@ -39,35 +39,50 @@ const solrClient = axios.create({
 export const searchDocuments = async (query, searchMode = 'all', filters = {}) => {
   try {
     console.log(`Searching for "${query}" in mode "${searchMode}" with filters:`, filters);
-    console.log(`Using Solr URL: ${getSolrBaseUrl()}`);
-    
-    // DEBUG: Log the incoming filters
-    console.log('DEBUG - Received filters:', JSON.stringify(filters, null, 2));
     
     // Bestimme, welches Feld durchsucht werden soll, basierend auf searchMode
-    let queryField = '*'; // Standard: Alle Felder
+    let queryParams;
     
     if (searchMode === 'title') {
-      queryField = 'title';
+      queryParams = {
+        q: `title:${query}`,
+        wt: 'json',
+        rows: 20
+      };
     } else if (searchMode === 'content') {
-      queryField = 'content';
+      queryParams = {
+        q: `content:${query}`,
+        wt: 'json',
+        rows: 20
+      };
+    } else {
+      // Für allgemeine Suche verwende DisMax Query Parser für bessere Relevanz
+      queryParams = {
+        q: query,
+        wt: 'json',
+        rows: 20,
+        defType: 'dismax',  // DisMax Query Parser
+        qf: 'title^2 content^1',  // Query Fields mit Boosting (title ist wichtiger)
+        mm: '1'  // Minimum Should Match - mindestens 1 Begriff muss matchen
+      };
     }
     
-    // Baue die Solr-Query basierend auf dem Suchmodus
-    let baseQuery = queryField === '*' ? query : `${queryField}:${query}`;
+    // Füge Highlighting hinzu (für alle Suchmodi)
+    queryParams.hl = 'true';
+    queryParams['hl.fl'] = 'title,content';
+    queryParams['hl.simple.pre'] = '<mark>';
+    queryParams['hl.simple.post'] = '</mark>';
     
-    // Füge Filter hinzu
+    // Füge Filter-Queries hinzu
     const filterQueries = [];
     if (filters.categories && filters.categories.length > 0) {
       const categoryFilter = filters.categories.map(cat => `category:"${cat}"`).join(' OR ');
       filterQueries.push(`(${categoryFilter})`);
-      console.log('DEBUG - Added category filter:', `(${categoryFilter})`);
     }
     
     if (filters.authors && filters.authors.length > 0) {
       const authorFilter = filters.authors.map(author => `author:"${author}"`).join(' OR ');
       filterQueries.push(`(${authorFilter})`);
-      console.log('DEBUG - Added author filter:', `(${authorFilter})`);
     }
     
     if (filters.dateRange) {
@@ -77,21 +92,8 @@ export const searchDocuments = async (query, searchMode = 'all', filters = {}) =
         const start = startDate ? startDate : '*';
         const end = endDate ? endDate : '*';
         filterQueries.push(`created_date:[${start} TO ${end}]`);
-        console.log('DEBUG - Added date filter:', `created_date:[${start} TO ${end}]`);
       }
     }
-    
-    console.log('DEBUG - All filter queries:', filterQueries);
-    
-    let queryParams = {
-      q: baseQuery,
-      wt: 'json',
-      rows: 20,
-      hl: 'true',  // Aktiviere Highlighting
-      'hl.fl': 'title,content',  // Felder für Highlighting
-      'hl.simple.pre': '<mark>',
-      'hl.simple.post': '</mark>'
-    };
     
     // Füge Filter-Queries hinzu
     if (filterQueries.length > 0) {
@@ -104,26 +106,34 @@ export const searchDocuments = async (query, searchMode = 'all', filters = {}) =
       params: queryParams
     });
     
-    console.log('Solr response:', response.data);
-    
-    // Verarbeite Highlighting-Informationen (falls vorhanden)
     const docs = response.data.response.docs;
     const highlighting = response.data.highlighting || {};
     
-    // Füge Highlighting zu den Dokumenten hinzu, falls verfügbar
+    // Füge Highlighting zu den Dokumenten hinzu und normalisiere Array-Felder
     return docs.map(doc => {
       const docHighlights = highlighting[doc.id] || {};
       
+      // Normalisiere Array-Felder zu Strings (Solr gibt Arrays zurück)
+      const normalizedDoc = {
+        ...doc,
+        title: Array.isArray(doc.title) ? doc.title[0] : doc.title,
+        content: Array.isArray(doc.content) ? doc.content[0] : doc.content,
+        category: Array.isArray(doc.category) ? doc.category[0] : doc.category,
+        author: Array.isArray(doc.author) ? doc.author[0] : doc.author,
+        created_date: Array.isArray(doc.created_date) ? doc.created_date[0] : doc.created_date,
+        last_modified: Array.isArray(doc.last_modified) ? doc.last_modified[0] : doc.last_modified
+      };
+      
       // Ersetze Inhalte mit hervorgehobenem Text, falls verfügbar
       if (docHighlights.title && docHighlights.title.length > 0) {
-        doc.title = docHighlights.title[0];
+        normalizedDoc.title = docHighlights.title[0];
       }
       
       if (docHighlights.content && docHighlights.content.length > 0) {
-        doc.content = docHighlights.content[0];
+        normalizedDoc.content = docHighlights.content[0];
       }
       
-      return doc;
+      return normalizedDoc;
     });
   } catch (error) {
     console.error('Solr API Error:', error);
@@ -224,68 +234,50 @@ export const mockSearchWithFilters = (query, filters = {}) => {
   const currentDate = new Date().toISOString();
   const yesterdayDate = new Date(Date.now() - 86400000).toISOString();
   
-  // Alle Mock-Dokumente
+  // Alle Mock-Dokumente (angepasst an echte Solr-Daten)
   const allDocs = [
     { 
       id: 'mock1', 
-      title: `<mark>${query}</mark> - Erster Mock-Ergebnis-Titel`, 
-      content: `Dies ist der Inhalt des ersten Mock-Dokuments über <mark>${query}</mark>. Es enthält alle notwendigen Informationen.`,
-      category: 'technologie',
+      title: `Introduction to Apache <mark>${query}</mark>`, 
+      content: `Apache Solr is an open-source search platform built on Apache Lucene. <mark>${query}</mark> provides powerful search capabilities.`,
+      category: 'technology',  // Englisch wie in Solr
       author: 'John Smith',
       created_date: yesterdayDate,
       last_modified: currentDate
     },
     { 
       id: 'mock2', 
-      title: `Zweiter Mock-Ergebnis-Titel zu <mark>${query}</mark>`, 
-      content: `Ein weiteres Dokument mit Informationen über <mark>${query}</mark> und verwandten Themen.`,
-      category: 'programmierung',
+      title: `Machine Learning Basics with <mark>${query}</mark>`, 
+      content: `Machine learning is a method of data analysis that automates analytical model building using <mark>${query}</mark>.`,
+      category: 'technology',  // Englisch wie in Solr
       author: 'Jane Doe',
       created_date: yesterdayDate,
       last_modified: currentDate
     },
     { 
       id: 'mock3', 
-      title: `<mark>${query}</mark> Anwendungsfälle`, 
-      content: `Verschiedene Anwendungsfälle für <mark>${query}</mark> in unterschiedlichen Kontexten.`,
-      category: 'devops',
-      author: 'David Green',
+      title: `Python Programming Guide for <mark>${query}</mark>`, 
+      content: `Python is an interpreted, high-level, general-purpose programming language perfect for <mark>${query}</mark>.`,
+      category: 'programming',  // Englisch wie in Solr
+      author: 'John Smith',
       created_date: yesterdayDate,
       last_modified: currentDate
     },
     { 
       id: 'mock4', 
-      title: `Einführung in <mark>${query}</mark>`, 
-      content: `Eine ausführliche Einführung in <mark>${query}</mark> für Anfänger und Fortgeschrittene.`,
-      category: 'api',
-      author: 'Emma Black',
+      title: `Data Structures and Algorithms in <mark>${query}</mark>`, 
+      content: `A data structure is a particular way of organizing data in a computer for <mark>${query}</mark> applications.`,
+      category: 'programming',
+      author: 'Alice Johnson',
       created_date: yesterdayDate,
       last_modified: currentDate
     },
     { 
       id: 'mock5', 
-      title: `Fortgeschrittene <mark>${query}</mark> Techniken`, 
-      content: `Dieses Dokument beschreibt fortgeschrittene Techniken für <mark>${query}</mark> in professionellen Umgebungen.`,
-      category: 'datenbank',
-      author: 'Carol White',
-      created_date: yesterdayDate,
-      last_modified: currentDate
-    },
-    { 
-      id: 'mock6', 
-      title: `<mark>${query}</mark> Dokumentation`, 
-      content: `Die vollständige Dokumentation für <mark>${query}</mark> mit Beispielen und Anleitungen.`,
-      category: 'cloud',
-      author: 'Frank Gray',
-      created_date: yesterdayDate,
-      last_modified: currentDate
-    },
-    { 
-      id: 'mock7', 
-      title: `<mark>${query}</mark> in der Praxis`, 
-      content: `Praktische Anwendungsfälle für <mark>${query}</mark> in realen Projekten.`,
-      category: 'technologie',
-      author: 'Grace Lee',
+      title: `Web Development with JavaScript and <mark>${query}</mark>`, 
+      content: `JavaScript is a programming language used to create dynamic content for websites with <mark>${query}</mark>.`,
+      category: 'programming',
+      author: 'Bob Brown',
       created_date: yesterdayDate,
       last_modified: currentDate
     }
@@ -324,8 +316,6 @@ export const mockSearchWithFilters = (query, filters = {}) => {
  */
 export const getFacets = async (facetFields = ['category', 'author']) => {
   try {
-    console.log('Fetching facets for fields:', facetFields);
-    
     const queryParams = {
       q: '*:*',  // Alle Dokumente
       wt: 'json',
@@ -336,13 +326,9 @@ export const getFacets = async (facetFields = ['category', 'author']) => {
       'facet.mincount': 1  // Nur Facetten mit mindestens 1 Dokument
     };
     
-    console.log('Facet query parameters:', queryParams);
-    
     const response = await solrClient.get('documents/select', {
       params: queryParams
     });
-    
-    console.log('Facets response:', response.data);
     
     // Verarbeite Facetten-Daten
     const solrFacetFields = response.data.facet_counts?.facet_fields || {};
@@ -373,29 +359,30 @@ export const getFacets = async (facetFields = ['category', 'author']) => {
 
 /**
  * Mock-Facetten für Tests ohne echte Solr-Verbindung
+ * Angepasst an die echten Solr-Kategorienamen (englisch)
  * @returns {Promise<Object>} Mock-Facetten-Daten
  */
 export const mockGetFacets = () => {
   return new Promise((resolve) => {
     setTimeout(() => {
-      // Facetten-Counts sollten mit den tatsächlichen Mock-Dokumenten übereinstimmen
+      // Facetten verwenden jetzt englische Kategorienamen wie in echten Solr-Daten
       const facetData = {
         category: [
-          { value: 'technologie', count: 2 },      // mock1, mock7
-          { value: 'programmierung', count: 1 },   // mock2
-          { value: 'devops', count: 1 },           // mock3
-          { value: 'api', count: 1 },              // mock4
-          { value: 'datenbank', count: 1 },        // mock5
-          { value: 'cloud', count: 1 }             // mock6
+          { value: 'technology', count: 2 },       // Entspricht den Solr-Daten
+          { value: 'programming', count: 3 },      // Entspricht den Solr-Daten
+          { value: 'devops', count: 1 },          // Mock-spezifisch
+          { value: 'api', count: 1 },             // Mock-spezifisch
+          { value: 'database', count: 1 },        // Mock-spezifisch (englisch)
+          { value: 'cloud', count: 1 }            // Mock-spezifisch
         ],
         author: [
-          { value: 'John Smith', count: 1 },       // mock1
-          { value: 'Jane Doe', count: 1 },         // mock2
-          { value: 'David Green', count: 1 },      // mock3
-          { value: 'Emma Black', count: 1 },       // mock4
-          { value: 'Carol White', count: 1 },      // mock5
-          { value: 'Frank Gray', count: 1 },       // mock6
-          { value: 'Grace Lee', count: 1 }         // mock7
+          { value: 'John Smith', count: 2 },       // Entspricht Solr-Daten
+          { value: 'Jane Doe', count: 1 },         // Entspricht Solr-Daten
+          { value: 'Alice Johnson', count: 1 },    // Entspricht Solr-Daten
+          { value: 'Bob Brown', count: 1 },        // Entspricht Solr-Daten
+          { value: 'David Green', count: 1 },      // Mock-spezifisch
+          { value: 'Emma Black', count: 1 },       // Mock-spezifisch
+          { value: 'Carol White', count: 1 }       // Mock-spezifisch
         ]
       };
       resolve(facetData);

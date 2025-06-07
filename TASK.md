@@ -50,13 +50,17 @@
 
 ## 7. Erweiterte Suchfunktionalitäten (In Bearbeitung - Phase 1)
 
-### 7.1 Facetten-Filter (Abgeschlossen - 07.06.2025)
+### 7.1 Facetten-Filter (Vollständig abgeschlossen - 07.06.2025)
 - [x] Dynamische Facetten aus Solr-Daten abrufen (mit Mock-Fallback)
 - [x] Kategorie-Filter in Sidebar implementiert
 - [x] Autor-Filter mit Zählern hinzugefügt
 - [x] Filter-State-Management zwischen Suchanfragen
 - [x] Filter-Bug behoben: Race-Condition zwischen State-Updates und Suchfunktion gelöst (07.06.2025)
 - [x] Filter funktionieren jetzt sofort nach Auswahl ohne manuellen Suchklick (07.06.2025)
+- [x] Solr DisMax Query Integration für bessere Volltextsuche (07.06.2025)
+- [x] Solr Array-Feld-Normalisierung implementiert (07.06.2025)
+- [x] Kategorie-Mapping von Englisch (Solr) zu Deutsch (UI) implementiert (07.06.2025)
+- [x] Code-Bereinigung: Debug-Logs entfernt (07.06.2025)
 - [ ] Datum-Range-Filter implementieren (zukünftige Aufgabe)
 
 ### 7.2 Erweiterte Suchoptionen
@@ -125,18 +129,21 @@
 
 ## Aktuelle Sprint-Planung (Juni 2025)
 
-### Sprint 1: Facetten-Filter (KW 23-24)
+### Sprint 1: Facetten-Filter (KW 23-24) - ✅ ABGESCHLOSSEN
 **Ziel**: Dynamische Filter-Funktionalität mit Solr-Integration
 
-**Priorität 1 (Diese Woche)**:
-- [ ] Solr-Facetten-API-Endpunkt implementieren
-- [ ] Kategorie-Filter in Sidebar mit echten Daten
-- [ ] Filter-State-Management für Suchanfragen
+**Priorität 1 (Abgeschlossen)**:
+- [x] Solr-Facetten-API-Endpunkt implementiert
+- [x] Kategorie-Filter in Sidebar mit echten Daten
+- [x] Filter-State-Management für Suchanfragen
+- [x] Filter-Race-Condition-Bug behoben
+- [x] Solr DisMax Query Integration
+- [x] Array-Feld-Normalisierung für Solr-Antworten
 
-**Priorität 2 (Nächste Woche)**:
-- [ ] Autor-Filter mit Dokumentzählern
-- [ ] Datum-Range-Filter mit Kalenderfunktion
-- [ ] Multi-Filter-Kombinationen
+**Priorität 2 (Teilweise abgeschlossen)**:
+- [x] Autor-Filter mit Dokumentzählern
+- [ ] Datum-Range-Filter mit Kalenderfunktion (→ Sprint 3)
+- [x] Multi-Filter-Kombinationen
 
 ### Sprint 2: Auto-Suggest und Sortierung (KW 25-26)
 **Ziel**: Verbesserte Benutzererfahrung bei der Suche
