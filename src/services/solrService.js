@@ -43,28 +43,52 @@ export const searchDocuments = async (query, searchMode = 'all', filters = {}) =
     // Bestimme, welches Feld durchsucht werden soll, basierend auf searchMode
     let queryParams;
     
+    // Spezielle Behandlung für Wildcard-Suche
+    const isWildcardQuery = query === '*' || query === '*:*' || query.trim() === '';
+    
     if (searchMode === 'title') {
       queryParams = {
-        q: `title:${query}`,
+        q: isWildcardQuery ? 'title:*' : `title:(${query})`,
         wt: 'json',
         rows: 20
       };
     } else if (searchMode === 'content') {
       queryParams = {
-        q: `content:${query}`,
+        q: isWildcardQuery ? 'content:*' : `content:(${query})`,
+        wt: 'json',
+        rows: 20
+      };
+    } else if (searchMode === 'author') {
+      queryParams = {
+        q: isWildcardQuery ? 'author:*' : `author:"${query}" OR author:*${query}*`,
+        wt: 'json',
+        rows: 20
+      };
+    } else if (searchMode === 'category') {
+      queryParams = {
+        q: isWildcardQuery ? 'category:*' : `category:"${query}" OR category:*${query}*`,
         wt: 'json',
         rows: 20
       };
     } else {
-      // Für allgemeine Suche verwende DisMax Query Parser für bessere Relevanz
-      queryParams = {
-        q: query,
-        wt: 'json',
-        rows: 20,
-        defType: 'dismax',  // DisMax Query Parser
-        qf: 'title content',  // Query Fields ohne Boosting erst mal, da Solr Arrays verwendet
-        mm: '1'  // Minimum Should Match - mindestens 1 Begriff muss matchen
-      };
+      // Für allgemeine Suche
+      if (isWildcardQuery) {
+        queryParams = {
+          q: '*:*',  // Alle Dokumente
+          wt: 'json',
+          rows: 20
+        };
+      } else {
+        // DisMax Query Parser für bessere Relevanz
+        queryParams = {
+          q: query,
+          wt: 'json',
+          rows: 20,
+          defType: 'dismax',
+          qf: 'title^2 content author category',  // Query Fields mit Boosting
+          mm: '1'  // Minimum Should Match
+        };
+      }
     }
     
     // Füge Highlighting hinzu (für alle Suchmodi)
@@ -75,15 +99,16 @@ export const searchDocuments = async (query, searchMode = 'all', filters = {}) =
     
     // Füge Filter-Queries hinzu
     const filterQueries = [];
-    if (filters.categories && filters.categories.length > 0) {
-      const categoryFilter = filters.categories.map(cat => `category:"${cat}"`).join(' OR ');
-      filterQueries.push(`(${categoryFilter})`);
-    }
     
-    if (filters.authors && filters.authors.length > 0) {
-      const authorFilter = filters.authors.map(author => `author:"${author}"`).join(' OR ');
-      filterQueries.push(`(${authorFilter})`);
-    }
+    // Dynamische Filter-Verarbeitung für alle verfügbaren Felder
+    Object.keys(filters).forEach(fieldName => {
+      const filterValues = filters[fieldName];
+      if (filterValues && filterValues.length > 0) {
+        const fieldFilter = filterValues.map(value => `${fieldName}:"${value}"`).join(' OR ');
+        filterQueries.push(`(${fieldFilter})`);
+        console.log(`Added filter for ${fieldName}:`, filterValues);
+      }
+    });
     
     if (filters.dateRange) {
       // Datum-Range-Filter implementieren
@@ -102,39 +127,28 @@ export const searchDocuments = async (query, searchMode = 'all', filters = {}) =
     
     console.log('Query parameters:', queryParams);
     
-    const response = await solrClient.get('documents/select', {
-      params: queryParams
-    });
-    
-    const docs = response.data.response.docs;
-    const highlighting = response.data.highlighting || {};
-    
-    // Füge Highlighting zu den Dokumenten hinzu und normalisiere Array-Felder
-    return docs.map(doc => {
-      const docHighlights = highlighting[doc.id] || {};
+    // Verwende URLSearchParams für korrekte Kodierung bei Filter-Queries
+    let finalParams;
+    if (queryParams.fq && Array.isArray(queryParams.fq)) {
+      // Erstelle URL manuell für korrekte Serialisierung von Array-Parametern
+      const baseParams = { ...queryParams };
+      delete baseParams.fq;
       
-      // Normalisiere Array-Felder zu Strings (Solr gibt Arrays zurück)
-      const normalizedDoc = {
-        ...doc,
-        title: Array.isArray(doc.title) ? doc.title[0] : doc.title,
-        content: Array.isArray(doc.content) ? doc.content[0] : doc.content,
-        category: Array.isArray(doc.category) ? doc.category[0] : doc.category,
-        author: Array.isArray(doc.author) ? doc.author[0] : doc.author,
-        created_date: Array.isArray(doc.created_date) ? doc.created_date[0] : doc.created_date,
-        last_modified: Array.isArray(doc.last_modified) ? doc.last_modified[0] : doc.last_modified
-      };
+      const searchParams = new URLSearchParams(baseParams);
+      queryParams.fq.forEach(filter => {
+        searchParams.append('fq', filter);
+      });
       
-      // Ersetze Inhalte mit hervorgehobenem Text, falls verfügbar
-      if (docHighlights.title && docHighlights.title.length > 0) {
-        normalizedDoc.title = docHighlights.title[0];
-      }
+      console.log('Final URL params:', searchParams.toString());
       
-      if (docHighlights.content && docHighlights.content.length > 0) {
-        normalizedDoc.content = docHighlights.content[0];
-      }
-      
-      return normalizedDoc;
-    });
+      const response = await solrClient.get(`documents/select?${searchParams.toString()}`);
+      return processSearchResponse(response);
+    } else {
+      const response = await solrClient.get('documents/select', {
+        params: queryParams
+      });
+      return processSearchResponse(response);
+    }
   } catch (error) {
     console.error('Solr API Error:', error);
     console.error('Error details:', error.message);
@@ -147,6 +161,38 @@ export const searchDocuments = async (query, searchMode = 'all', filters = {}) =
     throw error;
   }
 };
+
+function processSearchResponse(response) {
+  const docs = response.data.response.docs;
+  const responseHighlighting = response.data.highlighting || {};
+  
+  // Füge Highlighting zu den Dokumenten hinzu und normalisiere Array-Felder
+  return docs.map(doc => {
+    const docHighlights = responseHighlighting[doc.id] || {};
+    
+    // Normalisiere Array-Felder zu Strings (Solr gibt Arrays zurück)
+    const normalizedDoc = {
+      ...doc,
+      title: Array.isArray(doc.title) ? doc.title[0] : doc.title,
+      content: Array.isArray(doc.content) ? doc.content[0] : doc.content,
+      category: Array.isArray(doc.category) ? doc.category[0] : doc.category,
+      author: Array.isArray(doc.author) ? doc.author[0] : doc.author,
+      created_date: Array.isArray(doc.created_date) ? doc.created_date[0] : doc.created_date,
+      last_modified: Array.isArray(doc.last_modified) ? doc.last_modified[0] : doc.last_modified
+    };
+    
+    // Ersetze Inhalte mit hervorgehobenem Text, falls verfügbar
+    if (docHighlights.title && docHighlights.title.length > 0) {
+      normalizedDoc.title = docHighlights.title[0];
+    }
+    
+    if (docHighlights.content && docHighlights.content.length > 0) {
+      normalizedDoc.content = docHighlights.content[0];
+    }
+    
+    return normalizedDoc;
+  });
+}
 
 // Mock API for testing without real Solr connection
 export const mockSearch = (query) => {
