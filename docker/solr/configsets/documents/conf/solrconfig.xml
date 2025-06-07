@@ -27,9 +27,6 @@
 
   <!-- Update Request Handler -->
   <requestHandler name="/update" class="solr.UpdateRequestHandler"/>
-  
-  <!-- Admin Interfaces -->
-  <requestHandler name="/admin/" class="solr.admin.AdminHandlers"/>
 
   <!-- Query Settings -->
   <query>

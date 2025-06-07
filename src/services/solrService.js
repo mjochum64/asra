@@ -62,7 +62,7 @@ export const searchDocuments = async (query, searchMode = 'all', filters = {}) =
         wt: 'json',
         rows: 20,
         defType: 'dismax',  // DisMax Query Parser
-        qf: 'title^2 content^1',  // Query Fields mit Boosting (title ist wichtiger)
+        qf: 'title content',  // Query Fields ohne Boosting erst mal, da Solr Arrays verwendet
         mm: '1'  // Minimum Should Match - mindestens 1 Begriff muss matchen
       };
     }
@@ -326,9 +326,13 @@ export const getFacets = async (facetFields = ['category', 'author']) => {
       'facet.mincount': 1  // Nur Facetten mit mindestens 1 Dokument
     };
     
+    console.log('Facet query params:', queryParams);
+    
     const response = await solrClient.get('documents/select', {
       params: queryParams
     });
+    
+    console.log('Facet response:', response.data.facet_counts);
     
     // Verarbeite Facetten-Daten
     const solrFacetFields = response.data.facet_counts?.facet_fields || {};
