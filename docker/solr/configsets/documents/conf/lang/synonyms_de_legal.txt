@@ -1,0 +1,346 @@
+# Paragraphen und Artikel
+paragraph,paragraf,par,§,abs
+artikel,art
+absatz,abs
+satz,s
+nummer,nr,no,num
+ziffer,ziff,z
+buchstabe,lit,letter
+anlage,anl
+
+# Gesetze und Verordnungen
+gesetz,g
+verordnung,vo,v
+satzung,satz
+ordnung,o
+richtlinie,rl
+durchführungsverordnung,dvo
+rechtsverordnung,rechtsvo
+
+# Häufige Gesetzesabkürzungen
+bürgerliches gesetzbuch,bgb
+grundgesetz,gg
+strafgesetzbuch,stgb
+handelsgesetzbuch,hgb
+sozialgesetzbuch,sgb
+verwaltungsverfahrensgesetz,vwvfg
+zivilprozessordnung,zpo
+strafprozessordnung,stpo
+abgabenordnung,ao
+einkommensteuergesetz,estg
+umsatzsteuergesetz,ustg
+gewerbeordnung,gewo
+betriebsverfassungsgesetz,betrvg
+arbeitsgerichtsgesetz,arbgg
+bundesurlaubsgesetz,burlg
+entgeltfortzahlungsgesetz,efzg
+kündigungsschutzgesetz,kschg
+mutterschutzgesetz,muschg
+teilzeit- und befristungsgesetz,tzbfg
+
+# Rechtliche Institutionen
+bundesverfassungsgericht,bverfg
+bundesgerichtshof,bgh
+bundesarbeitsgericht,bag
+bundesverwaltungsgericht,bverwg
+bundesfinanzhof,bfh
+bundessozialgericht,bsg
+oberlandesgericht,olg
+landgericht,lg
+amtsgericht,ag
+verwaltungsgericht,vg
+sozialgericht,sg
+arbeitsgericht,arbg
+finanzgericht,fg
+
+# Rechtliche Begriffe - Verfahren
+verfahren,prozess
+klage,klageverfahren
+berufung,berufungsverfahren
+revision,revisionsverfahren
+beschwerde,beschwerdeverfahren
+widerspruch,widerspruchsverfahren
+einspruch,einspruchsverfahren
+antrag,antragsverfahren
+
+# Rechtliche Begriffe - Personen
+kläger,antragsteller
+beklagte,antragsgegner
+zeuge,zeugin
+sachverständige,gutachter,experte
+richter,richterin
+staatsanwalt,staatsanwältin
+rechtsanwalt,anwalt,rechtsanwältin,anwältin
+notar,notarin
+vollstreckungsbeamte,gerichtsvollzieher
+
+# Rechtliche Begriffe - Dokumente
+urteil,entscheidung,spruch
+beschluss,verfügung
+vollstreckungstitel,titel
+mahnung,zahlungsaufforderung
+vollmacht,bevollmächtigung
+vertrag,vereinbarung,abkommen
+testament,letztwille
+urkunde,dokument,schriftstück
+
+# Rechtliche Begriffe - Fristen
+frist,zeitraum,termine
+verjährung,verjährungsfrist
+ausschlussfrist,präklusivfrist
+einspruchsfrist,widerspruchsfrist
+berufungsfrist,revisionsfrist
+klagefrist,antragszeit
+
+# Rechtliche Begriffe - Geld und Kosten
+kosten,gebühren,auslagen
+schadensersatz,schadenersatz,entschädigung
+schmerzensgeld,genugtuung
+bußgeld,geldbuße,ordnungswidrigkeit
+geldstrafe,geldbuße
+kaution,sicherheit,bürgschaft
+
+# Rechtliche Begriffe - Eigentum
+eigentum,besitz
+eigentumsrecht,besitzrecht
+nutzungsrecht,gebrauchsrecht
+wohnrecht,nießbrauch
+grundstück,immobilie,liegenschaft
+gebäude,bauwerk,haus
+
+# Familienrecht
+ehe,heirat,eheschließung
+scheidung,ehescheidung
+unterhalt,unterhaltsanspruch
+sorgerecht,elterliche sorge
+umgangsrecht,besuchsrecht
+adoption,annahme als kind
+
+# Arbeitsrecht
+arbeitsvertrag,anstellungsvertrag
+kündigung,entlassung
+abmahnung,verwarnung
+arbeitszeit,arbeitszeiten
+urlaub,erholungsurlaub
+lohn,gehalt,vergütung,entgelt
+überstunden,mehrarbeit
+
+# Strafrecht
+straftat,delikt,vergehen,verbrechen
+strafe,sanktion
+bewährung,bewährungsstrafe
+geldstrafe,freiheitsstrafe
+täter,beschuldigter,angeklagte
+opfer,geschädigte,verletzte
+
+# Verwaltungsrecht
+behörde,amt,verwaltung
+bescheid,verwaltungsakt
+genehmigung,erlaubnis,bewilligung
+auflage,nebenbestimmung
+widerruf,rücknahme
+anfechtung,nichtigkeitsklage
+
+# Steuerrecht
+steuer,abgabe
+steuerpflicht,steuerschuld
+steuererklärung,veranlagung
+steuerbescheid,steuerfestsetzung
+einspruch,einspruchsverfahren
+betriebsprüfung,steuerprüfung
+
+# Allgemeine Rechtsbegriffe
+recht,anspruch,berechtigung
+pflicht,verpflichtung,obliegenheit
+haftung,verantwortlichkeit# Paragraphen und Artikel
+paragraph,paragraf,par,§,abs
+artikel,art
+absatz,abs
+satz,s
+nummer,nr,no,num
+ziffer,ziff,z
+buchstabe,lit,letter
+anlage,anl
+
+# Gesetze und Verordnungen
+gesetz,g
+verordnung,vo,v
+satzung,satz
+ordnung,o
+richtlinie,rl
+durchführungsverordnung,dvo
+rechtsverordnung,rechtsvo
+
+# Häufige Gesetzesabkürzungen
+bürgerliches gesetzbuch,bgb
+grundgesetz,gg
+strafgesetzbuch,stgb
+handelsgesetzbuch,hgb
+sozialgesetzbuch,sgb
+verwaltungsverfahrensgesetz,vwvfg
+zivilprozessordnung,zpo
+strafprozessordnung,stpo
+abgabenordnung,ao
+einkommensteuergesetz,estg
+umsatzsteuergesetz,ustg
+gewerbeordnung,gewo
+betriebsverfassungsgesetz,betrvg
+arbeitsgerichtsgesetz,arbgg
+bundesurlaubsgesetz,burlg
+entgeltfortzahlungsgesetz,efzg
+kündigungsschutzgesetz,kschg
+mutterschutzgesetz,muschg
+teilzeit- und befristungsgesetz,tzbfg
+
+# Rechtliche Institutionen
+bundesverfassungsgericht,bverfg
+bundesgerichtshof,bgh
+bundesarbeitsgericht,bag
+bundesverwaltungsgericht,bverwg
+bundesfinanzhof,bfh
+bundessozialgericht,bsg
+oberlandesgericht,olg
+landgericht,lg
+amtsgericht,ag
+verwaltungsgericht,vg
+sozialgericht,sg
+arbeitsgericht,arbg
+finanzgericht,fg
+
+# Rechtliche Begriffe - Verfahren
+verfahren,prozess
+klage,klageverfahren
+berufung,berufungsverfahren
+revision,revisionsverfahren
+beschwerde,beschwerdeverfahren
+widerspruch,widerspruchsverfahren
+einspruch,einspruchsverfahren
+antrag,antragsverfahren
+
+# Rechtliche Begriffe - Personen
+kläger,antragsteller
+beklagte,antragsgegner
+zeuge,zeugin
+sachverständige,gutachter,experte
+richter,richterin
+staatsanwalt,staatsanwältin
+rechtsanwalt,anwalt,rechtsanwältin,anwältin
+notar,notarin
+vollstreckungsbeamte,gerichtsvollzieher
+
+# Rechtliche Begriffe - Dokumente
+urteil,entscheidung,spruch
+beschluss,verfügung
+vollstreckungstitel,titel
+mahnung,zahlungsaufforderung
+vollmacht,bevollmächtigung
+vertrag,vereinbarung,abkommen
+testament,letztwille
+urkunde,dokument,schriftstück
+
+# Rechtliche Begriffe - Fristen
+frist,zeitraum,termine
+verjährung,verjährungsfrist
+ausschlussfrist,präklusivfrist
+einspruchsfrist,widerspruchsfrist
+berufungsfrist,revisionsfrist
+klagefrist,antragszeit
+
+# Rechtliche Begriffe - Geld und Kosten
+kosten,gebühren,auslagen
+schadensersatz,schadenersatz,entschädigung
+schmerzensgeld,genugtuung
+bußgeld,geldbuße,ordnungswidrigkeit
+geldstrafe,geldbuße
+kaution,sicherheit,bürgschaft
+
+# Rechtliche Begriffe - Eigentum
+eigentum,besitz
+eigentumsrecht,besitzrecht
+nutzungsrecht,gebrauchsrecht
+wohnrecht,nießbrauch
+grundstück,immobilie,liegenschaft
+gebäude,bauwerk,haus
+
+# Familienrecht
+ehe,heirat,eheschließung
+scheidung,ehescheidung
+unterhalt,unterhaltsanspruch
+sorgerecht,elterliche sorge
+umgangsrecht,besuchsrecht
+adoption,annahme als kind
+
+# Arbeitsrecht
+arbeitsvertrag,anstellungsvertrag
+kündigung,entlassung
+abmahnung,verwarnung
+arbeitszeit,arbeitszeiten
+urlaub,erholungsurlaub
+lohn,gehalt,vergütung,entgelt
+überstunden,mehrarbeit
+
+# Strafrecht
+straftat,delikt,vergehen,verbrechen
+strafe,sanktion
+bewährung,bewährungsstrafe
+geldstrafe,freiheitsstrafe
+täter,beschuldigter,angeklagte
+opfer,geschädigte,verletzte
+
+# Verwaltungsrecht
+behörde,amt,verwaltung
+bescheid,verwaltungsakt
+genehmigung,erlaubnis,bewilligung
+auflage,nebenbestimmung
+widerruf,rücknahme
+anfechtung,nichtigkeitsklage
+
+# Steuerrecht
+steuer,abgabe
+steuerpflicht,steuerschuld
+steuererklärung,veranlagung
+steuerbescheid,steuerfestsetzung
+einspruch,einspruchsverfahren
+betriebsprüfung,steuerprüfung
+
+# Allgemeine Rechtsbegriffe
+recht,anspruch,berechtigung
+pflicht,verpflichtung,obliegenheit
+haftung,verantwortlichkeit
+schuld,verschulden
+vorsatz,absicht
+fahrlässigkeit,nachlässigkeit
+rechtmäßig,legal,gesetzlich
+rechtswidrig,illegal,gesetzwidrig
+wirksam,gültig,rechtskräftig
+unwirksam,nichtig,ungültig
+
+# Zeitliche Begriffe
+sofort,unverzüglich,ohne schuldhaftes zögern
+angemessen,verhältnismäßig
+binnen,innerhalb,spätestens
+vor,nach,bis,seit
+rückwirkend,ex tunc
+für die zukunft,ex nunc
+
+# Modalitäten
+muss,hat zu,ist verpflichtet
+kann,darf,ist berechtigt
+soll,sollte,wird empfohlen
+darf nicht,ist untersagt,ist verboten
+wirksam,gültig,rechtskräftig
+unwirksam,nichtig,ungültig
+
+# Zeitliche Begriffe
+sofort,unverzüglich,ohne schuldhaftes zögern
+angemessen,verhältnismäßig
+binnen,innerhalb,spätestens
+vor,nach,bis,seit
+rückwirkend,ex tunc
+für die zukunft,ex nunc
+
+# Modalitäten
+muss,hat zu,ist verpflichtet
+kann,darf,ist berechtigt
+soll,sollte,wird empfohlen
+darf nicht,ist untersagt,ist verboten

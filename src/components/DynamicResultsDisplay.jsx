@@ -1,50 +1,150 @@
 import React, { useState, useEffect } from 'react';
-import { getDisplayFields } from '../services/schemaService';
+import { uiHelpers } from '../config/uiConfig';
+import DocumentFullView from './DocumentFullView';
 
 /**
- * Schema-driven ResultsDisplay - automatisch basierend auf verfügbaren Anzeigefeldern
+ * Hilfsfunktion zum Hervorheben von Suchbegriffen in Text
+ */
+const highlightSearchTerms = (text, searchQuery) => {
+  if (!text || !searchQuery) return text;
+  
+  // Entferne bereits vorhandene <mark> Tags, um Doppelmarkierungen zu vermeiden
+  const cleanText = text.replace(/<\/?mark[^>]*>/gi, '');
+  
+  // Splittet den Suchbegriff an Leerzeichen und behandelt jeden Begriff separat
+  const terms = searchQuery.split(/\s+/).filter(term => term.length > 1);
+  
+  let highlightedText = cleanText;
+  
+  terms.forEach(term => {
+    // Escape special regex characters
+    const escapedTerm = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    // Case-insensitive search with word boundaries
+    const regex = new RegExp(`(${escapedTerm})`, 'gi');
+    highlightedText = highlightedText.replace(regex, '<mark class="bg-yellow-200 px-1 rounded">$1</mark>');
+  });
+  
+  return highlightedText;
+};
+
+/**
+ * Hilfsfunktion zum Kürzen von Text
+ */
+const truncateText = (text, maxLength = null) => {
+  if (!text) return '';
+  if (!maxLength) return text;
+  
+  if (text.length <= maxLength) return text;
+  
+  // Kürze bei Wortgrenze, nicht mitten im Wort
+  const truncated = text.substring(0, maxLength);
+  const lastSpaceIndex = truncated.lastIndexOf(' ');
+  
+  if (lastSpaceIndex > maxLength * 0.8) {
+    return truncated.substring(0, lastSpaceIndex) + '...';
+  }
+  
+  return truncated + '...';
+};
+
+/**
+ * Rendert spezielle Badge-Anzeigen für verschiedene Feldtypen
+ */
+const renderFieldBadge = (fieldConfig, fieldData, isPrimary = false) => {
+  if (!fieldConfig.display) return null;
+  
+  const value = fieldData.value;
+  if (!value) return null;
+  
+  switch (fieldConfig.display) {
+    case 'norm-badge':
+      // Spezielle grüne Badges für Norm-Kennzeichnungen (enbez)
+      return (
+        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 ${isPrimary ? 'ml-2' : ''}`}>
+          📋 {value}
+        </span>
+      );
+      
+    case 'small-badge':
+      // Kleine Badges für Metadaten
+      return (
+        <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700 ${isPrimary ? 'ml-2' : ''}`}>
+          {value}
+        </span>
+      );
+      
+    case 'badge':
+      // Standard-Badges
+      return (
+        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 ${isPrimary ? 'ml-2' : ''}`}>
+          {value}
+        </span>
+      );
+      
+    case 'type-badge':
+      // Typ-spezifische Badges mit verschiedenen Farben
+      const colorMap = {
+        'article': 'bg-purple-100 text-purple-800',
+        'norm': 'bg-green-100 text-green-800',
+        'law': 'bg-blue-100 text-blue-800',
+        'regulation': 'bg-orange-100 text-orange-800'
+      };
+      const colorClass = colorMap[value.toLowerCase()] || 'bg-gray-100 text-gray-700';
+      
+      return (
+        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${colorClass} ${isPrimary ? 'ml-2' : ''}`}>
+          {value}
+        </span>
+      );
+      
+    default:
+      return null;
+  }
+};
+
+/**
+ * UI-konfigurierte ResultsDisplay - basierend auf UI-Konfiguration statt dynamischem Schema
  */
 export default function DynamicResultsDisplay({ 
   results = [], 
   isLoading = false, 
   searchQuery = '', 
   totalResults = 0,
-  error = null 
+  error = null,
+  uiMode = 'normal'
 }) {
-  const [displayFields, setDisplayFields] = useState([]);
-  const [fieldLabels, setFieldLabels] = useState({});
+  const [resultConfig, setResultConfig] = useState({ primary: [], secondary: [], metadata: [] });
+  const [selectedDocument, setSelectedDocument] = useState(null);
 
   useEffect(() => {
     loadDisplayConfiguration();
-  }, []);
+  }, [uiMode]);
 
-  const loadDisplayConfiguration = async () => {
+  const loadDisplayConfiguration = () => {
     try {
-      const fields = await getDisplayFields();
-      setDisplayFields(fields);
-      
-      // Erstelle benutzerfreundliche Labels für Felder
-      const labels = {};
-      fields.forEach(field => {
-        labels[field] = formatFieldLabel(field);
-      });
-      setFieldLabels(labels);
+      const config = uiHelpers.getResultFields(uiMode);
+      setResultConfig(config);
     } catch (error) {
-      console.error('Failed to load display configuration:', error);
-      // Fallback zu Standard-Feldern
-      setDisplayFields(['title', 'content', 'author', 'category', 'created_date']);
-      setFieldLabels({
-        title: 'Titel',
-        content: 'Inhalt', 
-        author: 'Autor',
-        category: 'Kategorie',
-        created_date: 'Erstellt'
+      console.error('Failed to load UI result configuration:', error);
+      // Fallback-Konfiguration
+      setResultConfig({
+        primary: [
+          { solrField: 'kurzue', label: 'Kurztitel', highlight: true, priority: 1 },
+          { solrField: 'text_content', label: 'Inhalt', highlight: true, maxLength: 200, priority: 2 }
+        ],
+        secondary: [
+          { solrField: 'amtabk', label: 'Abkürzung', display: 'badge' }
+        ],
+        metadata: [
+          { solrField: 'document_type', label: 'Typ' }
+        ]
       });
     }
   };
 
   const formatFieldLabel = (fieldName) => {
     const labels = {
+      // Standard englische Felder
       title: 'Titel',
       content: 'Inhalt',
       author: 'Autor',
@@ -53,7 +153,35 @@ export default function DynamicResultsDisplay({
       last_modified: 'Geändert',
       tags: 'Tags',
       content_type: 'Typ',
-      description: 'Beschreibung'
+      description: 'Beschreibung',
+      
+      // Deutsche Rechtsdokument-Felder
+      kurzue: 'Kurztitel',
+      langue: 'Langtitel',
+      amtabk: 'Amtliche Abkürzung',
+      jurabk: 'Juristische Abkürzung',
+      text_content: 'Gesetzestext',
+      fussnoten_content: 'Fußnoten',
+      table_content: 'Inhaltsverzeichnis',
+      document_type: 'Dokumenttyp',
+      xml_lang: 'Sprache',
+      fundstelle_periodikum: 'Fundstelle (Periodikum)',
+      fundstelle_zitstelle: 'Fundstelle (Zitstelle)',
+      standangabe_kommentar: 'Standangabe',
+      ausfertigung_datum_manuell: 'Ausfertigung (manuell)',
+      text_format: 'Textformat',
+      fussnoten_format: 'Fußnotenformat',
+      builddate: 'Erstellungsdatum',
+      id: 'Dokument-ID',
+      
+      // Norm-spezifische Felder
+      enbez: 'Artikel/Paragraph',
+      norm_type: 'Norm-Typ',
+      norm_doknr: 'Norm-Nummer',
+      norm_builddate: 'Norm-Erstellungsdatum',
+      parent_document_id: 'Ursprungsdokument',
+      text_content_html: 'Formatierter Gesetzestext',
+      fussnoten_content_html: 'Formatierte Fußnoten'
     };
     
     return labels[fieldName] || fieldName
@@ -72,6 +200,7 @@ export default function DynamicResultsDisplay({
     switch (field) {
       case 'created_date':
       case 'last_modified':
+      case 'builddate':
         try {
           return new Date(value).toLocaleDateString('de-DE', {
             year: 'numeric',
@@ -85,18 +214,41 @@ export default function DynamicResultsDisplay({
         }
       
       case 'content':
+      case 'text_content':
         // Kürze Content-Felder für bessere Lesbarkeit, aber behalte Highlighting-Tags
         // Entferne nur andere HTML-Tags, nicht <mark> Tags für Highlighting
         const contentWithHighlights = value.replace(/<(?!\/?(mark)\b)[^>]*>/g, '');
-        return contentWithHighlights.length > 200 
-          ? contentWithHighlights.substring(0, 200) + '...' 
+        return contentWithHighlights.length > 300 
+          ? contentWithHighlights.substring(0, 300) + '...' 
           : contentWithHighlights;
       
+      case 'fussnoten_content':
+        // Fußnoten kürzer darstellen
+        const footnotesWithHighlights = value.replace(/<(?!\/?(mark)\b)[^>]*>/g, '');
+        return footnotesWithHighlights.length > 150 
+          ? footnotesWithHighlights.substring(0, 150) + '...' 
+          : footnotesWithHighlights;
+      
+      case 'table_content':
+        // Tabellencontent als Liste formatieren
+        if (Array.isArray(value)) {
+          return value.slice(0, 3).join(' • ') + (value.length > 3 ? '...' : '');
+        }
+        return value.length > 200 ? value.substring(0, 200) + '...' : value;
+      
       case 'category':
+      case 'document_type':
         // Kapitalisiere erste Buchstaben
         return Array.isArray(value) 
           ? value.map(v => v.charAt(0).toUpperCase() + v.slice(1)).join(', ')
           : value.charAt(0).toUpperCase() + value.slice(1);
+      
+      case 'ausfertigung_datum_manuell':
+        return value ? 'Ja' : 'Nein';
+      
+      case 'xml_lang':
+        const langMap = { 'de': 'Deutsch', 'en': 'Englisch', 'fr': 'Französisch' };
+        return langMap[value] || value;
       
       default:
         // Handhabe Arrays
@@ -110,12 +262,27 @@ export default function DynamicResultsDisplay({
   const getFieldImportance = (field) => {
     // Bestimme die Wichtigkeit von Feldern für das Layout
     const importance = {
+      // Standard englische Felder
       title: 3,
       content: 2,
       author: 1,
       category: 1,
       created_date: 1,
-      last_modified: 0
+      last_modified: 0,
+      
+      // Deutsche Rechtsdokument-Felder
+      kurzue: 3,           // Kurztitel - höchste Priorität
+      langue: 2,           // Langtitel - hohe Priorität  
+      text_content: 2,     // Gesetzestext - hohe Priorität
+      amtabk: 1,           // Amtliche Abkürzung - mittlere Priorität
+      jurabk: 1,           // Juristische Abkürzung - mittlere Priorität
+      fussnoten_content: 1, // Fußnoten - mittlere Priorität
+      document_type: 1,    // Dokumenttyp - mittlere Priorität
+      fundstelle_periodikum: 0, // Fundstelle - niedrige Priorität
+      standangabe_kommentar: 0, // Standangabe - niedrige Priorität
+      xml_lang: 0,         // Sprache - niedrige Priorität
+      text_format: 0,      // Format - niedrige Priorität
+      builddate: 0         // Erstellungsdatum - niedrige Priorität
     };
     return importance[field] || 0;
   };
@@ -168,10 +335,16 @@ export default function DynamicResultsDisplay({
     );
   }
 
-  // Sortiere Felder nach Wichtigkeit für die Anzeige
-  const sortedDisplayFields = [...displayFields].sort((a, b) => 
-    getFieldImportance(b) - getFieldImportance(a)
-  );
+  // Erstelle eine flache Liste aller konfigurierten Felder für Kompatibilität
+  const getAllConfiguredFields = () => {
+    return [
+      ...resultConfig.primary.map(f => f.solrField),
+      ...resultConfig.secondary.map(f => f.solrField),
+      ...resultConfig.metadata.map(f => f.solrField)
+    ];
+  };
+
+  const configuredFields = getAllConfiguredFields();
 
   return (
     <div className="space-y-6">
@@ -181,69 +354,183 @@ export default function DynamicResultsDisplay({
           <h2 className="text-lg font-semibold text-gray-900">
             {totalResults} Ergebnis{totalResults !== 1 ? 'se' : ''} für "{searchQuery}"
           </h2>
-          <div className="text-sm text-gray-600 mt-1">
-            Anzeige: {sortedDisplayFields.map(f => fieldLabels[f] || f).join(', ')}
+          <div className="text-sm text-gray-600 mt-1 flex items-center">
+            <span className="text-solr-primary font-medium mr-2">
+              {uiMode === 'expert' ? '🔧 Experte' : '👤 Normal'}
+            </span>
+            {configuredFields.length} konfigurierte Anzeigefelder
           </div>
         </div>
       )}
 
-      {/* Dynamische Ergebnisliste */}
-      {results.map((result, index) => (
-        <div key={result.id || index} className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300">
-          {/* Hauptfelder (title, content) */}
+      {/* UI-konfigurierte Ergebnisliste */}
+      {results.map((result, index) => {
+        // Erkenne Framework-Dokumente
+        const documentType = uiHelpers.getDocumentType(result.id);
+        const isFramework = documentType === 'framework';
+        const isNorm = documentType === 'norm';
+        
+        return (
+        <div key={result.id || index} className={`bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 ${
+          isFramework ? 'border-l-4 border-blue-500' : isNorm ? 'border-l-4 border-green-500' : ''
+        }`}>
+          
+          {/* Document Type Indicator */}
+          {(isFramework || isNorm) && (
+            <div className="mb-3">
+              <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                isFramework 
+                  ? 'bg-blue-100 text-blue-800' 
+                  : 'bg-green-100 text-green-800'
+              }`}>
+                {uiHelpers.getDocumentTypeLabel(documentType)}
+              </span>
+            </div>
+          )}
+          
+          {/* Primäre Felder */}
           <div className="mb-4">
-            {sortedDisplayFields.filter(field => getFieldImportance(field) >= 2).map(field => (
-              result[field] && (
-                <div key={field} className={field === 'title' ? 'mb-3' : 'mb-2'}>
-                  {field === 'title' ? (
-                    <h3 
-                      className="text-xl font-semibold text-gray-900 mb-2" 
-                      dangerouslySetInnerHTML={{ __html: formatFieldValue(field, result[field]) }}
-                    />
+            {resultConfig.primary.map(fieldConfig => {
+              const fieldData = uiHelpers.getFieldValue(result, fieldConfig);
+              
+              // Zeige das Feld an, auch wenn es durch Fallback gefunden wurde
+              if (!fieldData) return null;
+              
+              return (
+                <div key={fieldConfig.solrField} className="mb-3">
+                  {fieldConfig.priority === 1 ? (
+                    <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                      {fieldConfig.highlight ? (
+                        <span dangerouslySetInnerHTML={{ 
+                          __html: highlightSearchTerms(
+                            truncateText(fieldData.value, fieldConfig.maxLength),
+                            searchQuery
+                          )
+                        }} />
+                      ) : (
+                        truncateText(fieldData.value, fieldConfig.maxLength)
+                      )}
+                      {fieldData.sourceField !== fieldConfig.solrField && (
+                        <span className="ml-2 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">
+                          aus {fieldData.label}
+                        </span>
+                      )}
+                      {renderFieldBadge(fieldConfig, fieldData, true)}
+                    </h3>
                   ) : (
-                    <div>
-                      <div 
-                        className="text-gray-700 leading-relaxed"
-                        dangerouslySetInnerHTML={{ __html: formatFieldValue(field, result[field]) }}
-                      />
+                    <div className="text-gray-700 leading-relaxed">
+                      <span className="font-medium text-gray-500 mr-2">{fieldData.label}:</span>
+                      {fieldConfig.highlight ? (
+                        <span dangerouslySetInnerHTML={{ 
+                          __html: highlightSearchTerms(
+                            truncateText(fieldData.value, fieldConfig.maxLength),
+                            searchQuery
+                          )
+                        }} />
+                      ) : (
+                        truncateText(fieldData.value, fieldConfig.maxLength)
+                      )}
+                      {renderFieldBadge(fieldConfig, fieldData)}
                     </div>
                   )}
                 </div>
-              )
-            ))}
+              );
+            })}
           </div>
 
-          {/* Metadaten */}
-          <div className="border-t border-gray-100 pt-3">
-            <div className="flex flex-wrap gap-4 text-sm text-gray-600">
-              {sortedDisplayFields.filter(field => getFieldImportance(field) < 2).map(field => (
-                result[field] && (
-                  <div key={field} className="flex items-center">
-                    <span className="font-medium text-gray-500 mr-2">
-                      {fieldLabels[field] || field}:
-                    </span>
-                    <span>{formatFieldValue(field, result[field])}</span>
-                  </div>
-                )
-              ))}
+          {/* Sekundäre Felder */}
+          {resultConfig.secondary.length > 0 && (
+            <div className="mb-3 border-t border-gray-100 pt-3">
+              <div className="space-y-2">
+                {resultConfig.secondary.map(fieldConfig => {
+                  const fieldData = uiHelpers.getFieldValue(result, fieldConfig);
+                  if (!fieldData) return null;
+                  
+                  return (
+                    <div key={fieldConfig.solrField} className="text-sm text-gray-600">
+                      {/* Verwende die neue Badge-Rendering-Funktion */}
+                      {renderFieldBadge(fieldConfig, fieldData) || (
+                        <>
+                          <span className="font-medium text-gray-500 mr-2">{fieldData.label}:</span>
+                          <span>
+                            {uiHelpers.formatFieldValue(fieldData.value, fieldConfig.format)}
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
-          </div>
+          )}
 
-          {/* Schema Info */}
-          <div className="mt-2 pt-2 border-t border-gray-50">
+          {/* Metadaten (nur im Experten-Modus) */}
+          {uiMode === 'expert' && resultConfig.metadata.length > 0 && (
+            <div className="border-t border-gray-100 pt-3">
+              <div className="flex flex-wrap gap-4 text-xs text-gray-500">
+                {resultConfig.metadata.map(fieldConfig => 
+                  result[fieldConfig.solrField] && (
+                    <div key={fieldConfig.solrField} className="flex items-center">
+                      <span className="font-medium mr-1">{fieldConfig.label}:</span>
+                      <span>
+                        {uiHelpers.formatFieldValue(result[fieldConfig.solrField], fieldConfig.format)}
+                      </span>
+                    </div>
+                  )
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Volltext-Button */}
+          <div className="mt-4 pt-3 border-t border-gray-50 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setSelectedDocument(result)}
+                className="text-solr-primary hover:text-solr-secondary font-medium text-sm transition-colors"
+              >
+                📄 Volltext anzeigen
+              </button>
+              {isFramework && (
+                <span className="text-blue-600 text-xs">
+                  📋 Mit Inhaltsverzeichnis
+                </span>
+              )}
+              {isNorm && (
+                <span className="text-green-600 text-xs">
+                  🔗 Teil eines Gesetzes
+                </span>
+              )}
+            </div>
             <div className="text-xs text-gray-400">
-              ID: {result.id} • {Object.keys(result).length} Felder verfügbar
+              ID: {result.id}
             </div>
           </div>
         </div>
-      ))}
+        );
+      })}
 
-      {/* Schema-Footer */}
+      {/* UI-Konfiguration Footer */}
       <div className="bg-gray-50 p-4 rounded-lg text-center">
-        <div className="text-xs text-gray-500">
-          Schema-basierte Anzeige • {displayFields.length} konfigurierte Anzeigefeld{displayFields.length !== 1 ? 'er' : ''}
+        <div className="text-xs text-gray-500 flex items-center justify-center space-x-4">
+          <span>UI-konfigurierte Anzeige</span>
+          <span>•</span>
+          <span>{configuredFields.length} Anzeigefelder</span>
+          <span>•</span>
+          <span className="text-solr-primary font-medium">
+            {uiMode === 'expert' ? '🔧 Experten-Modus' : '👤 Normal-Modus'}
+          </span>
         </div>
       </div>
+
+      {/* DocumentFullView Modal */}
+      {selectedDocument && (
+        <DocumentFullView
+          document={selectedDocument}
+          onClose={() => setSelectedDocument(null)}
+          searchQuery={searchQuery}
+        />
+      )}
     </div>
   );
 }

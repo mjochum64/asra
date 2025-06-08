@@ -5,6 +5,15 @@ ASRA ist eine moderne Webapplikation für die Dokumentensuche, die Apache Solr a
 ## Funktionen
 
 ### ✅ Implementierte Features
+- **Norm-Level-Indexierung**: Granulare Indexierung einzelner Rechtsnormen statt ganzer Dokumente
+- **XHTML-Formatierung**: Erhaltung der ursprünglichen XML-Formatierung in HTML-Darstellung
+- **Konfigurierbare UI-Modi**: Normal-Modus (5 benutzerfreundliche Felder) ↔ Experten-Modus (alle Solr-Felder)
+- **Deutsche Rechtsabkürzungen**: Vollständige Unterstützung für Suchen wie "1. BImSchV", "GG", "BGB"
+- **Präzise Artikel-Suche**: Finde spezifische Artikel (z.B. "Art 70 GG") statt ganzer Gesetzbücher
+- **Norm-Badge-System**: Visuelle Kennzeichnung von Artikeln, Paragraphen und Rechtsnormen
+- **Export-Funktionen**: PDF- und HTML-Export von Dokumenteninhalten mit professioneller Formatierung
+- **Volltext-Dokumentenansicht**: Erweiterte Ansicht mit korrekter Absatzformatierung und Inhaltsverzeichnis
+- **Intelligente Dateinamen**: Automatische Generierung aussagekräftiger Export-Dateinamen
 - **Echtzeit-Suche**: Schnelle Dokumentensuche mit sofortigen Ergebnissen
 - **Benutzerfreundliche Oberfläche**: Modernes, responsives UI mit React und Tailwind CSS
 - **Fehlerbehandlung**: Robuste Fehlerbehandlung und Ladezustände für eine bessere Benutzererfahrung
@@ -12,7 +21,7 @@ ASRA ist eine moderne Webapplikation für die Dokumentensuche, die Apache Solr a
 - **Docker-Integration**: Vollständige Containerisierung mit Docker Compose für Frontend und Solr-Backend
 - **CORS-freie Architektur**: Vermeidung von Cross-Origin-Problemen durch integrierte Reverse-Proxy-Konfiguration
 - **Entwickler-Modus**: Mock-Modus für Entwicklung und Tests, der ohne Solr-Backend funktioniert
-- **Fortgeschrittene Suchoptionen**: Suche in bestimmten Feldern (Titel, Inhalt, Alle)
+- **Fortgeschrittene Suchoptionen**: Feldspezifische Suche (Amtliche Abkürzung, Kurztitel, Volltext, etc.)
 - **Paginierung**: Unterstützung für große Ergebnismengen mit einer intuitiven Paginierung
 - **Responsive Design**: Optimiert für Desktop, Tablet und Mobilgeräte
 - **Code-Splitting**: Lazy Loading für optimierte Performance und kleinere Bundle-Größen
@@ -21,16 +30,17 @@ ASRA ist eine moderne Webapplikation für die Dokumentensuche, die Apache Solr a
 - **Content-Highlighting**: Hervorhebung von Suchbegriffen in den Ergebnissen
 - **Filter-State-Management**: Intelligente Filterung, die sich automatisch an Suchergebnisse anpasst
 
-### 🚧 In Entwicklung (Phase 1 - Juni 2025)
+### 🚧 In Entwicklung (Phase 2 - Sprint 2)
 - **Auto-Suggest**: Suchvorschläge basierend auf vorhandenen Dokumenten
 - **Erweiterte Sortierung**: Sortierung nach Relevanz, Datum und Titel
+- **Suchhistorie**: Lokale Speicherung und Wiederholung von Suchanfragen
 - **Datum-Range-Filter**: Zeitbasierte Filterung von Dokumenten
 
-### 🎯 Geplante Features (Phase 2+)
+### 🎯 Geplante Features (Phase 3+)
 - **Dokumentvorschau**: Modal-Ansicht für Dokumenteninhalte
 - **Webcrawler-Integration**: Automatischer Import von Daten aus gesetze-im-internet.de
 - **Erweiterte Authentifizierung**: Benutzerkonten und gespeicherte Suchen
-- **Export-Funktionen**: PDF- und CSV-Export von Suchergebnissen
+- **Theme-Wechsler**: Heller/dunkler Modus für die Benutzeroberfläche
 
 ## Screenshots
 
@@ -164,10 +174,13 @@ Die Anwendung folgt einer modularen Architektur:
 
 - React-Komponenten in `/src/components`
   - **Dynamic Components**: `DynamicApp.jsx`, `DynamicSearchBar.jsx`, `DynamicSidebar.jsx`, `DynamicResultsDisplay.jsx` - Hauptkomponenten mit voller Solr-Integration
-  - **Static Components**: `Navbar.jsx`, `Footer.jsx`, `Pagination.jsx` - Wiederverwendbare UI-Komponenten
+  - **Document Components**: `DocumentFullView.jsx`, `DocumentExport.jsx`, `TableOfContents.jsx` - Spezialisierte Komponenten für Dokumentenanzeige und Export
+  - **Static Components**: `Navbar.jsx`, `Footer.jsx`, `Pagination.jsx`, `ModeSwitcher.jsx` - Wiederverwendbare UI-Komponenten
 - Dienste für API-Interaktionen in `/src/services`
   - `solrService.js` - Hauptschnittstelle zu Apache Solr mit Mock-Fallback
   - `schemaService.js` - Dynamische Facetten und Schema-Management
+- Konfiguration in `/src/config`
+  - `uiConfig.js` - Zentrale UI-Konfiguration für Modi und Feldanzeige
 - Docker-Konfiguration in `/docker`
   - Nginx als Reverse-Proxy und statischer Dateiserver in `/docker/nginx`
   - Solr-Konfiguration in `/docker/solr`
@@ -176,6 +189,9 @@ Die Anwendung folgt einer modularen Architektur:
 - **Kontextuelle Facetten**: Filter werden dynamisch basierend auf aktuellen Suchergebnissen generiert
 - **Unified Search Response**: Eine einzige API-Antwort enthält sowohl Suchergebnisse als auch passende Filter
 - **Content Highlighting**: Automatische Hervorhebung von Suchbegriffen in Volltext-Ergebnissen
+- **Export-System**: Modulare Export-Funktionalität mit PDF- und HTML-Generierung
+- **HTML-Felder-Integration**: Intelligente Nutzung von `text_content_html` und `fussnoten_content_html` für optimale Formatierung
+- **Content-Filtering**: Automatische Bereinigung redundanter Inhalte und bedeutungsloser Strukturelemente
 
 ### Docker-Container
 
@@ -187,6 +203,8 @@ Die Anwendung besteht aus zwei Docker-Containern:
 ## Versionierung
 
 Dieses Projekt verwendet semantische Versionierung (SemVer). Alle Änderungen werden in der [CHANGELOG.md](CHANGELOG.md) dokumentiert.
+
+**Aktuelle Version: 1.1.1** - Export-System mit professioneller PDF/HTML-Funktionalität
 
 ## Für neue Entwickler
 
@@ -214,13 +232,20 @@ Dieses Projekt verwendet semantische Versionierung (SemVer). Alle Änderungen we
     - `DynamicSearchBar.jsx`: Suchleiste mit erweiterten Filteroptionen
     - `DynamicResultsDisplay.jsx`: Anzeige der Suchergebnisse mit Content-Highlighting
     - `DynamicSidebar.jsx`: Dynamische Seitenleiste mit kontextuellen Facetten-Filtern
+  - **Document Components**:
+    - `DocumentFullView.jsx`: Volltext-Dokumentenansicht mit korrekter Formatierung
+    - `DocumentExport.jsx`: Export-Funktionalität für PDF und HTML mit professioneller Formatierung
+    - `TableOfContents.jsx`: Intelligentes Inhaltsverzeichnis mit Strukturerkennung
   - **Static Components**:
     - `Navbar.jsx`: Navigationsleiste mit Mock-Umschalter
     - `Footer.jsx`: Fußzeile mit Links und Projektinfo
     - `Pagination.jsx`: Seitennavigation für Ergebnisse
+    - `ModeSwitcher.jsx`: UI-Modi-Umschalter (Normal ↔ Experten-Modus)
 - `src/services/`: API-Services
   - `solrService.js`: Hauptschnittstelle zu Solr mit Mock-Funktionalität
   - `schemaService.js`: Dynamische Facetten und Schema-Management
+- `src/config/`: Konfiguration
+  - `uiConfig.js`: Zentrale UI-Konfiguration für Modi und Feldanzeige
 - `vite.config.js`: Konfiguration des Entwicklungsservers und Proxy
 - `tailwind.config.js`: Anpassungen des Designs und der Farben
 
@@ -234,12 +259,20 @@ Dieses Projekt verwendet semantische Versionierung (SemVer). Alle Änderungen we
 
 ### Aktuelle Arbeitsschwerpunkte (Juni 2025)
 
-**Sprint 1 (KW 23-24): Facetten-Filter-Implementation**
+**✅ Sprint 1 ABGESCHLOSSEN (KW 23-24): Konfigurierbare UI**
 - Dynamische Solr-Facetten-Integration für Kategorien, Autoren und Datum
 - Filter-State-Management zwischen Suchanfragen
-- Erweiterte Sidebar-Funktionalität mit echten Daten
+- UI-Modi: Normal (5 Felder) vs. Experten (alle Felder)
+- Deutsche Rechtsabkürzungen-Unterstützung vollständig implementiert
 
-**Sprint 2 (KW 25-26): Auto-Suggest und Sortierung** 
+**✅ Export-System ABGESCHLOSSEN (KW 23-24): Professionelle Export-Funktionalität**
+- PDF- und HTML-Export mit intelligenter Formatierung
+- HTML-Felder-Integration für optimale Content-Darstellung
+- Automatische Dateinamen-Generierung basierend auf Dokument-IDs
+- Content-Filtering zur Entfernung redundanter Strukturelemente
+- Universelle PDF-Navigation mit präzisen Seitenzahlen
+
+**🚧 Sprint 2 GEPLANT (KW 25-26): Auto-Suggest und Sortierung** 
 - Autocomplete-Funktionalität basierend auf Solr-Begriffen
 - Erweiterte Sortieroptionen in der Ergebnisanzeige
 - Suchhistorie mit LocalStorage

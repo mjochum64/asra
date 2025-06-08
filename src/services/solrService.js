@@ -1,6 +1,28 @@
 import axios from 'axios';
 import { getContextualFacets } from './schemaService';
 
+// Helper function to build German legal abbreviation queries
+// Grund: Wildcard queries with spaces fail in Solr, so we split them into compound AND queries
+const buildGermanLegalQuery = (fieldName, query, isWildcard = false) => {
+  if (!query || query.trim() === '') {
+    return `${fieldName}:*`;
+  }
+  
+  // Für deutsche Rechtsabkürzungen bevorzugen wir exakte Suche
+  // wenn die Query Leerzeichen oder Punkte enthält
+  if (query.includes(' ') || query.includes('.')) {
+    // Exakte Suche mit Anführungszeichen (wie im Solr Admin UI)
+    return `${fieldName}:"${query}"`;
+  }
+  
+  // Für einfache Begriffe ohne Leerzeichen verwenden wir Wildcard
+  if (isWildcard) {
+    return `${fieldName}:*${query}*`;
+  } else {
+    return `${fieldName}:"${query}"`;
+  }
+};
+
 // Konfigurierbare Solr-URL basierend auf der Umgebung
 // Im Produktionsbetrieb mit Docker wird "/solr/" verwendet (relativ zur gleichen Domain wie Frontend)
 // Grund: Vermeidet CORS-Probleme durch Proxying über Nginx
@@ -37,9 +59,27 @@ const solrClient = axios.create({
   }
 });
 
-export const searchDocuments = async (query, searchMode = 'all', filters = {}) => {
+export const searchDocuments = async (query, searchMode = 'all', filters = {}, options = {}) => {
   try {
-    console.log(`Searching for "${query}" in mode "${searchMode}" with filters:`, filters);
+    console.log(`Searching for "${query}" in mode "${searchMode}" with filters:`, filters, 'options:', options);
+    
+    // Standard-Parameter mit überschreibbaren Optionen
+    const defaultParams = {
+      wt: 'json',
+      rows: 20,
+      ...options // Überschreibt Standard-Parameter
+    };
+    
+    // Spezielle Behandlung für bereits formatierte Solr-Queries
+    if (query.includes(':') && (query.includes('OR') || query.includes('AND') || query.includes('"') || query.includes('*'))) {
+      // Dies ist bereits eine formatierte Solr-Query, verwende sie direkt
+      return await solrClient.get('/documents/select', {
+        params: {
+          q: query,
+          ...defaultParams
+        }
+      }).then(response => response.data.response);
+    }
     
     // Bestimme, welches Feld durchsucht werden soll, basierend auf searchMode
     let queryParams;
@@ -49,57 +89,106 @@ export const searchDocuments = async (query, searchMode = 'all', filters = {}) =
     
     if (searchMode === 'title') {
       queryParams = {
-        q: isWildcardQuery ? 'title:*' : `title:(${query})`,
-        wt: 'json',
-        rows: 20
+        q: isWildcardQuery ? 'titel:*' : `titel:(${query})`,
+        ...defaultParams
       };
     } else if (searchMode === 'content') {
       queryParams = {
-        q: isWildcardQuery ? 'content:*' : `content:(${query})`,
-        wt: 'json',
-        rows: 20
+        q: isWildcardQuery ? 'text_content:*' : `text_content:(${query})`,
+        ...defaultParams
       };
     } else if (searchMode === 'author') {
       queryParams = {
         q: isWildcardQuery ? 'author:*' : `author:"${query}" OR author:*${query}*`,
-        wt: 'json',
-        rows: 20
+        ...defaultParams
       };
     } else if (searchMode === 'category') {
       queryParams = {
         q: isWildcardQuery ? 'category:*' : `category:"${query}" OR category:*${query}*`,
-        wt: 'json',
-        rows: 20
+        ...defaultParams
+      };
+    } else if (searchMode === 'kurzue') {
+      // Deutsche Rechtsdokument: Kurztitel
+      queryParams = {
+        q: isWildcardQuery ? 'kurzue:*' : `kurzue:(${query})`,
+        ...defaultParams
+      };
+    } else if (searchMode === 'langue') {
+      // Deutsche Rechtsdokument: Langtitel
+      queryParams = {
+        q: isWildcardQuery ? 'langue:*' : `langue:(${query})`,
+        ...defaultParams
+      };
+    } else if (searchMode === 'jurabk') {
+      // Deutsche Rechtsdokument: Juristische Abkürzung
+      let jurabkQuery;
+      if (isWildcardQuery) {
+        jurabkQuery = 'jurabk:*';
+      } else {
+        // Direkte Phrase-Suche mit korrekter Kodierung
+        jurabkQuery = `jurabk:"${query}"`;
+      }
+      queryParams = {
+        q: jurabkQuery,
+        ...defaultParams
+      };
+    } else if (searchMode === 'amtabk') {
+      // Deutsche Rechtsdokument: Amtliche Abkürzung - erweiterte Suche in amtabk und jurabk
+      // Grund: Kombiniere amtabk und jurabk Felder für bessere Suchergebnisse
+      let amtabkQuery;
+      if (isWildcardQuery) {
+        amtabkQuery = 'amtabk:* OR jurabk:*';
+      } else {
+        // Kombiniere exakte und Wildcard-Suche für beide Felder
+        const exactQuery = `(amtabk:"${query}" OR jurabk:"${query}")`;
+        const wildcardQuery = `(amtabk:*${query}* OR jurabk:*${query}*)`;
+        amtabkQuery = `${exactQuery} OR ${wildcardQuery}`;
+      }
+      console.log(`🔍 AMTABK DEBUG - Input query: "${query}"`);
+      console.log(`🔍 AMTABK DEBUG - isWildcardQuery: ${isWildcardQuery}`);
+      console.log(`🔍 AMTABK DEBUG - Final Solr query: "${amtabkQuery}"`);
+      queryParams = {
+        q: amtabkQuery,
+        ...defaultParams
+      };
+    } else if (searchMode === 'text_content') {
+      // Deutsche Rechtsdokument: Textinhalt
+      queryParams = {
+        q: isWildcardQuery ? 'text_content:*' : `text_content:(${query})`,
+        ...defaultParams
       };
     } else {
       // Für allgemeine Suche
       if (isWildcardQuery) {
         queryParams = {
           q: '*:*',  // Alle Dokumente
-          wt: 'json',
-          rows: 20
+          ...defaultParams
         };
       } else {
-        // DisMax Query Parser für bessere Relevanz
+        // Für allgemeine Suche: Kombiniere exakte und Wildcard-Suche
+        // Grund: Deutsche Rechtsabkürzungen benötigen sowohl exakte als auch Teilstring-Suche
+        const exactQuery = `(kurzue:"${query}" OR langue:"${query}" OR amtabk:"${query}" OR jurabk:"${query}")`;
+        const wildcardQuery = `(kurzue:*${query}* OR langue:*${query}* OR amtabk:*${query}* OR jurabk:*${query}* OR text_content:*${query}*)`;
+        const combinedQuery = `${exactQuery} OR ${wildcardQuery}`;
+        
         queryParams = {
-          q: query,
-          wt: 'json',
-          rows: 20,
-          defType: 'dismax',
-          qf: 'title^2 content author category',  // Query Fields mit Boosting
-          mm: '1'  // Minimum Should Match
+          q: combinedQuery,
+          ...defaultParams
         };
       }
     }
     
-    // Füge Highlighting hinzu (für alle Suchmodi)
+    // Füge vereinfachtes Highlighting hinzu (für alle Suchmodi)
+    // Grund: Entferne "content" und "title" da diese Felder nicht im deutschen Rechts-Schema existieren
     queryParams.hl = 'true';
-    queryParams['hl.fl'] = 'title,content';
+    queryParams['hl.fl'] = 'kurzue,langue,amtabk,jurabk,text_content,titel';
     queryParams['hl.simple.pre'] = '<mark>';
     queryParams['hl.simple.post'] = '</mark>';
     queryParams['hl.fragsize'] = 200;
-    queryParams['hl.maxAnalyzedChars'] = 1000000;
-    queryParams['hl.snippets'] = 3;  // Mehr Snippets für bessere Highlighting-Abdeckung
+    queryParams['hl.maxAnalyzedChars'] = 100000;
+    queryParams['hl.snippets'] = 1;  // Reduzierte Snippets für Stabilität
+    
+    // Grund: Vereinfachtes Highlighting ohne komplexe Parameter für bessere Kompatibilität
     
     // Füge Filter-Queries hinzu
     const filterQueries = [];
@@ -138,14 +227,48 @@ export const searchDocuments = async (query, searchMode = 'all', filters = {}) =
       const baseParams = { ...queryParams };
       delete baseParams.fq;
       
-      const searchParams = new URLSearchParams(baseParams);
+      const searchParams = new URLSearchParams();
+      
+      // Füge base parameters hinzu mit korrekter Kodierung
+      Object.keys(baseParams).forEach(key => {
+        let value = baseParams[key];
+        if (key === 'q') {
+          // Spezielle Behandlung für Query-Parameter
+          searchParams.append(key, value);
+        } else {
+          searchParams.append(key, value);
+        }
+      });
+      
+      // Füge Filter-Queries hinzu
       queryParams.fq.forEach(filter => {
         searchParams.append('fq', filter);
       });
       
-      console.log('Final URL params:', searchParams.toString());
+      // Korrigiere die Kodierung für Phrase-Queries
+      let urlString = searchParams.toString();
+      urlString = urlString.replace(/q=([^&]*)/g, (match, queryPart) => {
+        const decodedQuery = decodeURIComponent(queryPart);
+        if (decodedQuery.includes('"')) {
+          return `q=${encodeURIComponent(decodedQuery).replace(/\+/g, '%20')}`;
+        }
+        return match;
+      });
       
-      const response = await solrClient.get(`documents/select?${searchParams.toString()}`);
+      console.log('Final URL params:', urlString);
+      console.log(`🌐 Making request to: documents/select?${urlString}`);
+      
+      const response = await solrClient.get(`documents/select?${urlString}`);
+      
+      console.log(`📊 Response status: ${response.status}`);
+      console.log(`📊 Response numFound: ${response.data.response.numFound}`);
+      if (response.data.response.numFound > 0) {
+        console.log(`📊 First document fields:`, Object.keys(response.data.response.docs[0]));
+        console.log(`📊 First document amtabk:`, response.data.response.docs[0].amtabk);
+        console.log(`📊 First document jurabk:`, response.data.response.docs[0].jurabk);
+      } else {
+        console.log(`❌ No documents found for query`);
+      }
       
       // Hole kontextuelle Facetten basierend auf den Suchparametern
       const contextualFacets = await getContextualFacets(query, searchMode, filters);
@@ -160,12 +283,41 @@ export const searchDocuments = async (query, searchMode = 'all', filters = {}) =
         total: response.data.response.numFound
       };
     } else {
+      // Einfache Lösung: Verwende direkte Solr-Query ohne komplexe Parameter-Serialisierung
+      console.log('Query params (no filters):', queryParams);
+      console.log('Full query string to be sent:', queryParams.q);
+      
+      // Debug: Erstelle die finale URL zum Logging
+      const baseUrl = getSolrBaseUrl() + 'documents/select';
+      const urlParams = new URLSearchParams();
+      Object.keys(queryParams).forEach(key => {
+        urlParams.append(key, queryParams[key]);
+      });
+      console.log('Final request URL would be:', baseUrl + '?' + urlParams.toString());
+      
       const response = await solrClient.get('documents/select', {
-        params: queryParams
+        params: queryParams,
+        // Grund: Verwende benutzerdefinierten Parameter-Serializer für korrekte Query-Kodierung
+        paramsSerializer: {
+          encode: (param, key) => {
+            // Für Query-Parameter: Verwende normale Kodierung aber ersetze + mit %20
+            if (key === 'q') {
+              return encodeURIComponent(param).replace(/\+/g, '%20');
+            }
+            return encodeURIComponent(param);
+          }
+        }
       });
       
       // Hole kontextuelle Facetten basierend auf den Suchparametern
       const contextualFacets = await getContextualFacets(query, searchMode, filters);
+      
+      // Debug: Logge die Rohantwort von Solr
+      console.log('Solr response numFound:', response.data.response.numFound);
+      console.log('Solr response docs length:', response.data.response.docs.length);
+      if (response.data.response.docs.length > 0) {
+        console.log('First document fields:', Object.keys(response.data.response.docs[0]));
+      }
       
       // Verarbeite die Suchergebnisse
       const searchResults = processSearchResponse(response);
@@ -183,8 +335,13 @@ export const searchDocuments = async (query, searchMode = 'all', filters = {}) =
     if (error.response) {
       console.error('Response data:', error.response.data);
       console.error('Response status:', error.response.status);
+      console.error('Response headers:', error.response.headers);
+      console.error('Request URL:', error.config?.url);
+      console.error('Request method:', error.config?.method);
+      console.error('Request params:', error.config?.params);
     } else if (error.request) {
       console.error('No response received');
+      console.error('Request details:', error.request);
     }
     throw error;
   }
@@ -201,27 +358,69 @@ function processSearchResponse(response) {
     // Normalisiere Array-Felder zu Strings (Solr gibt Arrays zurück)
     const normalizedDoc = {
       ...doc,
-      title: Array.isArray(doc.title) ? doc.title[0] : doc.title,
-      content: Array.isArray(doc.content) ? doc.content[0] : doc.content,
+      // Legacy fields for compatibility (map to existing fields if they exist)
+      title: Array.isArray(doc.titel) ? doc.titel[0] : (doc.titel || (Array.isArray(doc.title) ? doc.title[0] : doc.title)),
+      content: Array.isArray(doc.text_content) ? doc.text_content[0] : (doc.text_content || (Array.isArray(doc.content) ? doc.content[0] : doc.content)),
+      // Standard fields
       category: Array.isArray(doc.category) ? doc.category[0] : doc.category,
       author: Array.isArray(doc.author) ? doc.author[0] : doc.author,
       created_date: Array.isArray(doc.created_date) ? doc.created_date[0] : doc.created_date,
-      last_modified: Array.isArray(doc.last_modified) ? doc.last_modified[0] : doc.last_modified
+      last_modified: Array.isArray(doc.last_modified) ? doc.last_modified[0] : doc.last_modified,
+      // Deutsche Rechtsfelder hinzufügen
+      kurzue: Array.isArray(doc.kurzue) ? doc.kurzue[0] : doc.kurzue,
+      langue: Array.isArray(doc.langue) ? doc.langue[0] : doc.langue,
+      amtabk: Array.isArray(doc.amtabk) ? doc.amtabk[0] : doc.amtabk,
+      jurabk: Array.isArray(doc.jurabk) ? doc.jurabk[0] : doc.jurabk,
+      text_content: Array.isArray(doc.text_content) ? doc.text_content[0] : doc.text_content,
+      titel: Array.isArray(doc.titel) ? doc.titel[0] : doc.titel
     };
     
     // Ersetze Inhalte mit hervorgehobenem Text, falls verfügbar
+    if (docHighlights.titel && docHighlights.titel.length > 0) {
+      normalizedDoc.titel = docHighlights.titel[0];
+      normalizedDoc.title = docHighlights.titel[0]; // Legacy compatibility
+    }
+    
+    // Legacy title field support
     if (docHighlights.title && docHighlights.title.length > 0) {
       normalizedDoc.title = docHighlights.title[0];
     }
     
-    if (docHighlights.content && docHighlights.content.length > 0) {
-      // Verwende das erste und beste Highlight-Snippet für content
-      normalizedDoc.content = docHighlights.content[0];
+    if (docHighlights.text_content && docHighlights.text_content.length > 0) {
+      // Verwende das erste und beste Highlight-Snippet für text_content
+      normalizedDoc.text_content = docHighlights.text_content[0];
+      normalizedDoc.content = docHighlights.text_content[0]; // Legacy compatibility
       
       // Falls mehrere Snippets vorhanden sind, zeige sie zusammen
+      if (docHighlights.text_content.length > 1) {
+        normalizedDoc.contentSnippets = docHighlights.text_content;
+      }
+    }
+    
+    // Legacy content field support
+    if (docHighlights.content && docHighlights.content.length > 0) {
+      normalizedDoc.content = docHighlights.content[0];
+      
       if (docHighlights.content.length > 1) {
         normalizedDoc.contentSnippets = docHighlights.content;
       }
+    }
+    
+    // Deutsche Rechtsfelder mit Highlighting unterstützen
+    if (docHighlights.kurzue && docHighlights.kurzue.length > 0) {
+      normalizedDoc.kurzue = docHighlights.kurzue[0];
+    }
+    
+    if (docHighlights.langue && docHighlights.langue.length > 0) {
+      normalizedDoc.langue = docHighlights.langue[0];
+    }
+    
+    if (docHighlights.amtabk && docHighlights.amtabk.length > 0) {
+      normalizedDoc.amtabk = docHighlights.amtabk[0];
+    }
+    
+    if (docHighlights.jurabk && docHighlights.jurabk.length > 0) {
+      normalizedDoc.jurabk = docHighlights.jurabk[0];
     }
     
     return normalizedDoc;

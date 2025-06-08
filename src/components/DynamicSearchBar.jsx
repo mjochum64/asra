@@ -1,38 +1,50 @@
 import React, { useState, useEffect } from 'react';
-import { getSearchFieldOptions } from '../services/schemaService';
+import { uiHelpers } from '../config/uiConfig';
 
 /**
- * Schema-driven SearchBar - automatisch basierend auf verfügbaren durchsuchbaren Feldern
+ * ConfigUI-driven SearchBar - basierend auf UI-Konfiguration statt dynamischem Schema
  */
-export default function DynamicSearchBar({ onSearch }) {
+export default function DynamicSearchBar({ onSearch, uiMode = 'normal' }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [searchMode, setSearchMode] = useState('all');
   const [fieldOptions, setFieldOptions] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Lade verfügbare Suchfelder beim Mount
+  // Lade verfügbare Suchfelder basierend auf UI-Modus beim Mount oder Modus-Änderung
   useEffect(() => {
     loadSearchFieldOptions();
-  }, []);
+  }, [uiMode]);
 
-  const loadSearchFieldOptions = async () => {
+  const loadSearchFieldOptions = () => {
     try {
       setIsLoading(true);
-      const options = await getSearchFieldOptions();
+      const searchFields = uiHelpers.getSearchFields(uiMode);
+      
+      // Konvertiere UI-Konfiguration zu feldoptions Format
+      const options = searchFields.map(field => ({
+        value: field.id,
+        label: field.label,
+        description: field.description,
+        icon: field.icon,
+        fields: field.solrField ? [field.solrField] : ['all'], // einzelnes Feld oder alle
+        primary: field.primary
+      }));
+      
       setFieldOptions(options);
       
-      // Setze den ersten verfügbaren Modus als Standard
-      if (options.length > 0) {
-        setSearchMode(options[0].value);
+      // Setze den ersten verfügbaren (primären) Modus als Standard
+      const primaryField = options.find(opt => opt.primary) || options[0];
+      if (primaryField) {
+        setSearchMode(primaryField.value);
       }
     } catch (error) {
-      console.error('Failed to load search field options:', error);
-      // Fallback zu Standard-Optionen
+      console.error('Failed to load UI search configuration:', error);
+      // Fallback zu Basis-Optionen
       setFieldOptions([
-        { value: 'all', label: 'Alle Felder', fields: ['title', 'content'] },
-        { value: 'title', label: 'Nur Titel', fields: ['title'] },
-        { value: 'content', label: 'Nur Inhalt', fields: ['content'] }
+        { value: 'all', label: 'Alle Felder', description: 'Durchsucht alle verfügbaren Felder', icon: '🔍', fields: ['all'], primary: true },
+        { value: 'text_content', label: 'Volltext', description: 'Durchsucht den Dokumentinhalt', icon: '📄', fields: ['text_content'] }
       ]);
+      setSearchMode('all');
     } finally {
       setIsLoading(false);
     }
@@ -51,10 +63,7 @@ export default function DynamicSearchBar({ onSearch }) {
     const selectedOption = fieldOptions.find(opt => opt.value === searchMode);
     if (!selectedOption) return '';
     
-    if (selectedOption.value === 'all') {
-      return `Durchsucht: ${selectedOption.fields.join(', ')}`;
-    }
-    return `Durchsucht: ${selectedOption.fields[0]}`;
+    return selectedOption.description || `Durchsucht: ${selectedOption.fields.join(', ')}`;
   };
 
   return (
@@ -96,29 +105,45 @@ export default function DynamicSearchBar({ onSearch }) {
             </button>
           </div>
           
-          {/* Dynamische Suchfeld-Optionen */}
+          {/* UI-konfigurierte Suchfeld-Optionen */}
           {!isLoading && fieldOptions.length > 0 && (
             <div className="mt-4">
-              <div className="flex flex-wrap gap-3 mb-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mb-3">
                 {fieldOptions.map((option) => (
-                  <div key={option.value} className="flex items-center">
+                  <div key={option.value} className="relative">
                     <input
                       type="radio"
                       id={`search-${option.value}`}
                       name="search-mode"
                       checked={searchMode === option.value}
                       onChange={() => setSearchMode(option.value)}
-                      className="h-4 w-4 text-solr-primary focus:ring-solr-primary border-gray-300"
+                      className="sr-only"
                     />
-                    <label htmlFor={`search-${option.value}`} className="ml-2 text-sm text-gray-700">
-                      {option.label}
+                    <label 
+                      htmlFor={`search-${option.value}`} 
+                      className={`flex items-center p-3 rounded-lg border-2 cursor-pointer transition-all duration-200 ${
+                        searchMode === option.value
+                          ? 'border-solr-primary bg-solr-primary bg-opacity-5 text-solr-primary'
+                          : 'border-gray-200 hover:border-gray-300 text-gray-700'
+                      }`}
+                    >
+                      <span className="text-lg mr-3">{option.icon}</span>
+                      <div className="flex-1">
+                        <div className="font-medium text-sm">{option.label}</div>
+                        <div className="text-xs text-gray-500 mt-1">{option.description}</div>
+                      </div>
+                      {searchMode === option.value && (
+                        <svg className="h-5 w-5 text-solr-primary" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        </svg>
+                      )}
                     </label>
                   </div>
                 ))}
               </div>
               
-              {/* Dynamische Feldinfo */}
-              <div className="text-xs text-gray-500 flex items-center">
+              {/* Feldinfo */}
+              <div className="text-xs text-gray-500 flex items-center bg-gray-50 p-2 rounded">
                 <svg className="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
@@ -128,10 +153,10 @@ export default function DynamicSearchBar({ onSearch }) {
           )}
         </form>
         
-        {/* Schema-Info */}
+        {/* UI-Modus Info */}
         <div className="mt-3 pt-3 border-t border-gray-100">
           <div className="flex items-center justify-between text-xs text-gray-500">
-            <span>Schema-basierte Suche</span>
+            <span>UI-konfigurierte Suche • {uiMode === 'normal' ? 'Normal-Modus' : 'Experten-Modus'}</span>
             <span>{fieldOptions.length} Suchfeld{fieldOptions.length !== 1 ? 'er' : ''} verfügbar</span>
           </div>
         </div>

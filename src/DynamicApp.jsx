@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import DynamicSearchBar from './components/DynamicSearchBar';
 import DynamicSidebar from './components/DynamicSidebar';
 import DynamicResultsDisplay from './components/DynamicResultsDisplay';
+import ModeSwitcher from './components/ModeSwitcher';
 import { searchDocuments } from './services/solrService';
 import { analyzeSchemaForUI } from './services/schemaService';
 
@@ -19,6 +20,7 @@ export default function DynamicApp() {
   const [schemaInfo, setSchemaInfo] = useState(null);
   const [totalResults, setTotalResults] = useState(0);
   const [currentFacets, setCurrentFacets] = useState({});
+  const [uiMode, setUIMode] = useState('normal'); // UI mode state (normal | expert)
 
   // Lade Schema-Informationen beim Mount
   useEffect(() => {
@@ -96,16 +98,24 @@ export default function DynamicApp() {
               </p>
             </div>
             
-            {/* Schema Info Badge */}
-            {schemaInfo && (
-              <div className="bg-solr-primary text-white px-4 py-2 rounded-lg text-sm">
-                <div className="font-medium">Schema erkannt</div>
-                <div className="text-xs opacity-90">
-                  {schemaInfo.searchableFields.length} durchsuchbare Felder •{' '}
-                  {schemaInfo.facetableFields.length} filterbare Felder
+            <div className="flex items-center space-x-4">
+              {/* UI Mode Switcher */}
+              <ModeSwitcher 
+                currentMode={uiMode} 
+                onModeChange={setUIMode} 
+              />
+              
+              {/* Schema Info Badge */}
+              {schemaInfo && (
+                <div className="bg-solr-primary text-white px-4 py-2 rounded-lg text-sm">
+                  <div className="font-medium">Schema erkannt</div>
+                  <div className="text-xs opacity-90">
+                    {schemaInfo.searchableFields.length} durchsuchbare Felder •{' '}
+                    {schemaInfo.facetableFields.length} filterbare Felder
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
       </header>
@@ -116,10 +126,10 @@ export default function DynamicApp() {
           {/* Hauptbereich */}
           <div className="lg:col-span-3 space-y-6">
             {/* Dynamische Suchleiste */}
-            <DynamicSearchBar onSearch={handleSearch} />
+            <DynamicSearchBar onSearch={handleSearch} uiMode={uiMode} />
             
             {/* Schema-Informationen */}
-            {schemaInfo && !isLoading && (
+            {schemaInfo && !isLoading && uiMode === 'expert' && (
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <h3 className="text-sm font-medium text-blue-900 mb-2">
                   🔍 Dynamische Schema-Konfiguration
@@ -139,6 +149,7 @@ export default function DynamicApp() {
               searchQuery={lastSearchQuery}
               totalResults={totalResults}
               error={error}
+              uiMode={uiMode}
             />
           </div>
 
@@ -149,6 +160,7 @@ export default function DynamicApp() {
               activeFilters={activeFilters}
               facets={currentFacets}
               schemaInfo={schemaInfo}
+              uiMode={uiMode}
             />
             
             {/* Debug-Info (nur in Entwicklung) */}

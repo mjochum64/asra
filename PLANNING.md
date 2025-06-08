@@ -2,7 +2,38 @@
 
 ## Project Overview
 
-This project is a web-based document search application that provides a modern, user-friendly interface for searching documents indexed in Apache Solr. It serves as both a practical tool for document retrieval and a demonstration of Solr's search capabilities. The application allows users to perform full-text searches across document collections with real-time results display.
+ASRA ist eine moderne webbasierte Dokumentensuch-Anwendung, die eine benutzerfreundliche Oberfläche für die Suche in Apache Solr-indizierten Dokumenten bietet. Das Projekt dient als praktisches Werkzeug für die Dokumentenrecherche und als Demonstration der Solr-Suchfähigkeiten.
+
+**Projektstatuts**: ✅ **Phase 1 VOLLSTÄNDIG ABGESCHLOSSEN** (Version 1.0.0 PRODUCTION READY)  
+**Qualitätssicherung**: 11/11 Tests bestanden, 0 kritische Bugs  
+**Nächste Phase**: Sprint 2 - Auto-Suggest & Sortierung
+
+---
+
+## System Architecture
+
+### Komponenten
+
+1. **Frontend Application**
+   - React-basierte Single-Page-Anwendung mit konfigurierbaren UI-Modi
+   - Responsive UI mit Tailwind CSS und modernem Design
+   - Komponentenbasierte Architektur mit zentraler Konfiguration ([`uiConfig.js`](src/config/uiConfig.js ))
+   - Vite für schnelle Entwicklung und optimierte Builds
+   - **Normal-Modus**: 5 benutzerfreundliche Suchfelder (Alle Felder, Volltext, Kurztitel, Amtliche Abkürzung, Juristische Abkürzung)
+   - **Experten-Modus**: Vollzugriff auf alle Solr-Felder mit erweiterten Filtern
+   - **ModeSwitcher**: Benutzerfreundlicher Toggle zwischen Modi
+
+2. **Search Backend**
+   - Apache Solr 9.4 Suchplattform
+   - Angepasste Schema-Konfiguration für deutsche Rechtsdokumente
+   - RESTful API mit spezieller Unterstützung für deutsche Rechtsabkürzungen ("1. BImSchV", etc.)
+   - Content-Highlighting mit korrigierten Feldkonfigurationen
+   - Docker-Containerisierung für Deployment-Konsistenz
+
+3. **Infrastructure**
+   - Docker Compose für Multi-Container-Orchestrierung
+   - Nginx als Reverse-Proxy und statischer Dateiserver
+   - Produktive und Entwicklungsumgebungen
 
 ---
 
