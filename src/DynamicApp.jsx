@@ -91,10 +91,10 @@ export default function DynamicApp() {
           <div className="flex justify-between items-center py-4">
             <div>
               <h1 className="text-2xl font-bold text-gray-900">
-                ASRA Dynamic
+                ASRA – GermanLaw
               </h1>
               <p className="text-sm text-gray-600">
-                Schema-basierte Apache Solr Research Application
+                Recherchieren im Bundesrecht
               </p>
             </div>
             

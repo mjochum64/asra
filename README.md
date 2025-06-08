@@ -1,6 +1,6 @@
-# ASRA - Apache Solr Research Application
+# ASRA – GermanLaw
 
-ASRA ist eine moderne Webapplikation für die Dokumentensuche, die Apache Solr als Suchbackend verwendet. Die Anwendung bietet eine benutzerfreundliche Oberfläche, um mit einem Solr-Index zu interagieren und Dokumente effizient zu durchsuchen.
+ASRA – GermanLaw ist eine spezialisierte Webapplikation für die Recherche im Bundesrecht, die Apache Solr als Suchbackend verwendet. Die Anwendung bietet eine benutzerfreundliche Oberfläche, um deutsche Rechtsdokumente effizient zu durchsuchen und zu analysieren.
 
 ## Funktionen
 

@@ -1,6 +1,6 @@
-# GitHub Copilot Anweisungen für ASRA (Apache Solr Research Application)
+# GitHub Copilot Anweisungen für ASRA – GermanLaw
 
-Diese Anweisungen dienen als Leitfaden für die Entwicklung mit GitHub Copilot im ASRA-Projekt.
+Diese Anweisungen dienen als Leitfaden für die Entwicklung mit GitHub Copilot im ASRA – GermanLaw-Projekt.
 
 ## Externe Dokumentation
 
