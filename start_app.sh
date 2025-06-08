@@ -24,7 +24,7 @@ chmod +x ./docker/solr/load_sample_data.py
 # Change to the solr directory and run the import script
 echo "Importing demo documents..."
 cd ./docker/solr
-python solr_import.py demodata --verbose
+python solr_import_norms.py demodata --verbose
 cd ../../
 
 # Start the frontend container
