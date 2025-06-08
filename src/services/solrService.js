@@ -427,163 +427,22 @@ function processSearchResponse(response) {
   });
 }
 
-// Mock API for testing without real Solr connection
-export const mockSearch = (query) => {
-  const currentDate = new Date().toISOString();
-  const yesterdayDate = new Date(Date.now() - 86400000).toISOString();
-  
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve([
-        { 
-          id: 'mock1', 
-          title: `<mark>${query}</mark> - Erster Mock-Ergebnis-Titel`, 
-          content: `Dies ist der Inhalt des ersten Mock-Dokuments über <mark>${query}</mark>. Es enthält alle notwendigen Informationen.`,
-          category: 'technologie',
-          author: 'John Smith',
-          created_date: yesterdayDate,
-          last_modified: currentDate
-        },
-        { 
-          id: 'mock2', 
-          title: `Zweiter Mock-Ergebnis-Titel zu <mark>${query}</mark>`, 
-          content: `Ein weiteres Dokument mit Informationen über <mark>${query}</mark> und verwandten Themen.`,
-          category: 'programmierung',
-          author: 'Jane Doe',
-          created_date: yesterdayDate,
-          last_modified: currentDate
-        },
-        { 
-          id: 'mock3', 
-          title: `<mark>${query}</mark> Anwendungsfälle`, 
-          content: `Verschiedene Anwendungsfälle für <mark>${query}</mark> in unterschiedlichen Kontexten.`,
-          category: 'devops',
-          author: 'David Green',
-          created_date: yesterdayDate,
-          last_modified: currentDate
-        },
-        { 
-          id: 'mock4', 
-          title: `Einführung in <mark>${query}</mark>`, 
-          content: `Eine ausführliche Einführung in <mark>${query}</mark> für Anfänger und Fortgeschrittene.`,
-          category: 'api',
-          author: 'Emma Black',
-          created_date: yesterdayDate,
-          last_modified: currentDate
-        },
-        { 
-          id: 'mock5', 
-          title: `Fortgeschrittene <mark>${query}</mark> Techniken`, 
-          content: `Dieses Dokument beschreibt fortgeschrittene Techniken für <mark>${query}</mark> in professionellen Umgebungen.`,
-          category: 'datenbank',
-          author: 'Carol White',
-          created_date: yesterdayDate,
-          last_modified: currentDate
-        },
-        { 
-          id: 'mock6', 
-          title: `<mark>${query}</mark> Dokumentation`, 
-          content: `Die vollständige Dokumentation für <mark>${query}</mark> mit Beispielen und Anleitungen.`,
-          category: 'cloud',
-          author: 'Frank Gray',
-          created_date: yesterdayDate,
-          last_modified: currentDate
-        },
-        { 
-          id: 'mock7', 
-          title: `<mark>${query}</mark> in der Praxis`, 
-          content: `Praktische Anwendungsfälle für <mark>${query}</mark> in realen Projekten.`,
-          category: 'technologie',
-          author: 'Grace Lee',
-          created_date: yesterdayDate,
-          last_modified: currentDate
-        }
-      ]);
-    }, 800); // Etwas längere Verzögerung für realistischere Suche
-  });
+/**
+ * DEAKTIVIERT - Mock-Funktion für Produktion entfernt
+ * Diese Funktion wurde deaktiviert um sicherzustellen, dass nur echte Solr-Daten verwendet werden
+ */
+export const mockSearch = () => {
+  console.error('❌ Mock-Daten sind deaktiviert. Verwenden Sie echte Solr-Daten.');
+  throw new Error('Mock-Daten sind in der Produktionsversion deaktiviert. Bitte stellen Sie sicher, dass Solr verfügbar ist.');
 };
 
 /**
- * Mock-Suche mit Filter-Unterstützung
- * @param {string} query - Suchbegriff
- * @param {Object} filters - Filter-Objekt mit categories und authors
- * @returns {Promise<Array>} Gefilterte Mock-Suchergebnisse
+ * DEAKTIVIERT - Mock-Suche mit Filter-Unterstützung für Produktion entfernt
+ * Diese Funktion wurde deaktiviert um sicherzustellen, dass nur echte Solr-Daten verwendet werden
  */
 export const mockSearchWithFilters = (query, filters = {}) => {
-  const currentDate = new Date().toISOString();
-  const yesterdayDate = new Date(Date.now() - 86400000).toISOString();
-  
-  // Alle Mock-Dokumente (angepasst an echte Solr-Daten)
-  const allDocs = [
-    { 
-      id: 'mock1', 
-      title: `Introduction to Apache <mark>${query}</mark>`, 
-      content: `Apache Solr is an open-source search platform built on Apache Lucene. <mark>${query}</mark> provides powerful search capabilities.`,
-      category: 'technology',  // Englisch wie in Solr
-      author: 'John Smith',
-      created_date: yesterdayDate,
-      last_modified: currentDate
-    },
-    { 
-      id: 'mock2', 
-      title: `Machine Learning Basics with <mark>${query}</mark>`, 
-      content: `Machine learning is a method of data analysis that automates analytical model building using <mark>${query}</mark>.`,
-      category: 'technology',  // Englisch wie in Solr
-      author: 'Jane Doe',
-      created_date: yesterdayDate,
-      last_modified: currentDate
-    },
-    { 
-      id: 'mock3', 
-      title: `Python Programming Guide for <mark>${query}</mark>`, 
-      content: `Python is an interpreted, high-level, general-purpose programming language perfect for <mark>${query}</mark>.`,
-      category: 'programming',  // Englisch wie in Solr
-      author: 'John Smith',
-      created_date: yesterdayDate,
-      last_modified: currentDate
-    },
-    { 
-      id: 'mock4', 
-      title: `Data Structures and Algorithms in <mark>${query}</mark>`, 
-      content: `A data structure is a particular way of organizing data in a computer for <mark>${query}</mark> applications.`,
-      category: 'programming',
-      author: 'Alice Johnson',
-      created_date: yesterdayDate,
-      last_modified: currentDate
-    },
-    { 
-      id: 'mock5', 
-      title: `Web Development with JavaScript and <mark>${query}</mark>`, 
-      content: `JavaScript is a programming language used to create dynamic content for websites with <mark>${query}</mark>.`,
-      category: 'programming',
-      author: 'Bob Brown',
-      created_date: yesterdayDate,
-      last_modified: currentDate
-    }
-  ];
-  
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      // Filter anwenden
-      let filteredDocs = allDocs;
-      
-      // Kategorie-Filter
-      if (filters.categories && filters.categories.length > 0) {
-        filteredDocs = filteredDocs.filter(doc => 
-          filters.categories.includes(doc.category)
-        );
-      }
-      
-      // Autor-Filter  
-      if (filters.authors && filters.authors.length > 0) {
-        filteredDocs = filteredDocs.filter(doc => 
-          filters.authors.includes(doc.author)
-        );
-      }
-      
-      resolve(filteredDocs);
-    }, 800);
-  });
+  console.error('❌ Mock-Daten mit Filtern sind deaktiviert. Verwenden Sie echte Solr-Daten.');
+  throw new Error('Mock-Daten sind in der Produktionsversion deaktiviert. Bitte stellen Sie sicher, dass Solr verfügbar ist.');
 };
 
 
@@ -641,34 +500,10 @@ export const getFacets = async (facetFields = ['category', 'author']) => {
 };
 
 /**
- * Mock-Facetten für Tests ohne echte Solr-Verbindung
- * Angepasst an die echten Solr-Kategorienamen (englisch)
- * @returns {Promise<Object>} Mock-Facetten-Daten
+ * DEAKTIVIERT - Mock-Facetten für Produktion entfernt
+ * Diese Funktion wurde deaktiviert um sicherzustellen, dass nur echte Solr-Daten verwendet werden
  */
 export const mockGetFacets = () => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      // Facetten verwenden jetzt englische Kategorienamen wie in echten Solr-Daten
-      const facetData = {
-        category: [
-          { value: 'technology', count: 2 },       // Entspricht den Solr-Daten
-          { value: 'programming', count: 3 },      // Entspricht den Solr-Daten
-          { value: 'devops', count: 1 },          // Mock-spezifisch
-          { value: 'api', count: 1 },             // Mock-spezifisch
-          { value: 'database', count: 1 },        // Mock-spezifisch (englisch)
-          { value: 'cloud', count: 1 }            // Mock-spezifisch
-        ],
-        author: [
-          { value: 'John Smith', count: 2 },       // Entspricht Solr-Daten
-          { value: 'Jane Doe', count: 1 },         // Entspricht Solr-Daten
-          { value: 'Alice Johnson', count: 1 },    // Entspricht Solr-Daten
-          { value: 'Bob Brown', count: 1 },        // Entspricht Solr-Daten
-          { value: 'David Green', count: 1 },      // Mock-spezifisch
-          { value: 'Emma Black', count: 1 },       // Mock-spezifisch
-          { value: 'Carol White', count: 1 }       // Mock-spezifisch
-        ]
-      };
-      resolve(facetData);
-    }, 500);
-  });
+  console.error('❌ Mock-Facetten sind deaktiviert. Verwenden Sie echte Solr-Daten.');
+  throw new Error('Mock-Facetten sind in der Produktionsversion deaktiviert. Bitte stellen Sie sicher, dass Solr verfügbar ist.');
 };
