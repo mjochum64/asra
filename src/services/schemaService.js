@@ -199,13 +199,25 @@ export const getDynamicFacets = async () => {
  */
 export const getContextualFacets = async (query = '*:*', searchMode = 'all', currentFilters = {}) => {
   try {
-    const uiConfig = await analyzeSchemaForUI();
-    const fieldsToQuery = uiConfig.facetableFields.map(field => field.name);
+    // Verwende die UI-konfigurierten Filter-Felder statt das dynamische Schema
+    const { uiHelpers } = await import('../config/uiConfig.js');
+    const configuredFilters = uiHelpers.getFilterFields('normal'); // Hole alle Filter (normal + expert wenn nötig)
+    const expertFilters = uiHelpers.getFilterFields('expert');
+    const allConfiguredFilters = [...configuredFilters, ...expertFilters];
+    
+    // Entferne Duplikate basierend auf solrField
+    const uniqueFilters = allConfiguredFilters.filter((filter, index, self) => 
+      index === self.findIndex(f => f.solrField === filter.solrField)
+    );
+    
+    const fieldsToQuery = uniqueFilters.map(filter => filter.solrField);
     
     if (fieldsToQuery.length === 0) {
-      console.warn('No facetable fields found in schema');
+      console.warn('No configured filter fields found');
       return {};
     }
+    
+    console.log('Debug - Using configured filter fields for facets:', fieldsToQuery);
     
     console.log('Getting contextual facets for query:', query, 'mode:', searchMode, 'filters:', currentFilters);
     

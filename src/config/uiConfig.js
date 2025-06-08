@@ -271,15 +271,15 @@ export const uiConfig = {
         priority: 1
       },
       {
-        solrField: 'xml_lang',
-        label: 'Sprache', 
-        icon: '🌐',
+        solrField: 'jurabk',
+        label: 'Juristische Abkürzung', 
+        icon: '⚖️',
         priority: 2,
-        format: 'language'
+        limit: 15 // maximal 15 Optionen anzeigen
       },
       {
-        solrField: 'fundstelle_periodikum',
-        label: 'Fundstelle',
+        solrField: 'fundstelle_typ',
+        label: 'Fundstellen-Typ',
         icon: '📚',
         priority: 3,
         limit: 10 // maximal 10 Optionen anzeigen
@@ -289,15 +289,29 @@ export const uiConfig = {
     // Erweiterte Filter für Expertenansicht
     expert: [
       {
+        solrField: 'gliederungskennzahl',
+        label: 'Gliederungskennzahl',
+        icon: '🔢'
+      },
+      {
+        solrField: 'enbez',
+        label: 'Einzelnorm-Bezeichnung',
+        icon: '📖'
+      },
+      {
+        solrField: 'standangabe_typ',
+        label: 'Standangabe-Typ',
+        icon: '📅'
+      },
+      {
         solrField: 'text_format',
         label: 'Textformat',
         icon: '🔧'
       },
       {
-        solrField: 'ausfertigung_datum_manuell',
-        label: 'Manuelle Datierung',
-        icon: '✋',
-        type: 'boolean'
+        solrField: 'xml_lang',
+        label: 'Sprache',
+        icon: '🌐'
       }
     ]
   },

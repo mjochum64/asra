@@ -121,16 +121,20 @@ export const searchDocuments = async (query, searchMode = 'all', filters = {}) =
         rows: 20
       };
     } else if (searchMode === 'amtabk') {
-      // Deutsche Rechtsdokument: Amtliche Abkürzung - vereinfachte Implementierung
-      // Grund: Verwende encodeURIComponent für korrekte URL-Kodierung von Sonderzeichen
+      // Deutsche Rechtsdokument: Amtliche Abkürzung - erweiterte Suche in amtabk und jurabk
+      // Grund: Kombiniere amtabk und jurabk Felder für bessere Suchergebnisse
       let amtabkQuery;
       if (isWildcardQuery) {
-        amtabkQuery = 'amtabk:*';
+        amtabkQuery = 'amtabk:* OR jurabk:*';
       } else {
-        // Direkte Phrase-Suche mit korrekter Kodierung
-        amtabkQuery = `amtabk:"${query}"`;
+        // Kombiniere exakte und Wildcard-Suche für beide Felder
+        const exactQuery = `(amtabk:"${query}" OR jurabk:"${query}")`;
+        const wildcardQuery = `(amtabk:*${query}* OR jurabk:*${query}*)`;
+        amtabkQuery = `${exactQuery} OR ${wildcardQuery}`;
       }
-      console.log(`Building amtabk query for: "${query}" → "${amtabkQuery}"`);
+      console.log(`🔍 AMTABK DEBUG - Input query: "${query}"`);
+      console.log(`🔍 AMTABK DEBUG - isWildcardQuery: ${isWildcardQuery}`);
+      console.log(`🔍 AMTABK DEBUG - Final Solr query: "${amtabkQuery}"`);
       queryParams = {
         q: amtabkQuery,
         wt: 'json',
@@ -244,8 +248,19 @@ export const searchDocuments = async (query, searchMode = 'all', filters = {}) =
       });
       
       console.log('Final URL params:', urlString);
+      console.log(`🌐 Making request to: documents/select?${urlString}`);
       
       const response = await solrClient.get(`documents/select?${urlString}`);
+      
+      console.log(`📊 Response status: ${response.status}`);
+      console.log(`📊 Response numFound: ${response.data.response.numFound}`);
+      if (response.data.response.numFound > 0) {
+        console.log(`📊 First document fields:`, Object.keys(response.data.response.docs[0]));
+        console.log(`📊 First document amtabk:`, response.data.response.docs[0].amtabk);
+        console.log(`📊 First document jurabk:`, response.data.response.docs[0].jurabk);
+      } else {
+        console.log(`❌ No documents found for query`);
+      }
       
       // Hole kontextuelle Facetten basierend auf den Suchparametern
       const contextualFacets = await getContextualFacets(query, searchMode, filters);
@@ -264,6 +279,14 @@ export const searchDocuments = async (query, searchMode = 'all', filters = {}) =
       console.log('Query params (no filters):', queryParams);
       console.log('Full query string to be sent:', queryParams.q);
       
+      // Debug: Erstelle die finale URL zum Logging
+      const baseUrl = getSolrBaseUrl() + 'documents/select';
+      const urlParams = new URLSearchParams();
+      Object.keys(queryParams).forEach(key => {
+        urlParams.append(key, queryParams[key]);
+      });
+      console.log('Final request URL would be:', baseUrl + '?' + urlParams.toString());
+      
       const response = await solrClient.get('documents/select', {
         params: queryParams,
         // Grund: Verwende benutzerdefinierten Parameter-Serializer für korrekte Query-Kodierung
@@ -280,6 +303,13 @@ export const searchDocuments = async (query, searchMode = 'all', filters = {}) =
       
       // Hole kontextuelle Facetten basierend auf den Suchparametern
       const contextualFacets = await getContextualFacets(query, searchMode, filters);
+      
+      // Debug: Logge die Rohantwort von Solr
+      console.log('Solr response numFound:', response.data.response.numFound);
+      console.log('Solr response docs length:', response.data.response.docs.length);
+      if (response.data.response.docs.length > 0) {
+        console.log('First document fields:', Object.keys(response.data.response.docs[0]));
+      }
       
       // Verarbeite die Suchergebnisse
       const searchResults = processSearchResponse(response);

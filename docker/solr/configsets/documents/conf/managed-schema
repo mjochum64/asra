@@ -86,11 +86,11 @@
   <!-- Metadaten fields -->
   
   <!-- jurabk - Juristische Abkürzung (can be multiple) -->
-  <field name="jurabk" type="string" indexed="true" stored="true" multiValued="true" />
+  <field name="jurabk" type="text_de_exact" indexed="true" stored="true" multiValued="true" />
   <field name="jurabk_suggest" type="text_suggest" indexed="true" stored="false" multiValued="true" />
   
   <!-- amtabk - Amtliche Abkürzung -->
-  <field name="amtabk" type="string" indexed="true" stored="true" multiValued="false" />
+  <field name="amtabk" type="text_de_exact" indexed="true" stored="true" multiValued="false" />
   
   <!-- ausfertigung-datum - Ausfertigungsdatum -->
   <field name="ausfertigung_datum" type="pdate" indexed="true" stored="true" multiValued="false" />
