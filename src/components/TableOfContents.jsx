@@ -24,7 +24,8 @@ export default function TableOfContents({ frameworkId, onNormSelect, currentNorm
     
     try {
       // Suche alle Unterdokumente des Rahmendokuments
-      const query = `parent_document_id:"${frameworkId}" OR id:${frameworkId}*`;
+      // Grund: Verwende korrekte Solr-Query-Syntax für hierarchische Dokument-IDs
+      const query = `id:"${frameworkId}" OR id:${frameworkId}*`;
       const response = await searchDocuments(query, 'all', {}, {
         rows: 1000,
         sort: 'id asc', // Sortierung nach ID für logische Reihenfolge
@@ -45,20 +46,62 @@ export default function TableOfContents({ frameworkId, onNormSelect, currentNorm
   };
 
   const structureContents = (docs) => {
+    console.log('🔍 DEBUG - All docs received:', docs.map(doc => ({ id: doc.id, norm_type: doc.norm_type, enbez: doc.enbez })));
+    
+    // Separiere die verschiedenen Dokumenttypen
     const framework = docs.find(doc => uiHelpers.isFrameworkDocument(doc.id));
-    const sections = docs.filter(doc => uiHelpers.getDocumentType(doc.id) === 'section');
-    const norms = docs.filter(doc => uiHelpers.getDocumentType(doc.id) === 'norm');
+    const sections = docs.filter(doc => doc.norm_type === 'section');
+    const articles = docs.filter(doc => doc.norm_type === 'article');
+    const specialNorms = docs.filter(doc => doc.norm_type === 'norm' && !uiHelpers.isFrameworkDocument(doc.id));
+    
+    console.log('🔍 DEBUG - Framework:', framework?.id);
+    console.log('🔍 DEBUG - Sections found:', sections.length);
+    console.log('🔍 DEBUG - Articles found:', articles.length);
+    console.log('🔍 DEBUG - Special norms found:', specialNorms.length);
 
-    return {
-      framework,
-      sections: sections.map(section => ({
+    // Vereinfachte Struktur: Nur sinnvolle Sections (mit Titel oder Inhalt) anzeigen
+    const meaningfulSections = sections.filter(section => 
+      section.enbez && section.enbez.trim() !== ''
+    );
+    
+    // Für jede Section die zugehörigen Artikel finden
+    const structuredSections = meaningfulSections.map(section => {
+      const sectionArticles = articles.filter(article => 
+        article.id.startsWith(section.id)
+      );
+      
+      console.log(`🔍 DEBUG - Section ${section.id} "${section.enbez}" has ${sectionArticles.length} articles`);
+      
+      return {
         ...section,
-        norms: norms.filter(norm => norm.id.startsWith(section.id))
-      })),
-      orphanNorms: norms.filter(norm => 
-        !sections.some(section => norm.id.startsWith(section.id))
-      )
+        norms: sectionArticles
+      };
+    }).filter(section => section.norms.length > 0); // Nur Sections mit Artikeln anzeigen
+    
+    // Alle Artikel, die nicht zu einer Section gehören + spezielle Normen
+    const orphanNorms = [
+      ...articles.filter(article => 
+        !meaningfulSections.some(section => article.id.startsWith(section.id))
+      ),
+      ...specialNorms
+    ];
+    
+    console.log('🔍 DEBUG - Meaningful sections:', structuredSections.length);
+    console.log('🔍 DEBUG - Orphan norms:', orphanNorms.length);
+    
+    const result = {
+      framework,
+      sections: structuredSections,
+      orphanNorms
     };
+    
+    console.log('🔍 DEBUG - Final structure:', {
+      framework: result.framework?.id,
+      sectionsCount: result.sections.length,
+      orphanNormsCount: result.orphanNorms.length
+    });
+
+    return result;
   };
 
   const toggleSection = (sectionId) => {
@@ -148,10 +191,10 @@ export default function TableOfContents({ frameworkId, onNormSelect, currentNorm
                 </span>
                 <div>
                   <div className="text-sm font-medium text-gray-700">
-                    {section.enbez || 'Gliederungseinheit'}
+                    {section.enbez || `Abschnitt ${section.id.slice(-8)}`}
                   </div>
                   <div className="text-xs text-gray-500">
-                    {section.norms.length} Norm{section.norms.length !== 1 ? 'en' : ''}
+                    {section.norms.length} Artikel
                   </div>
                 </div>
               </div>

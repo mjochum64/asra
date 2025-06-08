@@ -59,9 +59,27 @@ const solrClient = axios.create({
   }
 });
 
-export const searchDocuments = async (query, searchMode = 'all', filters = {}) => {
+export const searchDocuments = async (query, searchMode = 'all', filters = {}, options = {}) => {
   try {
-    console.log(`Searching for "${query}" in mode "${searchMode}" with filters:`, filters);
+    console.log(`Searching for "${query}" in mode "${searchMode}" with filters:`, filters, 'options:', options);
+    
+    // Standard-Parameter mit überschreibbaren Optionen
+    const defaultParams = {
+      wt: 'json',
+      rows: 20,
+      ...options // Überschreibt Standard-Parameter
+    };
+    
+    // Spezielle Behandlung für bereits formatierte Solr-Queries
+    if (query.includes(':') && (query.includes('OR') || query.includes('AND') || query.includes('"') || query.includes('*'))) {
+      // Dies ist bereits eine formatierte Solr-Query, verwende sie direkt
+      return await solrClient.get('/documents/select', {
+        params: {
+          q: query,
+          ...defaultParams
+        }
+      }).then(response => response.data.response);
+    }
     
     // Bestimme, welches Feld durchsucht werden soll, basierend auf searchMode
     let queryParams;
@@ -72,41 +90,36 @@ export const searchDocuments = async (query, searchMode = 'all', filters = {}) =
     if (searchMode === 'title') {
       queryParams = {
         q: isWildcardQuery ? 'titel:*' : `titel:(${query})`,
-        wt: 'json',
-        rows: 20
+        ...defaultParams
       };
     } else if (searchMode === 'content') {
       queryParams = {
         q: isWildcardQuery ? 'text_content:*' : `text_content:(${query})`,
-        wt: 'json',
-        rows: 20
+        ...defaultParams
       };
     } else if (searchMode === 'author') {
       queryParams = {
         q: isWildcardQuery ? 'author:*' : `author:"${query}" OR author:*${query}*`,
-        wt: 'json',
-        rows: 20
+        ...defaultParams
       };
     } else if (searchMode === 'category') {
       queryParams = {
         q: isWildcardQuery ? 'category:*' : `category:"${query}" OR category:*${query}*`,
-        wt: 'json',
-        rows: 20
+        ...defaultParams
       };
     } else if (searchMode === 'kurzue') {
       // Deutsche Rechtsdokument: Kurztitel
       queryParams = {
         q: isWildcardQuery ? 'kurzue:*' : `kurzue:(${query})`,
-        wt: 'json',
-        rows: 20
+        ...defaultParams
       };
     } else if (searchMode === 'langue') {
       // Deutsche Rechtsdokument: Langtitel
       queryParams = {
         q: isWildcardQuery ? 'langue:*' : `langue:(${query})`,
-        wt: 'json',
-        rows: 20
-      };    } else if (searchMode === 'jurabk') {
+        ...defaultParams
+      };
+    } else if (searchMode === 'jurabk') {
       // Deutsche Rechtsdokument: Juristische Abkürzung
       let jurabkQuery;
       if (isWildcardQuery) {
@@ -117,8 +130,7 @@ export const searchDocuments = async (query, searchMode = 'all', filters = {}) =
       }
       queryParams = {
         q: jurabkQuery,
-        wt: 'json',
-        rows: 20
+        ...defaultParams
       };
     } else if (searchMode === 'amtabk') {
       // Deutsche Rechtsdokument: Amtliche Abkürzung - erweiterte Suche in amtabk und jurabk
@@ -137,23 +149,20 @@ export const searchDocuments = async (query, searchMode = 'all', filters = {}) =
       console.log(`🔍 AMTABK DEBUG - Final Solr query: "${amtabkQuery}"`);
       queryParams = {
         q: amtabkQuery,
-        wt: 'json',
-        rows: 20
+        ...defaultParams
       };
     } else if (searchMode === 'text_content') {
       // Deutsche Rechtsdokument: Textinhalt
       queryParams = {
         q: isWildcardQuery ? 'text_content:*' : `text_content:(${query})`,
-        wt: 'json',
-        rows: 20
+        ...defaultParams
       };
     } else {
       // Für allgemeine Suche
       if (isWildcardQuery) {
         queryParams = {
           q: '*:*',  // Alle Dokumente
-          wt: 'json',
-          rows: 20
+          ...defaultParams
         };
       } else {
         // Für allgemeine Suche: Kombiniere exakte und Wildcard-Suche
@@ -164,8 +173,7 @@ export const searchDocuments = async (query, searchMode = 'all', filters = {}) =
         
         queryParams = {
           q: combinedQuery,
-          wt: 'json',
-          rows: 20
+          ...defaultParams
         };
       }
     }

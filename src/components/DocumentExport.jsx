@@ -16,11 +16,15 @@ export default function DocumentExport({ document, frameworkId }) {
 
     try {
       // Lade alle Unterdokumente des Rahmendokuments
+      // Grund: Verwende korrekte Solr-Query-Syntax ohne parent_document_id
       const query = frameworkId ? 
-        `parent_document_id:"${frameworkId}" OR id:${frameworkId}*` :
+        `id:"${frameworkId}" OR id:${frameworkId}*` :
         `id:"${document.id}"`;
         
-      const response = await searchDocuments(query, 'all', {});
+      const response = await searchDocuments(query, 'all', {}, {
+        rows: 1000,
+        fl: 'id,kurzue,langue,text_content,enbez,norm_type'
+      });
 
       if (response?.docs) {
         if (format === 'html') {

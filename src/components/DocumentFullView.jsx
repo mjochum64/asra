@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { uiConfig, uiHelpers } from '../config/uiConfig';
 import TableOfContents from './TableOfContents';
 import DocumentExport from './DocumentExport';
@@ -10,6 +10,9 @@ export default function DocumentFullView({ document, onClose }) {
   const [searchInContent, setSearchInContent] = useState('');
   const [highlightedContent, setHighlightedContent] = useState(null);
   const [selectedNorm, setSelectedNorm] = useState(null);
+  
+  // Ref für das Main Content Area Element
+  const mainContentRef = useRef(null);
 
   const fullTextConfig = uiConfig.fulltext;
   
@@ -47,10 +50,9 @@ export default function DocumentFullView({ document, onClose }) {
 
   const handleNormSelection = (norm) => {
     setSelectedNorm(norm);
-    // Scroll zum Volltext-Bereich
-    const contentArea = document.querySelector('.main-content-area');
-    if (contentArea) {
-      contentArea.scrollTop = 0;
+    // Scroll zum Volltext-Bereich mit useRef für sichere DOM-Manipulation
+    if (mainContentRef.current) {
+      mainContentRef.current.scrollTop = 0;
     }
   };
 
@@ -110,7 +112,7 @@ export default function DocumentFullView({ document, onClose }) {
           )}
           
           {/* Main Content Area */}
-          <div className="flex-1 overflow-y-auto p-6 main-content-area">
+          <div className="flex-1 overflow-y-auto p-6 main-content-area" ref={mainContentRef}>
             
             {/* Document Type Badge und Framework Info */}
             <div className="mb-4">
