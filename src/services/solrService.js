@@ -152,15 +152,16 @@ export const searchDocuments = async (query, searchMode = 'all', filters = {}) =
           rows: 20
         };
       } else {
-        // eDisMax Query Parser für bessere Relevanz mit Wildcard-Unterstützung für deutsche Rechtsabkürzungen
-        // Grund: Deutsche Rechtsabkürzungen wie "BImSchV" müssen auch "BImSchV 1 2010" finden
+        // Für allgemeine Suche: Kombiniere exakte und Wildcard-Suche
+        // Grund: Deutsche Rechtsabkürzungen benötigen sowohl exakte als auch Teilstring-Suche
+        const exactQuery = `(kurzue:"${query}" OR langue:"${query}" OR amtabk:"${query}" OR jurabk:"${query}")`;
+        const wildcardQuery = `(kurzue:*${query}* OR langue:*${query}* OR amtabk:*${query}* OR jurabk:*${query}* OR text_content:*${query}*)`;
+        const combinedQuery = `${exactQuery} OR ${wildcardQuery}`;
+        
         queryParams = {
-          defType: 'edismax',
-          q: `${query} OR *${query}*`,  // Sowohl exakte als auch Wildcard-Suche
-          qf: 'kurzue langue text_content titel amtabk jurabk',
+          q: combinedQuery,
           wt: 'json',
-          rows: 20,
-          mm: '1'  // Minimum Should Match
+          rows: 20
         };
       }
     }
