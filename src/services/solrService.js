@@ -71,13 +71,13 @@ export const searchDocuments = async (query, searchMode = 'all', filters = {}) =
     
     if (searchMode === 'title') {
       queryParams = {
-        q: isWildcardQuery ? 'title:*' : `title:(${query})`,
+        q: isWildcardQuery ? 'titel:*' : `titel:(${query})`,
         wt: 'json',
         rows: 20
       };
     } else if (searchMode === 'content') {
       queryParams = {
-        q: isWildcardQuery ? 'content:*' : `content:(${query})`,
+        q: isWildcardQuery ? 'text_content:*' : `text_content:(${query})`,
         wt: 'json',
         rows: 20
       };
@@ -157,7 +157,7 @@ export const searchDocuments = async (query, searchMode = 'all', filters = {}) =
         queryParams = {
           defType: 'edismax',
           q: query,
-          qf: 'kurzue langue text_content title content amtabk jurabk',
+          qf: 'kurzue langue text_content titel amtabk jurabk',
           wt: 'json',
           rows: 20,
           mm: '1'  // Minimum Should Match
@@ -168,7 +168,7 @@ export const searchDocuments = async (query, searchMode = 'all', filters = {}) =
     // Füge vereinfachtes Highlighting hinzu (für alle Suchmodi)
     // Grund: Entferne "content" und "title" da diese Felder nicht im deutschen Rechts-Schema existieren
     queryParams.hl = 'true';
-    queryParams['hl.fl'] = 'kurzue,langue,amtabk,jurabk,text_content';
+    queryParams['hl.fl'] = 'kurzue,langue,amtabk,jurabk,text_content,titel';
     queryParams['hl.simple.pre'] = '<mark>';
     queryParams['hl.simple.post'] = '</mark>';
     queryParams['hl.fragsize'] = 200;
@@ -319,8 +319,10 @@ function processSearchResponse(response) {
     // Normalisiere Array-Felder zu Strings (Solr gibt Arrays zurück)
     const normalizedDoc = {
       ...doc,
-      title: Array.isArray(doc.title) ? doc.title[0] : doc.title,
-      content: Array.isArray(doc.content) ? doc.content[0] : doc.content,
+      // Legacy fields for compatibility (map to existing fields if they exist)
+      title: Array.isArray(doc.titel) ? doc.titel[0] : (doc.titel || (Array.isArray(doc.title) ? doc.title[0] : doc.title)),
+      content: Array.isArray(doc.text_content) ? doc.text_content[0] : (doc.text_content || (Array.isArray(doc.content) ? doc.content[0] : doc.content)),
+      // Standard fields
       category: Array.isArray(doc.category) ? doc.category[0] : doc.category,
       author: Array.isArray(doc.author) ? doc.author[0] : doc.author,
       created_date: Array.isArray(doc.created_date) ? doc.created_date[0] : doc.created_date,
@@ -330,19 +332,36 @@ function processSearchResponse(response) {
       langue: Array.isArray(doc.langue) ? doc.langue[0] : doc.langue,
       amtabk: Array.isArray(doc.amtabk) ? doc.amtabk[0] : doc.amtabk,
       jurabk: Array.isArray(doc.jurabk) ? doc.jurabk[0] : doc.jurabk,
-      text_content: Array.isArray(doc.text_content) ? doc.text_content[0] : doc.text_content
+      text_content: Array.isArray(doc.text_content) ? doc.text_content[0] : doc.text_content,
+      titel: Array.isArray(doc.titel) ? doc.titel[0] : doc.titel
     };
     
     // Ersetze Inhalte mit hervorgehobenem Text, falls verfügbar
+    if (docHighlights.titel && docHighlights.titel.length > 0) {
+      normalizedDoc.titel = docHighlights.titel[0];
+      normalizedDoc.title = docHighlights.titel[0]; // Legacy compatibility
+    }
+    
+    // Legacy title field support
     if (docHighlights.title && docHighlights.title.length > 0) {
       normalizedDoc.title = docHighlights.title[0];
     }
     
-    if (docHighlights.content && docHighlights.content.length > 0) {
-      // Verwende das erste und beste Highlight-Snippet für content
-      normalizedDoc.content = docHighlights.content[0];
+    if (docHighlights.text_content && docHighlights.text_content.length > 0) {
+      // Verwende das erste und beste Highlight-Snippet für text_content
+      normalizedDoc.text_content = docHighlights.text_content[0];
+      normalizedDoc.content = docHighlights.text_content[0]; // Legacy compatibility
       
       // Falls mehrere Snippets vorhanden sind, zeige sie zusammen
+      if (docHighlights.text_content.length > 1) {
+        normalizedDoc.contentSnippets = docHighlights.text_content;
+      }
+    }
+    
+    // Legacy content field support
+    if (docHighlights.content && docHighlights.content.length > 0) {
+      normalizedDoc.content = docHighlights.content[0];
+      
       if (docHighlights.content.length > 1) {
         normalizedDoc.contentSnippets = docHighlights.content;
       }
@@ -363,15 +382,6 @@ function processSearchResponse(response) {
     
     if (docHighlights.jurabk && docHighlights.jurabk.length > 0) {
       normalizedDoc.jurabk = docHighlights.jurabk[0];
-    }
-    
-    if (docHighlights.text_content && docHighlights.text_content.length > 0) {
-      normalizedDoc.text_content = docHighlights.text_content[0];
-      
-      // Falls text_content das Hauptinhaltfeld ist, überschreibe auch content
-      if (!normalizedDoc.content || normalizedDoc.content === normalizedDoc.text_content) {
-        normalizedDoc.content = docHighlights.text_content[0];
-      }
     }
     
     return normalizedDoc;
