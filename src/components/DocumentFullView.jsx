@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { uiConfig, uiHelpers } from '../config/uiConfig';
+import TableOfContents from './TableOfContents';
+import DocumentExport from './DocumentExport';
 
 /**
  * DocumentFullView Component - Structured full-text display of a document
@@ -7,8 +9,14 @@ import { uiConfig, uiHelpers } from '../config/uiConfig';
 export default function DocumentFullView({ document, onClose }) {
   const [searchInContent, setSearchInContent] = useState('');
   const [highlightedContent, setHighlightedContent] = useState(null);
+  const [selectedNorm, setSelectedNorm] = useState(null);
 
   const fullTextConfig = uiConfig.fulltext;
+  
+  // Erkenne Dokumenttyp und Framework-ID
+  const documentType = uiHelpers.getDocumentType(document.id);
+  const isFramework = documentType === 'framework';
+  const frameworkId = isFramework ? document.id : uiHelpers.getFrameworkId(document.id);
 
   // Helper function to check field conditions
   const shouldShowField = (field, document) => {
@@ -27,13 +35,27 @@ export default function DocumentFullView({ document, onClose }) {
   // Search within document content
   const handleContentSearch = (query) => {
     setSearchInContent(query);
-    if (query && document.text_content) {
+    const currentDoc = getCurrentDocument();
+    if (query && currentDoc.text_content) {
       const regex = new RegExp(`(${query})`, 'gi');
-      const highlighted = document.text_content.replace(regex, '<mark>$1</mark>');
+      const highlighted = currentDoc.text_content.replace(regex, '<mark>$1</mark>');
       setHighlightedContent(highlighted);
     } else {
       setHighlightedContent(null);
     }
+  };
+
+  const handleNormSelection = (norm) => {
+    setSelectedNorm(norm);
+    // Scroll zum Volltext-Bereich
+    const contentArea = document.querySelector('.main-content-area');
+    if (contentArea) {
+      contentArea.scrollTop = 0;
+    }
+  };
+
+  const getCurrentDocument = () => {
+    return selectedNorm || document;
   };
 
   const getFieldStyle = (style) => {
@@ -70,20 +92,73 @@ export default function DocumentFullView({ document, onClose }) {
 
         <div className="flex-1 overflow-hidden flex">
           
+          {/* Linke Sidebar - Inhaltsverzeichnis für Framework-Dokumente */}
+          {isFramework && (
+            <div className="w-80 bg-white border-r border-gray-200 overflow-y-auto">
+              <div className="p-4 border-b border-gray-200">
+                <h3 className="text-lg font-semibold text-gray-900">Inhaltsverzeichnis</h3>
+                <p className="text-sm text-gray-600 mt-1">
+                  {uiHelpers.getDocumentTypeLabel(documentType)}
+                </p>
+              </div>
+              <TableOfContents
+                frameworkId={frameworkId}
+                onNormSelect={handleNormSelection}
+                selectedNormId={selectedNorm?.id}
+              />
+            </div>
+          )}
+          
           {/* Main Content Area */}
-          <div className="flex-1 overflow-y-auto p-6">
+          <div className="flex-1 overflow-y-auto p-6 main-content-area">
+            
+            {/* Document Type Badge und Framework Info */}
+            <div className="mb-4">
+              <div className="flex items-center gap-2 mb-2">
+                <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                  documentType === 'framework' 
+                    ? 'bg-blue-100 text-blue-800' 
+                    : documentType === 'norm'
+                    ? 'bg-green-100 text-green-800'
+                    : 'bg-gray-100 text-gray-800'
+                }`}>
+                  {uiHelpers.getDocumentTypeLabel(documentType)}
+                </span>
+                {!isFramework && frameworkId && (
+                  <span className="text-sm text-gray-500">
+                    Gehört zu: {frameworkId}
+                  </span>
+                )}
+              </div>
+              
+              {selectedNorm && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-blue-900">
+                      Ausgewählte Norm: {selectedNorm.title || selectedNorm.id}
+                    </span>
+                    <button
+                      onClick={() => setSelectedNorm(null)}
+                      className="text-blue-600 hover:text-blue-800 text-sm"
+                    >
+                      Zurück zur Übersicht
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
             
             {/* Document Header */}
             <div className="mb-6">
               {fullTextConfig.header.map((field) => 
-                shouldShowField(field, document) && document[field.solrField] && (
+                shouldShowField(field, getCurrentDocument()) && getCurrentDocument()[field.solrField] && (
                   <div key={field.solrField} className={getFieldStyle(field.style)}>
                     {field.style?.includes('badge') ? (
                       <span className={getFieldStyle(field.style)}>
-                        {uiHelpers.formatFieldValue(document[field.solrField], field.format)}
+                        {uiHelpers.formatFieldValue(getCurrentDocument()[field.solrField], field.format)}
                       </span>
                     ) : (
-                      uiHelpers.formatFieldValue(document[field.solrField], field.format)
+                      uiHelpers.formatFieldValue(getCurrentDocument()[field.solrField], field.format)
                     )}
                   </div>
                 )
@@ -91,7 +166,7 @@ export default function DocumentFullView({ document, onClose }) {
             </div>
 
             {/* Content Search */}
-            {fullTextConfig.content.some(field => field.searchable && document[field.solrField]) && (
+            {fullTextConfig.content.some(field => field.searchable && getCurrentDocument()[field.solrField]) && (
               <div className="mb-6 bg-gray-50 p-4 rounded-lg">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Im Dokument suchen:
@@ -121,7 +196,7 @@ export default function DocumentFullView({ document, onClose }) {
             {/* Main Content */}
             <div className="space-y-6">
               {fullTextConfig.content.map((field) => 
-                shouldShowField(field, document) && document[field.solrField] && (
+                shouldShowField(field, getCurrentDocument()) && getCurrentDocument()[field.solrField] && (
                   <div key={field.solrField}>
                     <h3 className="text-lg font-semibold text-gray-900 mb-3">{field.label}</h3>
                     <div className={getFieldStyle(field.style)}>
@@ -131,11 +206,11 @@ export default function DocumentFullView({ document, onClose }) {
                         // Render HTML content fields with preserved formatting
                         <div 
                           className="prose prose-sm max-w-none" 
-                          dangerouslySetInnerHTML={{ __html: document[field.solrField] }} 
+                          dangerouslySetInnerHTML={{ __html: getCurrentDocument()[field.solrField] }} 
                         />
                       ) : (
                         <div>
-                          {uiHelpers.formatFieldValue(document[field.solrField], field.format)}
+                          {uiHelpers.formatFieldValue(getCurrentDocument()[field.solrField], field.format)}
                         </div>
                       )}
                     </div>
@@ -145,39 +220,88 @@ export default function DocumentFullView({ document, onClose }) {
             </div>
           </div>
 
-          {/* Sidebar */}
-          <div className="w-80 bg-gray-50 border-l border-gray-200 overflow-y-auto p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Metadaten</h3>
+          {/* Rechte Sidebar - Metadaten und Export */}
+          <div className="w-80 bg-gray-50 border-l border-gray-200 overflow-y-auto">
             
-            {fullTextConfig.sidebar.map((section) => (
-              <div key={section.section} className="mb-6">
-                <h4 className="text-sm font-medium text-gray-900 mb-3 pb-1 border-b border-gray-300">
-                  {section.section}
-                </h4>
-                <div className="space-y-3">
-                  {section.fields.map((field) => 
-                    shouldShowField(field, document) && document[field.solrField] && (
-                      <div key={field.solrField}>
-                        <dt className="text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          {field.label}
-                        </dt>
-                        <dd className={`mt-1 text-sm ${getFieldStyle(field.style) || 'text-gray-900'}`}>
-                          {uiHelpers.formatFieldValue(document[field.solrField], field.format)}
-                        </dd>
-                      </div>
-                    )
-                  )}
+            {/* Export-Bereich */}
+            <div className="p-4 border-b border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">Export</h3>
+              <DocumentExport 
+                document={getCurrentDocument()}
+                frameworkId={frameworkId}
+                documentType={documentType}
+              />
+            </div>
+            
+            {/* Metadaten */}
+            <div className="p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Metadaten</h3>
+              
+              {fullTextConfig.sidebar.map((section) => (
+                <div key={section.section} className="mb-6">
+                  <h4 className="text-sm font-medium text-gray-900 mb-3 pb-1 border-b border-gray-300">
+                    {section.section}
+                  </h4>
+                  <div className="space-y-3">
+                    {section.fields.map((field) => 
+                      shouldShowField(field, getCurrentDocument()) && getCurrentDocument()[field.solrField] && (
+                        <div key={field.solrField}>
+                          <dt className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            {field.label}
+                          </dt>
+                          <dd className={`mt-1 text-sm ${getFieldStyle(field.style) || 'text-gray-900'}`}>
+                            {uiHelpers.formatFieldValue(getCurrentDocument()[field.solrField], field.format)}
+                          </dd>
+                        </div>
+                      )
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+              
+              {/* Framework-Navigation für einzelne Normen */}
+              {!isFramework && frameworkId && (
+                <div className="mb-6">
+                  <h4 className="text-sm font-medium text-gray-900 mb-3 pb-1 border-b border-gray-300">
+                    Navigation
+                  </h4>
+                  <button
+                    onClick={() => {
+                      // Hier könnte eine Funktion zum Navigieren zum Framework-Dokument implementiert werden
+                      console.log('Navigate to framework:', frameworkId);
+                    }}
+                    className="w-full text-left px-3 py-2 text-sm text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-md transition-colors"
+                  >
+                    → Zum Rahmendokument ({frameworkId})
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
         {/* Footer */}
         <div className="border-t border-gray-200 px-6 py-3 bg-gray-50">
           <div className="flex items-center justify-between text-sm text-gray-500">
-            <span>Dokument-ID: {document.id}</span>
-            <span>{Object.keys(document).length} Felder verfügbar</span>
+            <div className="flex items-center gap-4">
+              <span>Dokument-ID: {getCurrentDocument().id}</span>
+              <span>{Object.keys(getCurrentDocument()).length} Felder verfügbar</span>
+              {selectedNorm && (
+                <span className="text-blue-600">• Einzelne Norm angezeigt</span>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              {documentType === 'framework' && (
+                <span className="text-blue-600 text-xs">
+                  📋 Hierarchisches Dokument mit Inhaltsverzeichnis
+                </span>
+              )}
+              {documentType === 'norm' && (
+                <span className="text-green-600 text-xs">
+                  📄 Einzelne Rechtsnorm
+                </span>
+              )}
+            </div>
           </div>
         </div>
       </div>

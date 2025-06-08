@@ -364,8 +364,29 @@ export default function DynamicResultsDisplay({
       )}
 
       {/* UI-konfigurierte Ergebnisliste */}
-      {results.map((result, index) => (
-        <div key={result.id || index} className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300">
+      {results.map((result, index) => {
+        // Erkenne Framework-Dokumente
+        const documentType = uiHelpers.getDocumentType(result.id);
+        const isFramework = documentType === 'framework';
+        const isNorm = documentType === 'norm';
+        
+        return (
+        <div key={result.id || index} className={`bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 ${
+          isFramework ? 'border-l-4 border-blue-500' : isNorm ? 'border-l-4 border-green-500' : ''
+        }`}>
+          
+          {/* Document Type Indicator */}
+          {(isFramework || isNorm) && (
+            <div className="mb-3">
+              <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                isFramework 
+                  ? 'bg-blue-100 text-blue-800' 
+                  : 'bg-green-100 text-green-800'
+              }`}>
+                {uiHelpers.getDocumentTypeLabel(documentType)}
+              </span>
+            </div>
+          )}
           
           {/* Primäre Felder */}
           <div className="mb-4">
@@ -447,7 +468,7 @@ export default function DynamicResultsDisplay({
           {uiMode === 'expert' && resultConfig.metadata.length > 0 && (
             <div className="border-t border-gray-100 pt-3">
               <div className="flex flex-wrap gap-4 text-xs text-gray-500">
-                {resultConfig.metadata.map(fieldConfig => (
+                {resultConfig.metadata.map(fieldConfig => 
                   result[fieldConfig.solrField] && (
                     <div key={fieldConfig.solrField} className="flex items-center">
                       <span className="font-medium mr-1">{fieldConfig.label}:</span>
@@ -456,25 +477,38 @@ export default function DynamicResultsDisplay({
                       </span>
                     </div>
                   )
-                ))}
+                )}
               </div>
             </div>
           )}
 
           {/* Volltext-Button */}
           <div className="mt-4 pt-3 border-t border-gray-50 flex items-center justify-between">
-            <button
-              onClick={() => setSelectedDocument(result)}
-              className="text-solr-primary hover:text-solr-secondary font-medium text-sm transition-colors"
-            >
-              📄 Volltext anzeigen
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setSelectedDocument(result)}
+                className="text-solr-primary hover:text-solr-secondary font-medium text-sm transition-colors"
+              >
+                📄 Volltext anzeigen
+              </button>
+              {isFramework && (
+                <span className="text-blue-600 text-xs">
+                  📋 Mit Inhaltsverzeichnis
+                </span>
+              )}
+              {isNorm && (
+                <span className="text-green-600 text-xs">
+                  🔗 Teil eines Gesetzes
+                </span>
+              )}
+            </div>
             <div className="text-xs text-gray-400">
               ID: {result.id}
             </div>
           </div>
         </div>
-      ))}
+        );
+      })}
 
       {/* UI-Konfiguration Footer */}
       <div className="bg-gray-50 p-4 rounded-lg text-center">
