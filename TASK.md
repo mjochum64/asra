@@ -2,8 +2,8 @@
 
 ## 🎯 Projektstatuts: Phase 1.1 VOLLSTÄNDIG ABGESCHLOSSEN ✅
 **Stand**: 8. Juni 2025  
-**Version**: 1.1.0 PRODUCTION READY mit Norm-Level-Indexierung  
-**Status**: Norm-Level-Indexierung erfolgreich implementiert 🚀
+**Version**: 1.1.1 PRODUCTION READY mit optimierter Export-Funktionalität  
+**Status**: HTML-Felder-Integration und Export-Optimierung erfolgreich implementiert 🚀
 
 ### 🏆 Erfolgreich abgeschlossene Hauptziele:
 - ✅ **Konfigurierbare UI-Struktur**: Normal-Modus (5 Felder) vs. Experten-Modus (alle Felder)
@@ -14,6 +14,8 @@
 - ✅ **Finale Verifikation**: 11/11 Tests bestanden, 0 kritische Bugs
 - ✅ **Repository-Organisation**: Dokumentation aufgeräumt, [`docs/`](docs/) Struktur etabliert
 - ✅ **Norm-Level-Indexierung**: Granulare Indexierung einzelner Rechtsnormen mit XHTML-Formatierung
+- ✅ **Export-Funktionalität**: PDF/HTML-Export mit korrekter Absatzformatierung und Inhaltsverzeichnis
+- ✅ **HTML-Felder-Integration**: Optimale Nutzung der text_content_html Felder für perfekte Formatierung
 
 ### 🎯 Neu abgeschlossen: Norm-Level-Indexierung
 - ✅ **Granulare Suche**: Suchergebnisse zeigen spezifische Artikel/Paragraphen statt ganzer Gesetze
@@ -27,6 +29,15 @@
 - **Formatierung**: XHTML-Markup erfolgreich erhalten (`text_content_html`, `fussnoten_content_html`)
 - **Granularität**: Suche findet jetzt spezifische Artikel statt ganzer Gesetzbücher
 - **UI-Integration**: Norm-Badges, Typ-Anzeige und verbesserte Metadaten implementiert
+
+### 🎯 Neu abgeschlossen: Export-Funktionalität & HTML-Felder-Integration (8. Juni 2025)
+- ✅ **PDF-Export-Optimierung**: Korrekte Absatzformatierung mit (1), (2), (3) Nummerierung
+- ✅ **HTML-Export**: Saubere HTML-Ausgabe mit erhaltener Originalformatierung
+- ✅ **Intelligente Content-Konvertierung**: Bevorzugung von `text_content_html` Feldern vor Fallback
+- ✅ **PDF-Navigation**: Detailliertes Inhaltsverzeichnis mit Seitenzahlen für alle PDF-Viewer
+- ✅ **Content-Filtering**: Konsistente Filterung redundanter Inhaltsverzeichnisse zwischen allen Ansichten
+- ✅ **Meaningful Filenames**: Automatische Generierung aussagekräftiger Dateinamen basierend auf Dokument-IDs
+- ✅ **Cross-Platform-Kompatibilität**: Universelle PDF-Navigation ohne proprietäre Features
 
 ### 🚀 Nächste Phase: Sprint 2 (Auto-Suggest & Sortierung)
 - [ ] Auto-Suggest/Autocomplete-Funktionalität

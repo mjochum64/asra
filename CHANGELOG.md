@@ -17,7 +17,42 @@ und dieses Projekt folgt [Semantischer Versionierung](https://semver.org/lang/de
 - Dokumentvorschau-Modal
 - Webcrawler-Integration für automatischen Datenimport
 - Theme-Wechsler für hellen/dunklen Modus
-- Export-Funktionen (PDF, CSV)
+
+## [1.1.1] - 2025-06-09
+
+### 🚀 Feature Release: Optimierte Export-Funktionalität und Dokumentenansicht
+
+### Hinzugefügt
+- **Export-Funktionen**: PDF- und HTML-Export von Dokumenteninhalten mit professioneller Formatierung
+- **Intelligente Dateinamen-Generierung**: Automatische Erstellung aussagekräftiger Dateinamen basierend auf Dokument-IDs
+- **PDF-Navigation**: Vollständiges Inhaltsverzeichnis mit präzisen Seitenzahlen für alle PDF-Viewer
+- **HTML-Felder-Integration**: Nutzung von `text_content_html` und `fussnoten_content_html` für optimale Formatierung
+- **Orphan-Norm-Struktur**: Direkte Anzeige von Artikeln ohne übergeordnete Abschnitte
+- **Volltext-Ansicht**: Erweiterte Dokumenten-Ansicht mit korrekter Absatzformatierung
+
+### Geändert
+- **Export-Content-Optimierung**: Beide Export-Funktionen nutzen HTML-Felder statt manueller Textformatierung
+- **Content-Filtering**: Entfernung redundanter Inhaltsverzeichnisse und bedeutungsloser Gliederungseinheiten
+- **Datenabruf-Erweiterung**: Alle relevanten Queries um HTML-Felder erweitert
+- **Paragraph-Formatierung**: Nummerierte Abschnitte (1), (2), (3) werden als korrekte Absätze dargestellt
+
+### Behoben
+- **KRITISCHER BUGFIX**: Redundante Inhaltsverzeichnisse in Export-Dateien entfernt
+- **Formatierungs-Problem**: Übermäßige bedeutungslose Gliederungseinheiten gefiltert
+- **PDF-Kompatibilität**: Universelle PDF-Navigation ohne proprietäre Features
+- **Content-Konsistenz**: Identische Formatierung in Volltext-, HTML- und PDF-Ansicht
+
+### Technische Verbesserungen
+- **getContentForExport()**: Neue Funktion für HTML-Export mit HTML-Feld-Priorisierung
+- **getContentForPDF()**: Intelligente HTML-zu-PDF-Konvertierung mit Absatzerkennung
+- **generateFilename()**: Robuste Dateinamen-Generierung mit Sonderzeichen-Bereinigung
+- **Fallback-Mechanismus**: Automatische Verwendung manueller Formatierung bei fehlenden HTML-Feldern
+
+### Validiert ✅
+- **Export-Funktionalität**: PDF und HTML Export mit korrekter Formatierung
+- **Navigation**: PDF-Inhaltsverzeichnis funktioniert in allen PDF-Viewern
+- **Content-Filtering**: Nur relevante Abschnitte und Artikel werden exportiert
+- **Paragraph-Struktur**: Nummerierte Abschnitte als ordentliche Absätze dargestellt
 
 ## [1.0.1] - 2025-06-08
 

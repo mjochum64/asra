@@ -60,6 +60,66 @@ export default function DocumentFullView({ document, onClose }) {
     return selectedNorm || document;
   };
 
+  // Grund: Hilfsfunktion um bevorzugt HTML-Felder zu verwenden
+  const getContentForDisplay = (document, fieldType = 'text_content') => {
+    // Bevorzuge HTML-Felder wenn verfügbar
+    const htmlField = fieldType + '_html';
+    if (document[htmlField]) {
+      return (
+        <div 
+          className="prose prose-sm max-w-none text-gray-700 leading-relaxed" 
+          dangerouslySetInnerHTML={{ __html: document[htmlField] }}
+        />
+      );
+    }
+    
+    // Fallback auf Textfelder mit manueller Formatierung
+    if (document[fieldType]) {
+      return formatLegalTextAsFallback(document[fieldType]);
+    }
+    
+    return null;
+  };
+
+  // Grund: Fallback-Formatierung nur wenn keine HTML-Felder verfügbar sind
+  const formatLegalTextAsFallback = (text) => {
+    if (!text) return '';
+    
+    // Entferne HTML-Tags falls vorhanden
+    let cleanText = text.replace(/<[^>]*>/g, '');
+    
+    // Erkenne numerierte Absätze: (1), (2), (3) etc. oder 1., 2., 3. etc.
+    // Auch römische Ziffern: I., II., III. oder (I), (II), (III)
+    const paragraphPatterns = [
+      /(\(\d+\))/g,           // (1), (2), (3)
+      /(\d+\.)/g,             // 1., 2., 3.
+      /(\([IVX]+\))/g,        // (I), (II), (III), (IV), (V)
+      /([IVX]+\.)/g,          // I., II., III., IV., V.
+      /(\([a-z]\))/g,         // (a), (b), (c)
+      /([a-z]\.)/g            // a., b., c.
+    ];
+    
+    // Erstelle Absätze vor jedem nummerierten Absatz
+    paragraphPatterns.forEach(pattern => {
+      cleanText = cleanText.replace(pattern, '\n\n$1');
+    });
+    
+    // Entferne mehrfache Zeilenwechsel und normalisiere
+    cleanText = cleanText
+      .replace(/\n{3,}/g, '\n\n')  // Maximal 2 Zeilenwechsel
+      .replace(/^\n+/, '')          // Entferne führende Zeilenwechsel
+      .trim();
+    
+    // Konvertiere zu JSX mit <p> Tags
+    const paragraphs = cleanText.split('\n\n').filter(p => p.trim());
+    
+    return paragraphs.map((paragraph, index) => (
+      <p key={index} className="mb-4 leading-relaxed">
+        {paragraph.trim()}
+      </p>
+    ));
+  };
+
   const getFieldStyle = (style) => {
     const styles = {
       'title': 'text-2xl font-bold text-gray-900 mb-3',
@@ -210,6 +270,9 @@ export default function DocumentFullView({ document, onClose }) {
                           className="prose prose-sm max-w-none" 
                           dangerouslySetInnerHTML={{ __html: getCurrentDocument()[field.solrField] }} 
                         />
+                      ) : field.solrField === 'text_content' ? (
+                        // Grund: Verwende bevorzugt HTML-Felder, mit Fallback auf Textformatierung
+                        getContentForDisplay(getCurrentDocument(), 'text_content')
                       ) : (
                         <div>
                           {uiHelpers.formatFieldValue(getCurrentDocument()[field.solrField], field.format)}

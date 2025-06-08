@@ -29,7 +29,7 @@ export default function TableOfContents({ frameworkId, onNormSelect, currentNorm
       const response = await searchDocuments(query, 'all', {}, {
         rows: 1000,
         sort: 'id asc', // Sortierung nach ID für logische Reihenfolge
-        fl: 'id,enbez,norm_type,kurzue,text_content'
+        fl: 'id,enbez,norm_type,kurzue,text_content,text_content_html'
       });
 
       if (response?.docs) {
