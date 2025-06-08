@@ -305,20 +305,30 @@ export default function DynamicResultsDisplay({
           
           {/* Primäre Felder */}
           <div className="mb-4">
-            {resultConfig.primary.map(fieldConfig => (
-              result[fieldConfig.solrField] && (
+            {resultConfig.primary.map(fieldConfig => {
+              const fieldData = uiHelpers.getFieldValue(result, fieldConfig);
+              
+              // Zeige das Feld an, auch wenn es durch Fallback gefunden wurde
+              if (!fieldData) return null;
+              
+              return (
                 <div key={fieldConfig.solrField} className="mb-3">
                   {fieldConfig.priority === 1 ? (
                     <h3 className="text-xl font-semibold text-gray-900 mb-2">
                       {fieldConfig.highlight ? (
                         <span dangerouslySetInnerHTML={{ 
                           __html: highlightSearchTerms(
-                            truncateText(result[fieldConfig.solrField], fieldConfig.maxLength),
+                            truncateText(fieldData.value, fieldConfig.maxLength),
                             searchQuery
                           )
                         }} />
                       ) : (
-                        truncateText(result[fieldConfig.solrField], fieldConfig.maxLength)
+                        truncateText(fieldData.value, fieldConfig.maxLength)
+                      )}
+                      {fieldData.sourceField !== fieldConfig.solrField && (
+                        <span className="ml-2 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">
+                          aus {fieldData.label}
+                        </span>
                       )}
                       {fieldConfig.display === 'badge' && (
                         <span className="ml-2 px-2 py-1 bg-solr-primary text-white text-xs rounded">
@@ -328,22 +338,22 @@ export default function DynamicResultsDisplay({
                     </h3>
                   ) : (
                     <div className="text-gray-700 leading-relaxed">
-                      <span className="font-medium text-gray-500 mr-2">{fieldConfig.label}:</span>
+                      <span className="font-medium text-gray-500 mr-2">{fieldData.label}:</span>
                       {fieldConfig.highlight ? (
                         <span dangerouslySetInnerHTML={{ 
                           __html: highlightSearchTerms(
-                            truncateText(result[fieldConfig.solrField], fieldConfig.maxLength),
+                            truncateText(fieldData.value, fieldConfig.maxLength),
                             searchQuery
                           )
                         }} />
                       ) : (
-                        truncateText(result[fieldConfig.solrField], fieldConfig.maxLength)
+                        truncateText(fieldData.value, fieldConfig.maxLength)
                       )}
                     </div>
                   )}
                 </div>
-              )
-            ))}
+              );
+            })}
           </div>
 
           {/* Sekundäre Felder */}

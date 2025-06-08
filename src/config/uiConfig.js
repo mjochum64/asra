@@ -85,7 +85,8 @@ export const uiConfig = {
         label: 'Kurztitel',
         highlight: true,
         maxLength: 120,
-        priority: 1
+        priority: 1,
+        fallbackFields: ['langue', 'amtabk', 'jurabk'] // Fallback wenn kurzue fehlt
       },
       {
         solrField: 'amtabk', 
@@ -265,9 +266,9 @@ export const uiConfig = {
   filters: {
     enabled: [
       {
-        solrField: 'document_type',
-        label: 'Dokumenttyp',
-        icon: '📋',
+        solrField: 'xml_lang',
+        label: 'Sprache',
+        icon: '🌐',
         priority: 1
       },
       {
@@ -278,16 +279,23 @@ export const uiConfig = {
         limit: 15 // maximal 15 Optionen anzeigen
       },
       {
-        solrField: 'fundstelle_typ',
-        label: 'Fundstellen-Typ',
-        icon: '📚',
-        priority: 3,
-        limit: 10 // maximal 10 Optionen anzeigen
+        solrField: 'document_type',
+        label: 'Dokumenttyp',
+        icon: '📋',
+        priority: 3
       }
     ],
 
     // Erweiterte Filter für Expertenansicht
     expert: [
+      {
+        solrField: 'text_format',
+        label: 'Textformat',
+        icon: '🔧',
+        priority: 1
+      }
+      // Auskommentiert: Filter ohne Daten in Demo-Dokumenten
+      /*
       {
         solrField: 'gliederungskennzahl',
         label: 'Gliederungskennzahl',
@@ -302,17 +310,8 @@ export const uiConfig = {
         solrField: 'standangabe_typ',
         label: 'Standangabe-Typ',
         icon: '📅'
-      },
-      {
-        solrField: 'text_format',
-        label: 'Textformat',
-        icon: '🔧'
-      },
-      {
-        solrField: 'xml_lang',
-        label: 'Sprache',
-        icon: '🌐'
       }
+      */
     ]
   },
 
@@ -425,6 +424,61 @@ export const uiHelpers = {
       default:
         return value;
     }
+  },
+
+  /**
+   * Holt den Wert für ein Feld mit Fallback-Unterstützung
+   */
+  getFieldValue(document, fieldConfig) {
+    // Versuche zuerst das primäre Feld
+    let value = document[fieldConfig.solrField];
+    
+    if (value) {
+      return {
+        value: Array.isArray(value) ? value[0] : value,
+        sourceField: fieldConfig.solrField,
+        label: fieldConfig.label
+      };
+    }
+    
+    // Fallback-Felder versuchen
+    if (fieldConfig.fallbackFields) {
+      for (const fallbackField of fieldConfig.fallbackFields) {
+        const fallbackValue = document[fallbackField];
+        if (fallbackValue) {
+          return {
+            value: Array.isArray(fallbackValue) ? fallbackValue[0] : fallbackValue,
+            sourceField: fallbackField,
+            label: this.getFieldLabel(fallbackField)
+          };
+        }
+      }
+    }
+    
+    return null;
+  },
+
+  /**
+   * Holt das Label für ein Solr-Feld
+   */
+  getFieldLabel(fieldName) {
+    const labels = {
+      kurzue: 'Kurztitel',
+      langue: 'Vollständiger Titel',
+      amtabk: 'Amtliche Abkürzung',
+      jurabk: 'Juristische Abkürzung',
+      text_content: 'Inhalt',
+      document_type: 'Dokumenttyp',
+      xml_lang: 'Sprache'
+    };
+    
+    return labels[fieldName] || fieldName
+      .replace(/_/g, ' ')
+      .replace(/([A-Z])/g, ' $1')
+      .toLowerCase()
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
   }
 };
 
