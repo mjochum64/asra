@@ -1,4 +1,4 @@
-# Project Tasks: ASRA (Apache Solr Research Application)
+# Project Tasks: ASRA – GermanLaw
 
 ## 🎯 Projektstatuts: Phase 1.1 VOLLSTÄNDIG ABGESCHLOSSEN ✅
 **Stand**: 8. Juni 2025  
