@@ -1,9 +1,9 @@
 # Project Tasks: ASRA (Apache Solr Research Application)
 
-## 🎯 Projektstatuts: Phase 1 VOLLSTÄNDIG ABGESCHLOSSEN ✅
+## 🎯 Projektstatuts: Phase 1.1 VOLLSTÄNDIG ABGESCHLOSSEN ✅
 **Stand**: 8. Juni 2025  
-**Version**: 1.0.0 PRODUCTION READY  
-**Status**: Alle Tests bestanden (11/11) 🚀
+**Version**: 1.1.0 PRODUCTION READY mit Norm-Level-Indexierung  
+**Status**: Norm-Level-Indexierung erfolgreich implementiert 🚀
 
 ### 🏆 Erfolgreich abgeschlossene Hauptziele:
 - ✅ **Konfigurierbare UI-Struktur**: Normal-Modus (5 Felder) vs. Experten-Modus (alle Felder)
@@ -13,6 +13,20 @@
 - ✅ **Produktive Docker-Umgebung**: Stabile Container-Architektur
 - ✅ **Finale Verifikation**: 11/11 Tests bestanden, 0 kritische Bugs
 - ✅ **Repository-Organisation**: Dokumentation aufgeräumt, [`docs/`](docs/) Struktur etabliert
+- ✅ **Norm-Level-Indexierung**: Granulare Indexierung einzelner Rechtsnormen mit XHTML-Formatierung
+
+### 🎯 Neu abgeschlossen: Norm-Level-Indexierung
+- ✅ **Granulare Suche**: Suchergebnisse zeigen spezifische Artikel/Paragraphen statt ganzer Gesetze
+- ✅ **XHTML-Formatierung erhalten**: Original-Formatierung aus XML-Quellen beibehalten
+- ✅ **Norm-spezifische Badges**: Grüne Badges für Artikel-Identifikation (z.B. "Art 70", "§ 1")
+- ✅ **Erweiterte Metadaten**: Norm-Typ, Quelle, Norm-Nummer für verbesserte Navigation
+- ✅ **Frontend-Integration**: Vollständige Anzeige mit formatierten HTML-Inhalten
+
+### 📊 Norm-Level-Indexierung Erfolgsstatistik:
+- **Datentransformation**: 2 Dokumente → 263 individuelle Normen
+- **Formatierung**: XHTML-Markup erfolgreich erhalten (`text_content_html`, `fussnoten_content_html`)
+- **Granularität**: Suche findet jetzt spezifische Artikel statt ganzer Gesetzbücher
+- **UI-Integration**: Norm-Badges, Typ-Anzeige und verbesserte Metadaten implementiert
 
 ### 🚀 Nächste Phase: Sprint 2 (Auto-Suggest & Sortierung)
 - [ ] Auto-Suggest/Autocomplete-Funktionalität
@@ -157,7 +171,51 @@
 - [ ] Dokumenten-Download-Funktionalität
 - [ ] Related Documents Feature
 
-## 8. Zukünftige Features (Nach Phase 1)
+## 8. Norm-Level-Indexierung (✅ VOLLSTÄNDIG ABGESCHLOSSEN - 08.06.2025)
+
+### 8.1 Architekturelle Probleme identifiziert:
+- [x] **Problem 1 - Granularität**: Suche fand ganze Gesetze statt spezifische Artikel/Paragraphen
+- [x] **Problem 2 - Formatierungsverlust**: XHTML-Markup aus XML-Quellen wurde während Import entfernt
+
+### 8.2 Solr-Schema-Erweiterung:
+- [x] Neue norm-spezifische Felder hinzugefügt:
+  - [x] `norm_doknr` - Eindeutige Norm-Identifikation
+  - [x] `norm_builddate` - Erstellungsdatum der Norm
+  - [x] `parent_document_id` - Verweis auf übergeordnetes Dokument
+  - [x] `norm_type` - Typ der Norm (article, section, etc.)
+  - [x] `text_content_html` - Erhaltene XHTML-Formatierung
+  - [x] `fussnoten_content_html` - Formatierte Fußnoten
+
+### 8.3 Neuer Import-Algorithmus:
+- [x] **`solr_import_norms.py`** erstellt - verarbeitet `<norm>`-Elemente einzeln
+- [x] **XHTML-Formatierung erhalten**: Keine Textextraktion, direktes HTML-Mapping
+- [x] **Metadaten-Vererbung**: Gesetzes-Level-Metadaten (jurabk, amtabk) an individuelle Normen vererbt
+- [x] **Dokumentbeziehungen**: Eltern-Kind-Beziehungen via `parent_document_id` beibehalten
+
+### 8.4 Datentransformation erfolgreich:
+- [x] **Vor**: 2 Dokument-Level-Einträge (ganze Gesetze)
+- [x] **Nach**: 263 individuelle Norm-Einträge (spezifische Artikel/Paragraphen)
+- [x] **Granularität erreicht**: Suche findet z.B. "Art 70", "Art 79", "Art 83" einzeln
+- [x] **Formatierung erhalten**: HTML-Markup aus XML-Quellen beibehalten
+
+### 8.5 Frontend-Integration:
+- [x] **UI-Konfiguration erweitert**: `uiConfig.js` um norm-spezifische Anzeigefelder
+- [x] **Norm-Badges implementiert**: Grüne Badges für Artikel-Identifikation (`enbez`-Feld)
+- [x] **Display-Types erweitert**: `norm-badge`, `small-badge` für spezialisierte Anzeige
+- [x] **DynamicResultsDisplay erweitert**: `renderFieldBadge()` für norm-spezifische Darstellung
+- [x] **DocumentFullView aktualisiert**: HTML-Formatierung wird korrekt gerendert
+- [x] **Metadaten-Integration**: Norm-Typ, Quelle, Norm-Nummer in Sidebar-Anzeige
+
+### 8.6 Erfolgsmessung:
+- [x] **Granulare Suchergebnisse**: "Verantwortung" findet spezifische Artikel (Art 65, Art 20a, Art 46)
+- [x] **XHTML-Formatierung erhalten**: `text_content_html` enthält `<p>`-Tags und andere Formatierung
+- [x] **Norm-Identifikation**: `enbez`-Feld zeigt "Art 70", "Eingangsformel", "Präambel"
+- [x] **Typ-Unterscheidung**: `norm_type` unterscheidet "article", "norm", etc.
+- [x] **Volltext-Anzeige**: HTML-Formatierung wird in DocumentFullView korrekt gerendert
+
+**🎯 ERGEBNIS**: Norm-Level-Indexierung vollständig implementiert - Benutzer finden jetzt spezifische Rechtsnormen statt ganzer Gesetzbücher, mit erhaltener Originalformatierung
+
+## 9. Zukünftige Features (Nach Phase 1)
 
 - [ ] Benutzerverwaltung und Authentifizierung
 - [ ] Gespeicherte Suchanfragen für angemeldete Benutzer
@@ -165,7 +223,7 @@
 - [ ] Erweiterte Suchstatistiken und -analytik
 - [ ] Webcrawler für Gesetze-im-Internet.de Integration
 
-## 9. Dokumentation und Tests (Teilweise abgeschlossen)
+## 10. Dokumentation und Tests (Teilweise abgeschlossen)
 
 - [x] Aktualisierung von `README.md` mit:
   - [x] Projektübersicht
@@ -180,7 +238,7 @@
   - [ ] Solr-Service-Funktionen
   - [ ] End-to-End-Suchfluss
 
-## 10. DevOps und Bereitstellung (Teilweise abgeschlossen)
+## 11. DevOps und Bereitstellung (Teilweise abgeschlossen)
 
 - [x] Produktions-Deployment mit Docker Compose
 - [x] Nginx-Konfiguration für Frontend und Proxy
@@ -188,7 +246,7 @@
 - [ ] Monitoring und Logging-Setup
 - [ ] Leistungsoptimierung für größere Datenmengen
 
-## 11. Systemverbesserungen (Geplant)
+## 12. Systemverbesserungen (Geplant)
 
 - [x] Refactoring der API-Service-Schicht für konfigurierbare Endpunkte
 - [x] Implementierung von umgebungsspezifischen Konfigurationen
@@ -275,6 +333,50 @@
 
 **Query-Pattern-Lösung**: `amtabk:*1.* AND amtabk:*BImSchV*` für Queries mit Leerzeichen
 **Ergebnis**: Deutsche Rechtsabkürzungen mit Leerzeichen funktionieren vollständig in allen Suchmodi
+
+## 8. Norm-Level-Indexierung (✅ VOLLSTÄNDIG ABGESCHLOSSEN - 08.06.2025)
+
+### 8.1 Architekturelle Probleme identifiziert
+- [x] **Problem 1 - Granularität**: Suche fand ganze Gesetze statt spezifische Artikel/Paragraphen
+- [x] **Problem 2 - Formatierungsverlust**: XHTML-Markup aus XML-Quellen wurde während Import entfernt
+
+### 8.2 Solr-Schema-Erweiterung
+- [x] Neue norm-spezifische Felder hinzugefügt:
+  - [x] `norm_doknr` - Eindeutige Norm-Identifikation
+  - [x] `norm_builddate` - Erstellungsdatum der Norm
+  - [x] `parent_document_id` - Verweis auf übergeordnetes Dokument
+  - [x] `norm_type` - Typ der Norm (article, section, etc.)
+  - [x] `text_content_html` - Erhaltene XHTML-Formatierung
+  - [x] `fussnoten_content_html` - Formatierte Fußnoten
+
+### 8.3 Neuer Import-Algorithmus
+- [x] **`solr_import_norms.py`** erstellt - verarbeitet `<norm>`-Elemente einzeln
+- [x] **XHTML-Formatierung erhalten**: Keine Textextraktion, direktes HTML-Mapping
+- [x] **Metadaten-Vererbung**: Gesetzes-Level-Metadaten (jurabk, amtabk) an individuelle Normen vererbt
+- [x] **Dokumentbeziehungen**: Eltern-Kind-Beziehungen via `parent_document_id` beibehalten
+
+### 8.4 Datentransformation erfolgreich
+- [x] **Vor**: 2 Dokument-Level-Einträge (ganze Gesetze)
+- [x] **Nach**: 263 individuelle Norm-Einträge (spezifische Artikel/Paragraphen)
+- [x] **Granularität erreicht**: Suche findet z.B. "Art 70", "Art 79", "Art 83" einzeln
+- [x] **Formatierung erhalten**: HTML-Markup aus XML-Quellen beibehalten
+
+### 8.5 Frontend-Integration
+- [x] **UI-Konfiguration erweitert**: `uiConfig.js` um norm-spezifische Anzeigefelder
+- [x] **Norm-Badges implementiert**: Grüne Badges für Artikel-Identifikation (`enbez`-Feld)
+- [x] **Display-Types erweitert**: `norm-badge`, `small-badge` für spezialisierte Anzeige
+- [x] **DynamicResultsDisplay erweitert**: `renderFieldBadge()` für norm-spezifische Darstellung
+- [x] **DocumentFullView aktualisiert**: HTML-Formatierung wird korrekt gerendert
+- [x] **Metadaten-Integration**: Norm-Typ, Quelle, Norm-Nummer in Sidebar-Anzeige
+
+### 8.6 Erfolgsmessung
+- [x] **Granulare Suchergebnisse**: "Verantwortung" findet spezifische Artikel (Art 65, Art 20a, Art 46)
+- [x] **XHTML-Formatierung erhalten**: `text_content_html` enthält `<p>`-Tags und andere Formatierung
+- [x] **Norm-Identifikation**: `enbez`-Feld zeigt "Art 70", "Eingangsformel", "Präambel"
+- [x] **Typ-Unterscheidung**: `norm_type` unterscheidet "article", "norm", etc.
+- [x] **Volltext-Anzeige**: HTML-Formatierung wird in DocumentFullView korrekt gerendert
+
+**🎯 ERGEBNIS**: Norm-Level-Indexierung vollständig implementiert - Benutzer finden jetzt spezifische Rechtsnormen statt ganzer Gesetzbücher, mit erhaltener Originalformatierung.
 
 ### Sprint 2: Auto-Suggest und Sortierung (KW 25-26)
 **Ziel**: Verbesserte Benutzererfahrung bei der Suche

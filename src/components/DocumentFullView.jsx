@@ -127,6 +127,12 @@ export default function DocumentFullView({ document, onClose }) {
                     <div className={getFieldStyle(field.style)}>
                       {field.searchable && highlightedContent && field.solrField === 'text_content' ? (
                         <div dangerouslySetInnerHTML={{ __html: highlightedContent }} />
+                      ) : field.solrField === 'text_content_html' || field.solrField === 'fussnoten_content_html' ? (
+                        // Render HTML content fields with preserved formatting
+                        <div 
+                          className="prose prose-sm max-w-none" 
+                          dangerouslySetInnerHTML={{ __html: document[field.solrField] }} 
+                        />
                       ) : (
                         <div>
                           {uiHelpers.formatFieldValue(document[field.solrField], field.format)}

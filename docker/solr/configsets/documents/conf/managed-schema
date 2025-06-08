@@ -162,6 +162,16 @@
   <field name="xml_lang" type="string" indexed="true" stored="true" multiValued="false" />
   <field name="document_type" type="string" indexed="true" stored="true" multiValued="false" />
   
+  <!-- Norm-specific fields for norm-level indexing -->
+  <field name="norm_doknr" type="string" indexed="true" stored="true" multiValued="false" />
+  <field name="norm_builddate" type="pdate" indexed="true" stored="true" multiValued="false" />
+  <field name="parent_document_id" type="string" indexed="true" stored="true" multiValued="false" />
+  <field name="norm_type" type="string" indexed="true" stored="true" multiValued="false" />
+  
+  <!-- Formatted content fields to preserve XHTML -->
+  <field name="text_content_html" type="string" indexed="false" stored="true" multiValued="false" />
+  <field name="fussnoten_content_html" type="string" indexed="false" stored="true" multiValued="false" />
+  
   <!-- Search optimization fields -->
   <field name="all_text" type="text_de" indexed="true" stored="false" multiValued="true" />
   <field name="suggest" type="text_suggest" indexed="true" stored="false" multiValued="true" />

@@ -89,6 +89,13 @@ export const uiConfig = {
         fallbackFields: ['langue', 'amtabk', 'jurabk'] // Fallback wenn kurzue fehlt
       },
       {
+        solrField: 'enbez',
+        label: 'Norm',
+        highlight: true,
+        display: 'norm-badge', // spezielle Norm-Anzeige
+        priority: 1.5 // zwischen Titel und Abkürzung
+      },
+      {
         solrField: 'amtabk', 
         label: 'Abkürzung',
         highlight: true,
@@ -115,6 +122,13 @@ export const uiConfig = {
         showCondition: 'different_from_kurzue' // nur zeigen wenn anders als Kurztitel
       },
       {
+        solrField: 'norm_type',
+        label: 'Norm-Typ',
+        highlight: false,
+        display: 'small-badge',
+        format: 'capitalize'
+      },
+      {
         solrField: 'jurabk',
         label: 'Juristische Abkürzung',
         highlight: false,
@@ -132,9 +146,19 @@ export const uiConfig = {
     // Metadaten - in kleiner Schrift/Farbe
     metadata: [
       {
+        solrField: 'parent_document_id',
+        label: 'Quelle',
+        format: 'document-link'
+      },
+      {
         solrField: 'document_type',
         label: 'Typ',
         format: 'capitalize'
+      },
+      {
+        solrField: 'norm_doknr',
+        label: 'Norm-ID',
+        format: 'truncate'
       },
       {
         solrField: 'xml_lang',
@@ -157,6 +181,12 @@ export const uiConfig = {
     // Header-Bereich
     header: [
       {
+        solrField: 'enbez',
+        label: 'Norm-Bezeichnung',
+        style: 'badge-primary',
+        condition: 'if_exists'
+      },
+      {
         solrField: 'kurzue',
         label: 'Kurztitel',
         style: 'title',
@@ -177,17 +207,40 @@ export const uiConfig = {
         solrField: 'jurabk',
         label: 'Juristische Abkürzung', 
         style: 'badge-secondary'
+      },
+      {
+        solrField: 'norm_type',
+        label: 'Norm-Typ',
+        style: 'badge-secondary',
+        format: 'capitalize',
+        condition: 'if_exists'
       }
     ],
 
     // Hauptinhalt
     content: [
       {
+        solrField: 'text_content_html',
+        label: 'Volltext (formatiert)',
+        style: 'main-content',
+        highlight: false,
+        searchable: false,
+        condition: 'if_exists'
+      },
+      {
         solrField: 'text_content',
         label: 'Volltext',
         style: 'main-content',
         highlight: true,
         searchable: true // ermöglicht Suche im Text
+      },
+      {
+        solrField: 'fussnoten_content_html',
+        label: 'Fußnoten (formatiert)',
+        style: 'structured-content',
+        highlight: false,
+        searchable: false,
+        condition: 'if_exists'
       },
       {
         solrField: 'table_content',
@@ -233,6 +286,29 @@ export const uiConfig = {
             label: 'Fußnoten',
             format: 'text',
             condition: 'if_exists'
+          }
+        ]
+      },
+      {
+        section: 'Norm-Informationen',
+        fields: [
+          {
+            solrField: 'parent_document_id',
+            label: 'Quelle',
+            format: 'text',
+            style: 'technical'
+          },
+          {
+            solrField: 'norm_doknr',
+            label: 'Norm-Nummer',
+            format: 'text',
+            style: 'technical'
+          },
+          {
+            solrField: 'norm_builddate',
+            label: 'Norm-Erstellung',
+            format: 'date',
+            style: 'technical'
           }
         ]
       },

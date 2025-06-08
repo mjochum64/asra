@@ -5,8 +5,12 @@ ASRA ist eine moderne Webapplikation für die Dokumentensuche, die Apache Solr a
 ## Funktionen
 
 ### ✅ Implementierte Features
+- **Norm-Level-Indexierung**: Granulare Indexierung einzelner Rechtsnormen statt ganzer Dokumente
+- **XHTML-Formatierung**: Erhaltung der ursprünglichen XML-Formatierung in HTML-Darstellung
 - **Konfigurierbare UI-Modi**: Normal-Modus (5 benutzerfreundliche Felder) ↔ Experten-Modus (alle Solr-Felder)
 - **Deutsche Rechtsabkürzungen**: Vollständige Unterstützung für Suchen wie "1. BImSchV", "GG", "BGB"
+- **Präzise Artikel-Suche**: Finde spezifische Artikel (z.B. "Art 70 GG") statt ganzer Gesetzbücher
+- **Norm-Badge-System**: Visuelle Kennzeichnung von Artikeln, Paragraphen und Rechtsnormen
 - **Echtzeit-Suche**: Schnelle Dokumentensuche mit sofortigen Ergebnissen
 - **Benutzerfreundliche Oberfläche**: Modernes, responsives UI mit React und Tailwind CSS
 - **Fehlerbehandlung**: Robuste Fehlerbehandlung und Ladezustände für eine bessere Benutzererfahrung

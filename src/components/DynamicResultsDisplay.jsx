@@ -48,6 +48,61 @@ const truncateText = (text, maxLength = null) => {
 };
 
 /**
+ * Rendert spezielle Badge-Anzeigen für verschiedene Feldtypen
+ */
+const renderFieldBadge = (fieldConfig, fieldData, isPrimary = false) => {
+  if (!fieldConfig.display) return null;
+  
+  const value = fieldData.value;
+  if (!value) return null;
+  
+  switch (fieldConfig.display) {
+    case 'norm-badge':
+      // Spezielle grüne Badges für Norm-Kennzeichnungen (enbez)
+      return (
+        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 ${isPrimary ? 'ml-2' : ''}`}>
+          📋 {value}
+        </span>
+      );
+      
+    case 'small-badge':
+      // Kleine Badges für Metadaten
+      return (
+        <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700 ${isPrimary ? 'ml-2' : ''}`}>
+          {value}
+        </span>
+      );
+      
+    case 'badge':
+      // Standard-Badges
+      return (
+        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 ${isPrimary ? 'ml-2' : ''}`}>
+          {value}
+        </span>
+      );
+      
+    case 'type-badge':
+      // Typ-spezifische Badges mit verschiedenen Farben
+      const colorMap = {
+        'article': 'bg-purple-100 text-purple-800',
+        'norm': 'bg-green-100 text-green-800',
+        'law': 'bg-blue-100 text-blue-800',
+        'regulation': 'bg-orange-100 text-orange-800'
+      };
+      const colorClass = colorMap[value.toLowerCase()] || 'bg-gray-100 text-gray-700';
+      
+      return (
+        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${colorClass} ${isPrimary ? 'ml-2' : ''}`}>
+          {value}
+        </span>
+      );
+      
+    default:
+      return null;
+  }
+};
+
+/**
  * UI-konfigurierte ResultsDisplay - basierend auf UI-Konfiguration statt dynamischem Schema
  */
 export default function DynamicResultsDisplay({ 
@@ -117,7 +172,16 @@ export default function DynamicResultsDisplay({
       text_format: 'Textformat',
       fussnoten_format: 'Fußnotenformat',
       builddate: 'Erstellungsdatum',
-      id: 'Dokument-ID'
+      id: 'Dokument-ID',
+      
+      // Norm-spezifische Felder
+      enbez: 'Artikel/Paragraph',
+      norm_type: 'Norm-Typ',
+      norm_doknr: 'Norm-Nummer',
+      norm_builddate: 'Norm-Erstellungsdatum',
+      parent_document_id: 'Ursprungsdokument',
+      text_content_html: 'Formatierter Gesetzestext',
+      fussnoten_content_html: 'Formatierte Fußnoten'
     };
     
     return labels[fieldName] || fieldName
@@ -330,11 +394,7 @@ export default function DynamicResultsDisplay({
                           aus {fieldData.label}
                         </span>
                       )}
-                      {fieldConfig.display === 'badge' && (
-                        <span className="ml-2 px-2 py-1 bg-solr-primary text-white text-xs rounded">
-                          {fieldConfig.label}
-                        </span>
-                      )}
+                      {renderFieldBadge(fieldConfig, fieldData, true)}
                     </h3>
                   ) : (
                     <div className="text-gray-700 leading-relaxed">
@@ -349,6 +409,7 @@ export default function DynamicResultsDisplay({
                       ) : (
                         truncateText(fieldData.value, fieldConfig.maxLength)
                       )}
+                      {renderFieldBadge(fieldConfig, fieldData)}
                     </div>
                   )}
                 </div>
@@ -360,22 +421,24 @@ export default function DynamicResultsDisplay({
           {resultConfig.secondary.length > 0 && (
             <div className="mb-3 border-t border-gray-100 pt-3">
               <div className="space-y-2">
-                {resultConfig.secondary.map(fieldConfig => (
-                  result[fieldConfig.solrField] && (
+                {resultConfig.secondary.map(fieldConfig => {
+                  const fieldData = uiHelpers.getFieldValue(result, fieldConfig);
+                  if (!fieldData) return null;
+                  
+                  return (
                     <div key={fieldConfig.solrField} className="text-sm text-gray-600">
-                      <span className="font-medium text-gray-500 mr-2">{fieldConfig.label}:</span>
-                      {fieldConfig.display === 'badge' ? (
-                        <span className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded">
-                          {result[fieldConfig.solrField]}
-                        </span>
-                      ) : (
-                        <span>
-                          {uiHelpers.formatFieldValue(result[fieldConfig.solrField], fieldConfig.format)}
-                        </span>
+                      {/* Verwende die neue Badge-Rendering-Funktion */}
+                      {renderFieldBadge(fieldConfig, fieldData) || (
+                        <>
+                          <span className="font-medium text-gray-500 mr-2">{fieldData.label}:</span>
+                          <span>
+                            {uiHelpers.formatFieldValue(fieldData.value, fieldConfig.format)}
+                          </span>
+                        </>
                       )}
                     </div>
-                  )
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}
