@@ -17,10 +17,15 @@ sleep 5
 # Make the sample data loader executable
 chmod +x ./docker/solr/load_sample_data.py
 
-# Load sample data
-echo "Loading sample data into Solr..."
-python ./docker/solr/load_sample_data.py
-python ./docker/solr/solr_import.py demodata --verbose
+# Load sample data - veraltete einfache Demodaten
+# echo "Loading sample data into Solr..."
+#python ./docker/solr/load_sample_data.py
+
+# Change to the solr directory and run the import script
+echo "Importing demo documents..."
+cd ./docker/solr
+python solr_import.py demodata --verbose
+cd ../../
 
 # Start the frontend container
 echo "Starting frontend container..."

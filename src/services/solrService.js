@@ -8,25 +8,18 @@ const buildGermanLegalQuery = (fieldName, query, isWildcard = false) => {
     return `${fieldName}:*`;
   }
   
-  // Escape special characters for Solr queries
-  const escapedQuery = query.replace(/[+\-&|!(){}[\]^"~*?:\\]/g, '\\$&');
-  
-  // If the query contains spaces and we're doing a wildcard search,
-  // split it into separate terms and combine with AND
-  if (isWildcard && query.includes(' ')) {
-    const terms = query.trim().split(/\s+/);
-    const wildcardTerms = terms.map(term => {
-      const escapedTerm = term.replace(/[+\-&|!(){}[\]^"~*?:\\]/g, '\\$&');
-      return `${fieldName}:*${escapedTerm}*`;
-    });
-    return `(${wildcardTerms.join(' AND ')})`;
+  // Für deutsche Rechtsabkürzungen bevorzugen wir exakte Suche
+  // wenn die Query Leerzeichen oder Punkte enthält
+  if (query.includes(' ') || query.includes('.')) {
+    // Exakte Suche mit Anführungszeichen (wie im Solr Admin UI)
+    return `${fieldName}:"${query}"`;
   }
   
-  // For exact match or simple wildcard (no spaces)
+  // Für einfache Begriffe ohne Leerzeichen verwenden wir Wildcard
   if (isWildcard) {
-    return `${fieldName}:*${escapedQuery}*`;
+    return `${fieldName}:*${query}*`;
   } else {
-    return `${fieldName}:"${escapedQuery}"`;
+    return `${fieldName}:"${query}"`;
   }
 };
 
@@ -113,26 +106,31 @@ export const searchDocuments = async (query, searchMode = 'all', filters = {}) =
         q: isWildcardQuery ? 'langue:*' : `langue:(${query})`,
         wt: 'json',
         rows: 20
-      };
-    } else if (searchMode === 'jurabk') {
+      };    } else if (searchMode === 'jurabk') {
       // Deutsche Rechtsdokument: Juristische Abkürzung
-      // Grund: Verwende buildGermanLegalQuery für bessere Behandlung von Leerzeichen
-      const jurabkQuery = isWildcardQuery ? 'jurabk:*' : 
-        query.includes(' ') ? 
-          `(${buildGermanLegalQuery('jurabk', query, false)} OR ${buildGermanLegalQuery('jurabk', query, true)})` :
-          buildGermanLegalQuery('jurabk', query, false);
+      let jurabkQuery;
+      if (isWildcardQuery) {
+        jurabkQuery = 'jurabk:*';
+      } else {
+        // Direkte Phrase-Suche mit korrekter Kodierung
+        jurabkQuery = `jurabk:"${query}"`;
+      }
       queryParams = {
         q: jurabkQuery,
         wt: 'json',
         rows: 20
       };
     } else if (searchMode === 'amtabk') {
-      // Deutsche Rechtsdokument: Amtliche Abkürzung
-      // Grund: Verwende buildGermanLegalQuery für bessere Behandlung von Leerzeichen
-      const amtabkQuery = isWildcardQuery ? 'amtabk:*' : 
-        query.includes(' ') ? 
-          `(${buildGermanLegalQuery('amtabk', query, false)} OR ${buildGermanLegalQuery('amtabk', query, true)})` :
-          buildGermanLegalQuery('amtabk', query, false);
+      // Deutsche Rechtsdokument: Amtliche Abkürzung - vereinfachte Implementierung
+      // Grund: Verwende encodeURIComponent für korrekte URL-Kodierung von Sonderzeichen
+      let amtabkQuery;
+      if (isWildcardQuery) {
+        amtabkQuery = 'amtabk:*';
+      } else {
+        // Direkte Phrase-Suche mit korrekter Kodierung
+        amtabkQuery = `amtabk:"${query}"`;
+      }
+      console.log(`Building amtabk query for: "${query}" → "${amtabkQuery}"`);
       queryParams = {
         q: amtabkQuery,
         wt: 'json',
@@ -168,8 +166,9 @@ export const searchDocuments = async (query, searchMode = 'all', filters = {}) =
     }
     
     // Füge vereinfachtes Highlighting hinzu (für alle Suchmodi)
+    // Grund: Entferne "content" und "title" da diese Felder nicht im deutschen Rechts-Schema existieren
     queryParams.hl = 'true';
-    queryParams['hl.fl'] = 'kurzue,langue,amtabk,jurabk,text_content,title,content';
+    queryParams['hl.fl'] = 'kurzue,langue,amtabk,jurabk,text_content';
     queryParams['hl.simple.pre'] = '<mark>';
     queryParams['hl.simple.post'] = '</mark>';
     queryParams['hl.fragsize'] = 200;
@@ -208,12 +207,6 @@ export const searchDocuments = async (query, searchMode = 'all', filters = {}) =
     
     console.log('Query parameters:', queryParams);
     
-    // Debug: Show exactly what buildGermanLegalQuery is returning
-    if (searchMode === 'amtabk' && !isWildcardQuery) {
-      console.log('German legal query for amtabk:', buildGermanLegalQuery('amtabk', query, false));
-      console.log('Original query input:', query);
-    }
-    
     // Verwende URLSearchParams für korrekte Kodierung bei Filter-Queries
     let finalParams;
     if (queryParams.fq && Array.isArray(queryParams.fq)) {
@@ -221,14 +214,37 @@ export const searchDocuments = async (query, searchMode = 'all', filters = {}) =
       const baseParams = { ...queryParams };
       delete baseParams.fq;
       
-      const searchParams = new URLSearchParams(baseParams);
+      const searchParams = new URLSearchParams();
+      
+      // Füge base parameters hinzu mit korrekter Kodierung
+      Object.keys(baseParams).forEach(key => {
+        let value = baseParams[key];
+        if (key === 'q') {
+          // Spezielle Behandlung für Query-Parameter
+          searchParams.append(key, value);
+        } else {
+          searchParams.append(key, value);
+        }
+      });
+      
+      // Füge Filter-Queries hinzu
       queryParams.fq.forEach(filter => {
         searchParams.append('fq', filter);
       });
       
-      console.log('Final URL params:', searchParams.toString());
+      // Korrigiere die Kodierung für Phrase-Queries
+      let urlString = searchParams.toString();
+      urlString = urlString.replace(/q=([^&]*)/g, (match, queryPart) => {
+        const decodedQuery = decodeURIComponent(queryPart);
+        if (decodedQuery.includes('"')) {
+          return `q=${encodeURIComponent(decodedQuery).replace(/\+/g, '%20')}`;
+        }
+        return match;
+      });
       
-      const response = await solrClient.get(`documents/select?${searchParams.toString()}`);
+      console.log('Final URL params:', urlString);
+      
+      const response = await solrClient.get(`documents/select?${urlString}`);
       
       // Hole kontextuelle Facetten basierend auf den Suchparametern
       const contextualFacets = await getContextualFacets(query, searchMode, filters);
@@ -243,25 +259,21 @@ export const searchDocuments = async (query, searchMode = 'all', filters = {}) =
         total: response.data.response.numFound
       };
     } else {
-      // Einfache Lösung: Verwende axios params aber mit spezieller Behandlung der Query
+      // Einfache Lösung: Verwende direkte Solr-Query ohne komplexe Parameter-Serialisierung
       console.log('Query params (no filters):', queryParams);
-      
-      // Erstelle eine vereinfachte Version der Query mit minimaler Kodierung
-      const simpleQuery = queryParams.q.replace(/ /g, '%20');
-      
-      console.log('Simplified query:', simpleQuery);
+      console.log('Full query string to be sent:', queryParams.q);
       
       const response = await solrClient.get('documents/select', {
-        params: {
-          q: simpleQuery,
-          wt: 'json',
-          rows: 20
-        },
-        // Verwende custom parameter serializer um double encoding zu vermeiden
-        paramsSerializer: function(params) {
-          return Object.keys(params)
-            .map(key => `${key}=${params[key]}`)
-            .join('&');
+        params: queryParams,
+        // Grund: Verwende benutzerdefinierten Parameter-Serializer für korrekte Query-Kodierung
+        paramsSerializer: {
+          encode: (param, key) => {
+            // Für Query-Parameter: Verwende normale Kodierung aber ersetze + mit %20
+            if (key === 'q') {
+              return encodeURIComponent(param).replace(/\+/g, '%20');
+            }
+            return encodeURIComponent(param);
+          }
         }
       });
       

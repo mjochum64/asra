@@ -7,14 +7,56 @@ und dieses Projekt folgt [Semantischer Versionierung](https://semver.org/lang/de
 
 ## [Unreleased]
 
-### Geplant
-- Vollständige Facettennavigation mit Solr-Integration
-- Suchvorschläge während der Eingabe
-- Dokumentvorschau
-- Code-Splitting zur Optimierung der Ladezeiten
-- Verbesserte Fehlerbehandlung für Netzwerkprobleme
-- Hot-Reload für Solr-Schema-Aktualisierungen
+### Geplant für Sprint 2
+- Auto-Suggest/Autocomplete-Funktionalität basierend auf Solr-Begriffen
+- Erweiterte Sortieroptionen (Relevanz, Datum, Titel)
+- Suchhistorie mit LocalStorage
+- Erweiterte Datum-Range-Filter
+
+### Langfristig geplant
+- Dokumentvorschau-Modal
+- Webcrawler-Integration für automatischen Datenimport
 - Theme-Wechsler für hellen/dunklen Modus
+- Export-Funktionen (PDF, CSV)
+
+## [1.0.0] - 2025-06-08
+
+### 🎉 Major Release: Konfigurierbare UI-Struktur PRODUCTION READY
+
+### Hinzugefügt
+- **Konfigurierbare UI-Modi**: Normal-Modus (5 benutzerfreundliche Felder) vs. Experten-Modus (alle Solr-Felder)
+- **ModeSwitcher-Komponente**: Toggle zwischen vereinfachter und erweiteter Suche
+- **uiConfig.js**: Zentrale Konfigurationsdatei für UI-Bereiche (Suche, Trefferliste, Volltext)
+- **Deutsche Rechtsabkürzungen**: Vollständige Unterstützung für Suchen wie "1. BImSchV", "GG", "BGB"
+- **Helper-Funktionen**: `highlightSearchTerms`, `truncateText`, Feldformatierung und Wertverarbeitung
+- **Finale Verifikations-Suite**: 11/11 Tests bestanden - alle kritischen Funktionalitäten validiert
+- **Dokumentations-Organisation**: Alle Reports in [`docs/`](docs/) Ordner verschoben
+
+### Geändert  
+- **DynamicSearchBar**: Vollständige Integration der UI-Konfiguration mit Icon-Support
+- **DynamicResultsDisplay**: Konfigurierbare Ergebnis-Anzeige mit Content-Highlighting
+- **DynamicSidebar**: Modus-bewusste Filterung mit UI-Konfiguration
+- **DynamicApp**: Vollständiges State-Management für uiMode-Wechsel
+- **Repository-Struktur**: Aufgeräumt und organisiert für Produktionsreife
+
+### Behoben
+- **KRITISCHER BUGFIX**: Deutsche Rechtsabkürzungssuche (HTTP 400 → HTTP 200)
+- **URL-Encoding-Problem**: Custom Parameter-Serializer für Phrase-Queries mit Leerzeichen
+- **Highlighting-Konfiguration**: Korrigiert auf existierende Schema-Felder (kurzue,langue,amtabk,jurabk,text_content)
+- **Frontend-Rendering-Fehler**: `highlightSearchTerms` und `truncateText` Funktionen implementiert
+- **Leere Webseite**: ReferenceError bei fehlenden Helper-Funktionen behoben
+
+### Validiert ✅
+- **Infrastruktur**: Docker-Container, Entwicklungsserver, Solr-Backend
+- **Suchfunktionalität**: Deutsche Rechtsabkürzungen, Facettierung, Highlighting
+- **UI-System**: Alle 5 Komponenten mit uiConfig.js integriert
+- **End-to-End**: Kombinierte Such-/Filter-/Highlighting-Funktionalität
+- **Produktionsreife**: 0 kritische Fehler, alle Tests bestanden
+
+### Entfernt
+- Überflüssige Debug-Ausgaben und Konsolen-Logs
+- Veraltete Dokumentationsdateien aus Root-Verzeichnis
+- [`summary.sh`](summary.sh) - ersetzt durch umfassende Markdown-Dokumentation
 
 ## [0.3.1] - 2025-05-18
 

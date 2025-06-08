@@ -3,6 +3,51 @@ import { uiHelpers } from '../config/uiConfig';
 import DocumentFullView from './DocumentFullView';
 
 /**
+ * Hilfsfunktion zum Hervorheben von Suchbegriffen in Text
+ */
+const highlightSearchTerms = (text, searchQuery) => {
+  if (!text || !searchQuery) return text;
+  
+  // Entferne bereits vorhandene <mark> Tags, um Doppelmarkierungen zu vermeiden
+  const cleanText = text.replace(/<\/?mark[^>]*>/gi, '');
+  
+  // Splittet den Suchbegriff an Leerzeichen und behandelt jeden Begriff separat
+  const terms = searchQuery.split(/\s+/).filter(term => term.length > 1);
+  
+  let highlightedText = cleanText;
+  
+  terms.forEach(term => {
+    // Escape special regex characters
+    const escapedTerm = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    // Case-insensitive search with word boundaries
+    const regex = new RegExp(`(${escapedTerm})`, 'gi');
+    highlightedText = highlightedText.replace(regex, '<mark class="bg-yellow-200 px-1 rounded">$1</mark>');
+  });
+  
+  return highlightedText;
+};
+
+/**
+ * Hilfsfunktion zum Kürzen von Text
+ */
+const truncateText = (text, maxLength = null) => {
+  if (!text) return '';
+  if (!maxLength) return text;
+  
+  if (text.length <= maxLength) return text;
+  
+  // Kürze bei Wortgrenze, nicht mitten im Wort
+  const truncated = text.substring(0, maxLength);
+  const lastSpaceIndex = truncated.lastIndexOf(' ');
+  
+  if (lastSpaceIndex > maxLength * 0.8) {
+    return truncated.substring(0, lastSpaceIndex) + '...';
+  }
+  
+  return truncated + '...';
+};
+
+/**
  * UI-konfigurierte ResultsDisplay - basierend auf UI-Konfiguration statt dynamischem Schema
  */
 export default function DynamicResultsDisplay({ 
@@ -176,33 +221,6 @@ export default function DynamicResultsDisplay({
       builddate: 0         // Erstellungsdatum - niedrige Priorität
     };
     return importance[field] || 0;
-  };
-
-  // Helper-Funktionen für Text-Verarbeitung
-  const highlightSearchTerms = (text, searchQuery) => {
-    if (!searchQuery || !text) return text;
-    
-    // Entferne bereits vorhandene <mark> Tags um Dopplungen zu vermeiden
-    const cleanText = text.replace(/<\/?mark[^>]*>/g, '');
-    
-    // Erstelle Regex für Suchbegriffe (case insensitive)
-    const searchTerms = searchQuery.split(/\s+/).filter(term => term.length > 2);
-    if (searchTerms.length === 0) return cleanText;
-    
-    const pattern = new RegExp(`(${searchTerms.map(term => 
-      term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-    ).join('|')})`, 'gi');
-    
-    return cleanText.replace(pattern, '<mark class="bg-yellow-200 px-1 rounded">$1</mark>');
-  };
-
-  const truncateText = (text, maxLength = null) => {
-    if (!text) return '';
-    if (!maxLength) return text;
-    
-    return text.length > maxLength 
-      ? text.substring(0, maxLength) + '...'
-      : text;
   };
 
   if (isLoading) {

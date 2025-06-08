@@ -1,7 +1,7 @@
 {
     "name": "asra",
-    "version": "0.3.1",
-    "description": "Apache Solr Research Application",
+    "version": "1.0.0",
+    "description": "Apache Solr Research Application - Configurable UI with German Legal Document Support",
     "private": true,
     "type": "module",
     "scripts": {
