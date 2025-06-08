@@ -19,6 +19,30 @@ und dieses Projekt folgt [Semantischer Versionierung](https://semver.org/lang/de
 - Theme-Wechsler für hellen/dunklen Modus
 - Export-Funktionen (PDF, CSV)
 
+## [1.0.1] - 2025-06-08
+
+### 🔧 Patch Release: Kritische Suchfunktions-Bugfixes
+
+### Behoben
+- **KRITISCHER BUGFIX**: Case-insensitive Suche für deutsche Rechtsabkürzungen
+  - Problem: Suche nach "gg" fand keine Dokumente mit "GG" in "Amtliche Abkürzung" Modus
+  - Lösung: Solr-Schema-Felder `jurabk` und `amtabk` von `type="string"` auf `type="text_de_exact"` geändert
+  - Ergebnis: Vollständige case-insensitive Funktionalität für alle deutschen Rechtsabkürzungen
+- **Filter-Display-Konfiguration behoben**
+  - Problem: Nur 1-2 Filter wurden angezeigt statt der konfigurierten Filter
+  - Lösung: `getContextualFacets()` in `schemaService.js` aktualisiert um UI-konfigurierte Filter zu verwenden
+  - Ergebnis: Filter zeigen jetzt korrekt basierend auf verfügbaren Daten
+
+### Geändert
+- **Solr-Schema**: Felder `jurabk` und `amtabk` nutzen jetzt `LowerCaseFilterFactory` für case-insensitive Matching
+- **schemaService.js**: `getContextualFacets()` Funktion verwendet UI-Konfiguration statt dynamische Schema-Felder
+- **Infrastruktur**: Solr Core neu erstellt und Demo-Daten mit aktualisiertem Schema re-indexiert
+
+### Technische Details
+- Solr-Container neugestartet und Core mit neuer Schema-Konfiguration erstellt
+- Alle Demo-Dokumente erfolgreich mit case-insensitive Schema re-indexiert
+- Debug-Logging entfernt nach erfolgreicher Problemdiagnose
+
 ## [1.0.0] - 2025-06-08
 
 ### 🎉 Major Release: Konfigurierbare UI-Struktur PRODUCTION READY
