@@ -152,11 +152,11 @@ export const searchDocuments = async (query, searchMode = 'all', filters = {}) =
           rows: 20
         };
       } else {
-        // eDisMax Query Parser für bessere Relevanz
-        // Grund: Verwende einfachere Struktur ohne übermäßig komplexe verschachtelte Queries
+        // eDisMax Query Parser für bessere Relevanz mit Wildcard-Unterstützung für deutsche Rechtsabkürzungen
+        // Grund: Deutsche Rechtsabkürzungen wie "BImSchV" müssen auch "BImSchV 1 2010" finden
         queryParams = {
           defType: 'edismax',
-          q: query,
+          q: `${query} OR *${query}*`,  // Sowohl exakte als auch Wildcard-Suche
           qf: 'kurzue langue text_content titel amtabk jurabk',
           wt: 'json',
           rows: 20,
