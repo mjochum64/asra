@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react'; // Added useRef
 import { uiHelpers } from '../config/uiConfig';
 import DocumentFullView from './DocumentFullView';
 import ResultItem from './ResultItem'; // Import the new ResultItem component
@@ -17,11 +17,13 @@ export default function DynamicResultsDisplay({
   error = null,
   uiMode = 'normal',
   onSearchExecuteRefine, // New prop for framework navigation
-  onNavigateToDocumentById // Added prop from DynamicApp
+  onNavigateToDocumentById, // Added prop from DynamicApp
+  lastSearchMode // Added prop from DynamicApp
   // onSelectedDocumentChange // Removed for revert
 }) {
   const [resultConfig, setResultConfig] = useState({ primary: [], secondary: [], metadata: [] });
   const [selectedDocument, setSelectedDocument] = useState(null);
+  const prevResultsRef = useRef(); // Ref to store previous results for auto-selection logic
 
   // Effect to call onSelectedDocumentChange when selectedDocument changes - REMOVED FOR REVERT
   // useEffect(() => {
@@ -29,6 +31,20 @@ export default function DynamicResultsDisplay({
   //     onSelectedDocumentChange(selectedDocument);
   //   }
   // }, [selectedDocument, onSelectedDocumentChange]);
+
+  useEffect(() => {
+    // Auto-select document if it's a single result from a direct ID lookup
+    if (results && results.length === 1 && lastSearchMode === 'id_lookup_direct') {
+      // Check if results have actually changed to prevent re-selection on mere re-renders
+      // This is a simple reference check; for deep comparison, a more robust method would be needed,
+      // but for this specific use case (results array changing after ID lookup), it should be effective.
+      if (prevResultsRef.current !== results) {
+        setSelectedDocument(results[0]);
+      }
+    }
+    // Update prevResultsRef with the current results for the next render
+    prevResultsRef.current = results;
+  }, [results, lastSearchMode, setSelectedDocument]); // Added setSelectedDocument as per React Hook linting suggestion
 
   useEffect(() => {
     loadDisplayConfiguration();

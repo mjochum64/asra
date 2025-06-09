@@ -102,7 +102,8 @@ export default function DynamicApp() {
         setSearchResults([frameworkDocument]);
         setTotalResults(1);
         setCurrentFacets({});
-        setLastSearchQuery(`Rahmendokument: ${frameworkId}`);
+        setLastSearchQuery(`id:${frameworkId}`); // Standardized query format
+        setLastSearchMode('id_lookup_direct'); // Set search mode for this specific type of search
         // Automatically select the fetched framework document to open it in DocumentFullView
         // This assumes DocumentFullView will be shown if searchResults has one item and it's selected.
         // The selection logic itself is in DynamicResultsDisplay, which needs to be adapted
@@ -112,12 +113,14 @@ export default function DynamicApp() {
         setError(`Rahmendokument mit ID ${frameworkId} nicht gefunden.`);
         setSearchResults([]);
         setTotalResults(0);
+        setLastSearchMode('all'); // Reset search mode on failure
       }
     } catch (err) {
       console.error('Framework navigation search failed:', err);
       setError(err.message || `Fehler beim Laden des Rahmendokuments ${frameworkId}`);
       setSearchResults([]);
       setTotalResults(0);
+      setLastSearchMode('all'); // Reset search mode on error
     } finally {
       setIsLoading(false);
     }
@@ -207,7 +210,8 @@ export default function DynamicApp() {
               error={error}
               uiMode={uiMode}
               onSearchExecuteRefine={handleNavigateToFrameworkSearch}
-              onNavigateToDocumentById={handleNavigateToFrameworkSearch} // Added prop for DocumentFullView link
+              onNavigateToDocumentById={handleNavigateToFrameworkSearch}
+              lastSearchMode={lastSearchMode} // Pass lastSearchMode to DynamicResultsDisplay
             />
           </div>
 
