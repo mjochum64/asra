@@ -87,19 +87,40 @@ export default function DocumentFullView({ document, onClose }) {
         
         {/* Header with Close Button */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
-          <div className="flex items-center flex-grow min-w-0"> {/* Added flex-grow and min-w-0 here */}
-            <h2 className="text-xl font-semibold text-gray-900 mr-3 truncate">Dokumentenansicht</h2> {/* Added truncate */}
-            <div className="flex items-center"> {/* Added a wrapper for DocumentExport for better control */}
+          <div className="flex items-center flex-grow min-w-0">
+            <h2 className="text-xl font-semibold text-gray-900 mr-3 truncate">Dokumentenansicht</h2>
+            <div className="flex items-center space-x-1"> {/* Wrapper for export and toggle */}
               <DocumentExport
                 document={getCurrentDocument()}
                 frameworkId={frameworkId}
                 documentType={localDocumentType}
               />
+              <button
+                onClick={() => setIsMetadataVisible(!isMetadataVisible)}
+                className="p-2 text-gray-500 hover:text-blue-600 transition-colors"
+                title={isMetadataVisible ? "Metadaten ausblenden" : "Metadaten einblenden"}
+              >
+                {isMetadataVisible ? (
+                  // Icon for "hide sidebar" (e.g., layout-sidebar-left-collapse)
+                  <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="9" y1="3" x2="9" y2="21"></line>
+                    <path d="m14 9-3 3 3 3"></path>
+                  </svg>
+                ) : (
+                  // Icon for "show sidebar" (e.g., layout-sidebar-left-expand)
+                  <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="9" y1="3" x2="9" y2="21"></line>
+                    <path d="m15 9 3 3-3 3"></path>
+                  </svg>
+                )}
+              </button>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors ml-4 flex-shrink-0" /* Added ml-4 and flex-shrink-0 */
+            className="text-gray-400 hover:text-gray-600 transition-colors ml-4 flex-shrink-0"
           >
             <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -241,33 +262,16 @@ export default function DocumentFullView({ document, onClose }) {
           </div>
 
           {/* Rechte Sidebar - Metadaten und Export */}
-          <div className="w-80 bg-gray-50 border-l border-gray-200 overflow-y-auto">
+          <div className={`bg-gray-50 border-l border-gray-200 overflow-y-auto transition-all duration-300 ease-in-out ${isMetadataVisible ? 'w-80' : 'w-0 overflow-hidden'}`}>
             
             {/* Metadaten */}
-            <div className="p-6">
-              <div
-                className="flex items-center justify-between cursor-pointer mb-4 group" // Added group for hover effect on h3
-                onClick={() => setIsMetadataVisible(!isMetadataVisible)}
-              >
-                <h3 className="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors"> {/* Added hover effect */}
-                  Metadaten
-                </h3>
-                <button className="text-gray-500 hover:text-blue-600 transition-colors"> {/* Consistent hover color */}
-                  {isMetadataVisible ? (
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 transform rotate-180" viewBox="0 0 20 20" fill="currentColor"> {/* Icon rotation */}
-                      <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                    </svg>
-                  ) : (
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                    </svg>
-                  )}
-                </button>
-              </div>
+            {/* Child div for content, controls opacity and padding */}
+            <div className={`transition-opacity duration-300 ease-in-out overflow-hidden ${isMetadataVisible ? 'opacity-100 p-6' : 'opacity-0 p-0'}`}>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Metadaten</h3>
               
-              {isMetadataVisible && (
-                <>
-                  {/*
+              {/* Content of metadata, will be hidden by opacity-0 and p-0 and overflow-hidden on parent */}
+              <>
+                {/*
                 Metadata rendering section assessed for potential extraction into MetadataDisplay.jsx.
                 Decision: For this subtask, the complexity is manageable within DocumentFullView.jsx.
                 Extraction is not performed at this time to keep focus on text formatter centralization.
@@ -314,7 +318,6 @@ export default function DocumentFullView({ document, onClose }) {
                     </div>
                   )}
                 </>
-              )}
             </div>
           </div>
         </div>
