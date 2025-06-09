@@ -1,8 +1,8 @@
 # Project Tasks: ASRA – Deutsche Gesetze
 
 ## 🎯 Projektstatuts: Phase 1.1 VOLLSTÄNDIG ABGESCHLOSSEN ✅
-**Stand**: 8. Juni 2025  
-**Version**: 1.1.1 PRODUCTION READY mit optimierter Export-Funktionalität  
+**Stand**: 8. Juni 2025
+**Version**: 1.1.1 PRODUCTION READY mit optimierter Export-Funktionalität
 **Status**: HTML-Felder-Integration und Export-Optimierung erfolgreich implementiert 🚀
 
 ### 🏆 Erfolgreich abgeschlossene Hauptziele:
@@ -163,7 +163,7 @@
 
 **🧪 FINALE VERIFIKATIONS-SUITE ABGESCHLOSSEN (08.06.2025)**: Komplette Endkontrolle erfolgreich
 - [x] **Infrastruktur-Tests**: Docker-Container, Entwicklungsserver, Solr-Backend (alle ✅)
-- [x] **Funktionalitäts-Tests**: Deutsche Rechtsabkürzungen, Facettierung, Highlighting (alle ✅)  
+- [x] **Funktionalitäts-Tests**: Deutsche Rechtsabkürzungen, Facettierung, Highlighting (alle ✅)
 - [x] **UI-Konfigurations-Tests**: uiConfig.js, Komponenten-Integration, Mode-Switcher (alle ✅)
 - [x] **End-to-End-Tests**: Kombinierte Such-/Filter-/Highlighting-Funktionalität (✅)
 - [x] **Produktionsreife**: 11/11 Tests bestanden, 0 kritische Fehler verbleibend
@@ -224,7 +224,7 @@
 - [x] **Typ-Unterscheidung**: `norm_type` unterscheidet "article", "norm", etc.
 - [x] **Volltext-Anzeige**: HTML-Formatierung wird in DocumentFullView korrekt gerendert
 
-**🎯 ERGEBNIS**: Norm-Level-Indexierung vollständig implementiert - Benutzer finden jetzt spezifische Rechtsnormen statt ganzer Gesetzbücher, mit erhaltener Originalformatierung
+**🎯 ERGEBNIS**: Norm-Level-Indexierung vollständig implementiert - Benutzer finden jetzt spezifische Rechtsnormen statt ganzer Gesetzbücher, mit erhaltener Originalformatierung.
 
 ## 9. Zukünftige Features (Nach Phase 1)
 
@@ -308,8 +308,8 @@
   - `getContextualFacets()` verwendet deutsche Felder in expliziter OR-Query
 - [x] **Solr-Service angepasst** (`solrService.js`):
   - Explizite OR-Query für kombinierte Text- und String-Feld-Suche
-  - Text-Felder: `kurzue:(query) OR langue:(query) OR text_content:(query)`
-  - String-Felder: `amtabk:*query* OR jurabk:*query*`
+  - Text-Felder: `kurzue:(${query}) OR langue:(${query}) OR text_content:(${query})`
+  - String-Felder: `amtabk:"${query}" OR jurabk:"${query}"`
   - Highlighting-Felder um deutsche Felder erweitert
 - [x] **URL-Kodierungsprobleme behoben**: 400 Bad Request Fehler durch korrekte `encodeURIComponent()` Verwendung
 - [x] **Query-Syntax optimiert**: Von DisMax/eDisMax zu expliziter OR-Query für bessere String-Feld-Kontrolle
@@ -325,14 +325,14 @@
 - [x] **Solr-Query-Tests**: Validierung verschiedener Query-Muster:
   - `amtabk:"1. BImSchV"` (exakt) ✅
   - `amtabk:*BImSchV*` (einfach) ✅
-  - `amtabk:*1.*` (einfach) ✅ 
+  - `amtabk:*1.*` (einfach) ✅
   - `amtabk:*1. BImSchV*` (mit Leerzeichen) ❌
   - `amtabk:*1.* AND amtabk:*BImSchV*` (compound AND) ✅
 - [x] **Helper-Funktion implementiert**: `buildGermanLegalQuery()` in beiden Services:
   - Erkennt Leerzeichen in Queries automatisch
   - Splittet Queries mit Leerzeichen in compound AND-Patterns
   - Unterstützt sowohl exakte Matches als auch Wildcard-Varianten
-- [x] **SolrService aktualisiert**: 
+- [x] **SolrService aktualisiert**:
   - Feldspezifische Suchen für `amtabk` und `jurabk` verwenden compound queries
   - Allgemeine Suche nutzt Helper-Funktion für deutsche Rechtsfelder
   - Kombiniert exakte und Wildcard-Ansätze: `exact OR wildcard`
@@ -396,3 +396,27 @@
 - [ ] Autocomplete-Funktionalität basierend auf Solr-Begriffen
 - [ ] Erweiterte Sortieroptionen in ResultsDisplay
 - [ ] Suchhistorie im LocalStorage
+
+## 13. Code Quality & Refactoring (Hinzugefügt am 2025-06-09)
+
+### 13.1 Frontend Modularization (✅ VOLLSTÄNDIG ABGESCHLOSSEN - 2025-06-09)
+- **Ziel**: Verbesserung der Code-Struktur, Lesbarkeit und Wartbarkeit durch Modularisierung.
+- [x] **DocumentExport.jsx Refactoring**:
+    - [x] HTML-Export-Logik nach `src/lib/htmlExporter.js` extrahiert.
+    - [x] PDF-Export-Logik nach `src/lib/pdfExporter.js` extrahiert.
+    - [x] Zugehörige Textformatierungs- und Datei-Utilities nach `src/utils/textFormatters.jsx` und `src/utils/fileUtils.js` verschoben.
+- [x] **DynamicResultsDisplay.jsx Refactoring**:
+    - [x] `ResultItem.jsx` Komponente für einzelne Suchergebnisse erstellt.
+    - [x] Text-Utilities (`highlightSearchTerms`, `truncateText`) nach `src/utils/textFormatters.jsx` verschoben.
+- [x] **DocumentFullView.jsx Refactoring**:
+    - [x] Text-Formatierungshelfer (`getContentForDisplay`, `formatLegalTextAsFallback`) nach `src/utils/textFormatters.jsx` verschoben.
+- [x] **Zentralisierung von Utility-Funktionen**:
+    - [x] `src/utils/queryUtils.js` für `buildGermanLegalQuery` erstellt.
+    - [x] `src/utils/documentUtils.js` für Dokument-spezifische Helfer (aus `uiHelpers`).
+    - [x] `src/utils/formatUtils.js` für `formatFieldValue` (aus `uiHelpers`).
+    - [x] `uiHelpers` in `src/config/uiConfig.js` bereinigt.
+- [x] **Service-Klärung**:
+    - [x] Kommentare in `schemaService.js` zur Verdeutlichung der Rollenverteilung ggü. `uiConfig.js` hinzugefügt.
+- [x] **Build-Fix**:
+    - [x] `textFormatters.js` zu `textFormatters.jsx` umbenannt und Importe korrigiert, um Build-Fehler zu beheben.
+- **Ergebnis**: Deutlich verbesserte Code-Organisation, Reduktion von Duplikaten und klarere Verantwortlichkeiten der Module.

@@ -18,6 +18,25 @@ und dieses Projekt folgt [Semantischer Versionierung](https://semver.org/lang/de
 - Webcrawler-Integration für automatischen Datenimport
 - Theme-Wechsler für hellen/dunklen Modus
 
+## [1.1.2] - 2025-06-09 <!-- Assuming current date for consistency with example -->
+
+### Geändert
+- **Codebase Refactoring for Modularity**:
+    - Refactored `DocumentExport.jsx`, `DynamicResultsDisplay.jsx`, and `DocumentFullView.jsx` to improve modularity and readability.
+    - Extracted export logic (HTML/PDF) from `DocumentExport.jsx` into `src/lib/htmlExporter.js` and `src/lib/pdfExporter.js`.
+    - Created `ResultItem.jsx` to handle individual search result rendering, simplifying `DynamicResultsDisplay.jsx`.
+    - Centralized various utility functions into dedicated modules:
+        - `src/utils/textFormatters.jsx` (for text manipulation, JSX formatting, highlighting, truncation - renamed from `.js` to `.jsx`).
+        - `src/utils/fileUtils.js` (for `generateFilename`, `downloadFile`).
+        - `src/utils/queryUtils.js` (for `buildGermanLegalQuery`).
+        - `src/utils/documentUtils.js` (for document-specific helpers like `isFrameworkDocument`).
+        - `src/utils/formatUtils.js` (for general value formatting like `formatFieldValue`).
+    - Streamlined `uiHelpers` in `src/config/uiConfig.js`.
+    - Added clarifying comments to `schemaService.js` regarding the roles of its dynamic functions versus `uiConfig`-driven approaches.
+
+### Behoben
+- **Buildfehler**: Korrektur der Dateiendung für `textFormatters.js` zu `textFormatters.jsx`, da die Datei JSX-Syntax enthält. Dies behebt einen Buildfehler, der von Vite/Rollup gemeldet wurde.
+
 ## [1.1.1] - 2025-06-09
 
 ### 🚀 Feature Release: Optimierte Export-Funktionalität und Dokumentenansicht
@@ -84,7 +103,7 @@ und dieses Projekt folgt [Semantischer Versionierung](https://semver.org/lang/de
 
 ### Hinzugefügt
 - **Konfigurierbare UI-Modi**: Normal-Modus (5 benutzerfreundliche Felder) vs. Experten-Modus (alle Solr-Felder)
-- **ModeSwitcher-Komponente**: Toggle zwischen vereinfachter und erweiteter Suche
+- **ModeSwitcher-Komponente**: Toggle zwischen vereinfachter und erweiterter Suche
 - **uiConfig.js**: Zentrale Konfigurationsdatei für UI-Bereiche (Suche, Trefferliste, Volltext)
 - **Deutsche Rechtsabkürzungen**: Vollständige Unterstützung für Suchen wie "1. BImSchV", "GG", "BGB"
 - **Helper-Funktionen**: `highlightSearchTerms`, `truncateText`, Feldformatierung und Wertverarbeitung

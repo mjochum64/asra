@@ -465,30 +465,7 @@ export const uiHelpers = {
     return filters.sort((a, b) => (a.priority || 999) - (b.priority || 999));
   },
 
-  /**
-   * Formatiert Feldwerte basierend auf der Konfiguration
-   */
-  formatFieldValue(value, format) {
-    if (!value) return '';
-    
-    switch (format) {
-      case 'date':
-        return new Date(value).toLocaleDateString('de-DE');
-      case 'datetime':
-        return new Date(value).toLocaleString('de-DE');
-      case 'language':
-        return value === 'de' ? 'Deutsch' : value.toUpperCase();
-      case 'capitalize':
-        return value.charAt(0).toUpperCase() + value.slice(1);
-      case 'array':
-        return Array.isArray(value) ? value.join(', ') : value;
-      case 'table':
-        // Spezielle Formatierung für Tabellendaten
-        return Array.isArray(value) ? value.join('\n') : value;
-      default:
-        return value;
-    }
-  },
+  // formatFieldValue moved to src/utils/formatUtils.js
 
   /**
    * Holt den Wert für ein Feld mit Fallback-Unterstützung
@@ -513,7 +490,7 @@ export const uiHelpers = {
           return {
             value: Array.isArray(fallbackValue) ? fallbackValue[0] : fallbackValue,
             sourceField: fallbackField,
-            label: this.getFieldLabel(fallbackField)
+            label: this.getFieldLabel(fallbackField) // Still uses local getFieldLabel
           };
         }
       }
@@ -543,63 +520,12 @@ export const uiHelpers = {
       .split(' ')
       .map(word => word.charAt(0).toUpperCase() + word.slice(1))
       .join(' ');
-  },
-
-  /**
-   * Erkennt ob es sich um ein Rahmendokument handelt (z.B. BJNR000010949)
-   */
-  isFrameworkDocument(documentId) {
-    if (!documentId) return false;
-    // Rahmendokumente haben nur die Basis-BJNR-Kennung ohne BJNE/BJNG-Suffix
-    return documentId.startsWith('BJNR') && !documentId.includes('BJNE') && !documentId.includes('BJNG');
-  },
-
-  /**
-   * Erkennt Einzelnormen (BJNE) vs. Gliederungseinheiten (BJNG)
-   */
-  getDocumentType(documentId) {
-    if (!documentId) return 'unknown';
-    
-    if (this.isFrameworkDocument(documentId)) {
-      return 'framework'; // Rahmendokument (ganzes Gesetz)
-    } else if (documentId.includes('BJNE')) {
-      return 'norm'; // Einzelnorm (Artikel, Paragraph)
-    } else if (documentId.includes('BJNG')) {
-      return 'section'; // Gliederungseinheit (Abschnitt, Kapitel)
-    }
-    
-    return 'unknown';
-  },
-
-  /**
-   * Extrahiert die Basis-BJNR-Kennung aus einer Dokument-ID
-   */
-  getFrameworkId(documentId) {
-    if (!documentId) return null;
-    
-    // Finde die Position des ersten BJNE oder BJNG
-    const bjnePos = documentId.indexOf('BJNE');
-    const bjngPos = documentId.indexOf('BJNG');
-    
-    let cutPos = documentId.length;
-    if (bjnePos !== -1) cutPos = Math.min(cutPos, bjnePos);
-    if (bjngPos !== -1) cutPos = Math.min(cutPos, bjngPos);
-    
-    return documentId.substring(0, cutPos);
-  },
-
-  /**
-   * Generiert eine benutzerfreundliche Anzeige für Dokument-Typen
-   */
-  getDocumentTypeLabel(documentId) {
-    const type = this.getDocumentType(documentId);
-    switch (type) {
-      case 'framework': return '📋 Gesetz';
-      case 'norm': return '📄 Artikel/Paragraph';
-      case 'section': return '📂 Gliederung';
-      default: return '📄 Dokument';
-    }
   }
+
+  // isFrameworkDocument moved to src/utils/documentUtils.js
+  // getDocumentType moved to src/utils/documentUtils.js
+  // getFrameworkId moved to src/utils/documentUtils.js
+  // getDocumentTypeLabel moved to src/utils/documentUtils.js
 };
 
 export default uiConfig;

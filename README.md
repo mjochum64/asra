@@ -175,6 +175,8 @@ Die Anwendung folgt einer modularen Architektur:
   - `schemaService.js` - Dynamische Facetten und Schema-Management
 - Konfiguration in `/src/config`
   - `uiConfig.js` - Zentrale UI-Konfiguration für Modi und Feldanzeige
+- Hilfsmodule und Bibliotheken in `/src/lib` (z.B. für Export-Logik)
+- Allgemeine Hilfsfunktionen in `/src/utils` (z.B. Textformatierung, Dateioperationen)
 - Docker-Konfiguration in `/docker`
   - Nginx als Reverse-Proxy und statischer Dateiserver in `/docker/nginx`
   - Solr-Konfiguration in `/docker/solr`
@@ -238,6 +240,8 @@ Dieses Projekt verwendet semantische Versionierung (SemVer). Alle Änderungen we
 - `src/services/`: API-Services
   - `solrService.js`: Hauptschnittstelle zu Solr mit Mock-Funktionalität
   - `schemaService.js`: Dynamische Facetten und Schema-Management
+- `src/lib/`: Wiederverwendbare Bibliotheksmodule (z.B. `htmlExporter.js`, `pdfExporter.js`)
+- `src/utils/`: Allgemeine Hilfsfunktionen (z.B. `textFormatters.jsx`, `fileUtils.js`, `queryUtils.js`, `documentUtils.js`, `formatUtils.js`)
 - `src/config/`: Konfiguration
   - `uiConfig.js`: Zentrale UI-Konfiguration für Modi und Feldanzeige
 - `vite.config.js`: Konfiguration des Entwicklungsservers und Proxy
