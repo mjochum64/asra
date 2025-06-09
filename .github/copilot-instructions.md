@@ -1,6 +1,6 @@
-# GitHub Copilot Anweisungen für ASRA – GermanLaw
+# GitHub Copilot Anweisungen für ASRA – Deutsche Gesetze
 
-Diese Anweisungen dienen als Leitfaden für die Entwicklung mit GitHub Copilot im ASRA – GermanLaw-Projekt.
+Diese Anweisungen dienen als Leitfaden für die Entwicklung mit GitHub Copilot im ASRA – Deutsche Gesetze-Projekt.
 
 ## Externe Dokumentation
 

@@ -1,4 +1,4 @@
-# Project Tasks: ASRA – GermanLaw
+# Project Tasks: ASRA – Deutsche Gesetze
 
 ## 🎯 Projektstatuts: Phase 1.1 VOLLSTÄNDIG ABGESCHLOSSEN ✅
 **Stand**: 8. Juni 2025  

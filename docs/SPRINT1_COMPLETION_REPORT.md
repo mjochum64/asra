@@ -1,4 +1,4 @@
-# Sprint 1 Completion Report - ASRA – GermanLaw Dynamic Facets
+# Sprint 1 Completion Report - ASRA – Deutsche Gesetze Dynamic Facets
 **Datum**: 7. Juni 2025  
 **Sprint**: Facetten-Filter (KW 23-24)  
 **Status**: ✅ VOLLSTÄNDIG ABGESCHLOSSEN

@@ -18,35 +18,23 @@ export const uiConfig = {
     // Standard-Suchmodi für normale Benutzer
     modes: [
       {
-        id: 'all',
-        label: 'Alle Felder',
-        description: 'Durchsucht Titel, Inhalt und deutsche Rechtsfelder',
-        icon: '🔍',
-        primary: true
-      },
-      {
         id: 'text_content',
         label: 'Volltext',
         description: 'Durchsucht den gesamten Dokumentinhalt',
-        icon: '📄'
+        icon: '📄',
+        primary: true  // Volltext als Standard
       },
       {
-        id: 'kurzue',
-        label: 'Kurztitel',
-        description: 'Suche in deutschen Rechtsdokument-Kurztiteln',
-        icon: '📋'
+        id: 'all',
+        label: 'Alle Felder',
+        description: 'Durchsucht Titel, Inhalt und deutsche Rechtsfelder',
+        icon: '🔍'
       },
       {
         id: 'amtabk',
         label: 'Amtliche Abkürzung',
         description: 'z.B. "1. BImSchV", "GG", "BGB"',
         icon: '⚖️'
-      },
-      {
-        id: 'jurabk',
-        label: 'Juristische Abkürzung', 
-        description: 'Juristische Kurznamen für Gesetze',
-        icon: '📚'
       }
     ],
     

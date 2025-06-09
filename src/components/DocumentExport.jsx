@@ -386,7 +386,7 @@ export default function DocumentExport({ document, frameworkId }) {
     </div>
 
     <div class="footer">
-        Generiert von ASRA – GermanLaw<br>
+        Generiert von ASRA – Deutsche Gesetze<br>
         ${new Date().toLocaleString('de-DE')}
     </div>
 </body>
@@ -591,7 +591,7 @@ export default function DocumentExport({ document, frameworkId }) {
       // Footer
       checkPageBreak(15);
       yPosition += 20;
-      addTextWithWrap('Generiert von ASRA – GermanLaw', 8);
+      addTextWithWrap('Generiert von ASRA – Deutsche Gesetze', 8);
       addTextWithWrap(new Date().toLocaleString('de-DE'), 8);
 
       // Grund: Verwende jsPDF's outline/bookmark Feature (falls verfügbar)

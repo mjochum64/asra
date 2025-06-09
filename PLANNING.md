@@ -1,8 +1,8 @@
-# Project Planning: ASRA – GermanLaw
+# Project Planning: ASRA – Deutsche Gesetze
 
 ## Project Overview
 
-ASRA – GermanLaw ist eine spezialisierte webbasierte Anwendung für die Recherche im Bundesrecht, die eine benutzerfreundliche Oberfläche für die Suche in Apache Solr-indizierten deutschen Rechtsdokumenten bietet. Das Projekt dient als praktisches Werkzeug für die Rechtsrecherche und als Demonstration der Solr-Suchfähigkeiten für juristische Anwendungen.
+ASRA – Deutsche Gesetze ist eine spezialisierte webbasierte Anwendung für die Recherche im Bundesrecht, die eine benutzerfreundliche Oberfläche für die Suche in Apache Solr-indizierten deutschen Rechtsdokumenten bietet. Das Projekt dient als praktisches Werkzeug für die Rechtsrecherche und als Demonstration der Solr-Suchfähigkeiten für juristische Anwendungen.
 
 **Projektstatuts**: ✅ **Phase 1 VOLLSTÄNDIG ABGESCHLOSSEN** (Version 1.0.0 PRODUCTION READY)  
 **Qualitätssicherung**: 11/11 Tests bestanden, 0 kritische Bugs  

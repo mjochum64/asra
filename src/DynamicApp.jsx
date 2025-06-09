@@ -89,32 +89,29 @@ export default function DynamicApp() {
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">
-                ASRA – GermanLaw
-              </h1>
-              <p className="text-sm text-gray-600">
-                Recherchieren im Bundesrecht
-              </p>
+            <div className="flex items-center space-x-4">
+              {/* Logo */}
+              <img 
+                src="/logo_small.png" 
+                alt="ASRA – Deutsche Gesetze Logo" 
+                className="h-12 w-auto object-contain"
+              />
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">
+                  ASRA – Deutsche Gesetze
+                </h1>
+                <p className="text-sm text-gray-600">
+                  Recherchieren im Bundesrecht
+                </p>
+              </div>
             </div>
             
             <div className="flex items-center space-x-4">
-              {/* UI Mode Switcher */}
+              {/* UI Mode Switcher - kompakter */}
               <ModeSwitcher 
                 currentMode={uiMode} 
                 onModeChange={setUIMode} 
               />
-              
-              {/* Schema Info Badge */}
-              {schemaInfo && (
-                <div className="bg-solr-primary text-white px-4 py-2 rounded-lg text-sm">
-                  <div className="font-medium">Schema erkannt</div>
-                  <div className="text-xs opacity-90">
-                    {schemaInfo.searchableFields.length} durchsuchbare Felder •{' '}
-                    {schemaInfo.facetableFields.length} filterbare Felder
-                  </div>
-                </div>
-              )}
             </div>
           </div>
         </div>
@@ -126,7 +123,11 @@ export default function DynamicApp() {
           {/* Hauptbereich */}
           <div className="lg:col-span-3 space-y-6">
             {/* Dynamische Suchleiste */}
-            <DynamicSearchBar onSearch={handleSearch} uiMode={uiMode} />
+            <DynamicSearchBar 
+              onSearch={handleSearch} 
+              uiMode={uiMode} 
+              schemaInfo={schemaInfo}
+            />
             
             {/* Schema-Informationen */}
             {schemaInfo && !isLoading && uiMode === 'expert' && (

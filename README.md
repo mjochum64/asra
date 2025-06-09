@@ -1,6 +1,6 @@
-# ASRA – GermanLaw
+# ASRA – Deutsche Gesetze
 
-ASRA – GermanLaw ist eine spezialisierte Webapplikation für die Recherche im Bundesrecht, die Apache Solr als Suchbackend verwendet. Die Anwendung bietet eine benutzerfreundliche Oberfläche, um deutsche Rechtsdokumente effizient zu durchsuchen und zu analysieren.
+ASRA – Deutsche Gesetze ist eine spezialisierte Webapplikation für die Recherche im Bundesrecht, die Apache Solr als Suchbackend verwendet. Die Anwendung bietet eine benutzerfreundliche Oberfläche, um deutsche Rechtsdokumente effizient zu durchsuchen und zu analysieren.
 
 ## Funktionen
 
@@ -46,15 +46,9 @@ ASRA – GermanLaw ist eine spezialisierte Webapplikation für die Recherche im 
 
 ### Hauptansicht
 ![ASRA Hauptansicht](docs/images/asra-ui-screenshot.png)
-*Die modernisierte Benutzeroberfläche von ASRA mit Navbar, Suchleiste und Ergebnisanzeige*
 
 ### Suchfunktionalität
-![ASRA Suche](docs/images/asra-search-screenshot.png)
-*Suchergebnisse mit Highlighting und Metadatenanzeige*
-
-### Responsive Design
-![ASRA Mobile](docs/images/asra-mobile-screenshot.png)
-*ASRA auf einem mobilen Gerät*
+![ASRA Suche](docs/images/asra-volltextanzeige.png)
 
 ## Installation
 
