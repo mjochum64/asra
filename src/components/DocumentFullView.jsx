@@ -276,19 +276,8 @@ export default function DocumentFullView({ document, onClose, onNavigateToFramew
                     <div className={getFieldStyle(field.style)}>
                       {field.searchable && highlightedContent && field.solrField === 'text_content' ? (
                         <div dangerouslySetInnerHTML={{ __html: highlightedContent }} />
-                      ) : field.solrField === 'text_content_html' || field.solrField === 'fussnoten_content_html' ? (
-                        // Render HTML content fields with preserved formatting
-                        <div 
-                          className="prose prose-sm max-w-none" 
-                          dangerouslySetInnerHTML={{ __html: getCurrentDocument()[field.solrField] }} 
-                        />
-                      ) : field.solrField === 'text_content' ? (
-                        // Grund: Verwende bevorzugt HTML-Felder, mit Fallback auf Textformatierung
-                        getContentForDisplay(getCurrentDocument(), 'text_content')
                       ) : (
-                        <div>
-                          {formatFieldValue(getCurrentDocument()[field.solrField], field.format)}
-                        </div>
+                        getContentForDisplay(getCurrentDocument(), field.solrField)
                       )}
                     </div>
                   </div>

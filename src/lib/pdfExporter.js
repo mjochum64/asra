@@ -1,16 +1,16 @@
 import jsPDF from 'jspdf';
 import { searchDocuments } from '../services/solrService'; // Path adjusted
-import { uiHelpers } from '../config/uiConfig'; // Path adjusted
 import { getContentForPDF } from '../utils/textFormatters.jsx'; // Path adjusted
 import { generateFilename } from '../utils/fileUtils'; // Path adjusted
+import { isFrameworkDocument } from '../utils/documentUtils'; // Import hinzugefügt
 
 export const exportAsPDF = async (docs) => {
-    const framework = docs.find(doc => uiHelpers.isFrameworkDocument(doc.id));
+    const framework = docs.find(doc => isFrameworkDocument(doc.id)); // Direkte Funktion verwenden
 
     // Verwende norm_type Feld wie in TableOfContents
     const sections = docs.filter(doc => doc.norm_type === 'section');
     const articles = docs.filter(doc => doc.norm_type === 'article');
-    const specialNorms = docs.filter(doc => doc.norm_type === 'norm' && !uiHelpers.isFrameworkDocument(doc.id));
+    const specialNorms = docs.filter(doc => doc.norm_type === 'norm' && !isFrameworkDocument(doc.id)); // Direkte Funktion verwenden
 
     // Grund: Filtere Gliederungseinheiten ohne Titel aus (wie in TableOfContents)
     const meaningfulSections = sections.filter(section =>
@@ -214,7 +214,8 @@ export const exportAsPDF = async (docs) => {
       }
 
       // Speichere PDF mit aussagekräftigem Namen
-      const filename = generateFilename(framework, 'pdf');
+      const documentForFilename = framework || (docs.length > 0 ? docs[0] : null);
+      const filename = generateFilename(documentForFilename, 'pdf');
       pdf.save(filename);
 
       // Grund: Informiere Benutzer über Navigation mit spezifischen Tipps

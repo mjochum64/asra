@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 import { searchDocuments } from '../services/solrService';
-// import { uiHelpers } from '../config/uiConfig'; // No longer needed directly
-import { exportAsHTML } from '../lib/htmlExporter'; // Adjusted path
-import { exportAsPDF } from '../lib/pdfExporter'; // Adjusted path
-import { generateFilename } from '../utils/fileUtils'; // Adjusted path
-import { isFrameworkDocument } from '../utils/documentUtils'; // Import specific helper
+import { exportAsHTML } from '../lib/htmlExporter';
+import { exportAsPDF } from '../lib/pdfExporter';
+import { generateFilename } from '../utils/fileUtils';
+import { isFrameworkDocument } from '../utils/documentUtils';
 
 /**
  * DocumentExport Component - Export-Funktionen für Rahmendokumente
@@ -19,11 +18,16 @@ export default function DocumentExport({ document, frameworkId }) {
     setExportFormat(format);
 
     try {
-      // Lade alle Unterdokumente des Rahmendokuments
-      // Grund: Verwende korrekte Solr-Query-Syntax ohne parent_document_id
-      const query = frameworkId ? 
-        `id:"${frameworkId}" OR id:${frameworkId}*` :
-        `id:"${document.id}"`;
+      const currentDocumentIsFramework = isFrameworkDocument(document.id);
+      let query;
+
+      if (currentDocumentIsFramework) {
+        // Aktuelles Dokument ist ein Rahmendokument, exportiere es und alle Kinder
+        query = `id:"${document.id}" OR id:${document.id}*`;
+      } else {
+        // Aktuelles Dokument ist eine Norm, exportiere nur diese Norm
+        query = `id:"${document.id}"`;
+      }
         
       const response = await searchDocuments(query, 'all', {}, {
         rows: 1000,

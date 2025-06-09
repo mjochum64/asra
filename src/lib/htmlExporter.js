@@ -1,15 +1,15 @@
 import { searchDocuments } from '../services/solrService';
-import { uiHelpers } from '../config/uiConfig';
 import { getContentForExport } from '../utils/textFormatters.jsx';
 import { generateFilename, downloadFile } from '../utils/fileUtils';
+import { isFrameworkDocument } from '../utils/documentUtils'; // Import hinzugefügt
 
 export const exportAsHTML = async (docs) => {
-    const framework = docs.find(doc => uiHelpers.isFrameworkDocument(doc.id));
+    const framework = docs.find(doc => isFrameworkDocument(doc.id)); // Direkte Funktion verwenden
 
     // Verwende norm_type Feld wie in TableOfContents
     const sections = docs.filter(doc => doc.norm_type === 'section');
     const articles = docs.filter(doc => doc.norm_type === 'article');
-    const specialNorms = docs.filter(doc => doc.norm_type === 'norm' && !uiHelpers.isFrameworkDocument(doc.id));
+    const specialNorms = docs.filter(doc => doc.norm_type === 'norm' && !isFrameworkDocument(doc.id)); // Direkte Funktion verwenden
 
     // Grund: Filtere Gliederungseinheiten ohne Titel aus (wie in TableOfContents)
     const meaningfulSections = sections.filter(section =>
@@ -215,6 +215,7 @@ export const exportAsHTML = async (docs) => {
 </html>`;
 
     // Download der HTML-Datei mit aussagekräftigem Namen
-    const filename = generateFilename(framework, 'html');
+    const documentForFilename = framework || (docs.length > 0 ? docs[0] : null);
+    const filename = generateFilename(documentForFilename, 'html');
     downloadFile(htmlContent, filename, 'text/html');
   };
