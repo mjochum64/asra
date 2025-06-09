@@ -13,6 +13,7 @@ export default function DocumentFullView({ document, onClose }) {
   const [searchInContent, setSearchInContent] = useState('');
   const [highlightedContent, setHighlightedContent] = useState(null);
   const [selectedNorm, setSelectedNorm] = useState(null);
+  const [isMetadataVisible, setIsMetadataVisible] = useState(true);
   
   // Ref für das Main Content Area Element
   const mainContentRef = useRef(null);
@@ -85,11 +86,20 @@ export default function DocumentFullView({ document, onClose }) {
       <div className="bg-white rounded-lg shadow-xl max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         
         {/* Header with Close Button */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-900">Dokumentenansicht</h2>
+        <div className="flex items-center justify-between p-4 border-b border-gray-200">
+          <div className="flex items-center flex-grow min-w-0"> {/* Added flex-grow and min-w-0 here */}
+            <h2 className="text-xl font-semibold text-gray-900 mr-3 truncate">Dokumentenansicht</h2> {/* Added truncate */}
+            <div className="flex items-center"> {/* Added a wrapper for DocumentExport for better control */}
+              <DocumentExport
+                document={getCurrentDocument()}
+                frameworkId={frameworkId}
+                documentType={localDocumentType}
+              />
+            </div>
+          </div>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className="text-gray-400 hover:text-gray-600 transition-colors ml-4 flex-shrink-0" /* Added ml-4 and flex-shrink-0 */
           >
             <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -233,65 +243,77 @@ export default function DocumentFullView({ document, onClose }) {
           {/* Rechte Sidebar - Metadaten und Export */}
           <div className="w-80 bg-gray-50 border-l border-gray-200 overflow-y-auto">
             
-            {/* Export-Bereich */}
-            <div className="p-4 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Export</h3>
-              <DocumentExport 
-                document={getCurrentDocument()}
-                frameworkId={frameworkId}
-                documentType={localDocumentType}
-              />
-            </div>
-            
             {/* Metadaten */}
             <div className="p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Metadaten</h3>
+              <div
+                className="flex items-center justify-between cursor-pointer mb-4 group" // Added group for hover effect on h3
+                onClick={() => setIsMetadataVisible(!isMetadataVisible)}
+              >
+                <h3 className="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors"> {/* Added hover effect */}
+                  Metadaten
+                </h3>
+                <button className="text-gray-500 hover:text-blue-600 transition-colors"> {/* Consistent hover color */}
+                  {isMetadataVisible ? (
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 transform rotate-180" viewBox="0 0 20 20" fill="currentColor"> {/* Icon rotation */}
+                      <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
+                  ) : (
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
+                  )}
+                </button>
+              </div>
               
-              {/*
+              {isMetadataVisible && (
+                <>
+                  {/*
                 Metadata rendering section assessed for potential extraction into MetadataDisplay.jsx.
                 Decision: For this subtask, the complexity is manageable within DocumentFullView.jsx.
                 Extraction is not performed at this time to keep focus on text formatter centralization.
                 This section can be a candidate for future refactoring if it grows in complexity or
                 if a similar metadata display is needed elsewhere.
               */}
-              {fullTextConfig.sidebar.map((section) => (
-                <div key={section.section} className="mb-6">
-                  <h4 className="text-sm font-medium text-gray-900 mb-3 pb-1 border-b border-gray-300">
-                    {section.section}
-                  </h4>
-                  <div className="space-y-3">
-                    {section.fields.map((field) => 
-                      shouldShowField(field, getCurrentDocument()) && getCurrentDocument()[field.solrField] && (
-                        <div key={field.solrField}>
-                          <dt className="text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            {field.label}
-                          </dt>
-                          <dd className={`mt-1 text-sm ${getFieldStyle(field.style) || 'text-gray-900'}`}>
-                            {formatFieldValue(getCurrentDocument()[field.solrField], field.format)}
-                          </dd>
-                        </div>
-                      )
-                    )}
-                  </div>
-                </div>
-              ))}
+                  {fullTextConfig.sidebar.map((section) => (
+                    <div key={section.section} className="mb-6">
+                      <h4 className="text-sm font-medium text-gray-900 mb-3 pb-1 border-b border-gray-300">
+                        {section.section}
+                      </h4>
+                      <div className="space-y-3">
+                        {section.fields.map((field) =>
+                          shouldShowField(field, getCurrentDocument()) && getCurrentDocument()[field.solrField] && (
+                            <div key={field.solrField}>
+                              <dt className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                {field.label}
+                              </dt>
+                              <dd className={`mt-1 text-sm ${getFieldStyle(field.style) || 'text-gray-900'}`}>
+                                {formatFieldValue(getCurrentDocument()[field.solrField], field.format)}
+                              </dd>
+                            </div>
+                          )
+                        )}
+                      </div>
+                    </div>
+                  ))}
               
-              {/* Framework-Navigation für einzelne Normen */}
-              {!isFramework && frameworkId && (
-                <div className="mb-6">
-                  <h4 className="text-sm font-medium text-gray-900 mb-3 pb-1 border-b border-gray-300">
-                    Navigation
-                  </h4>
-                  <button
-                    onClick={() => {
-                      // Hier könnte eine Funktion zum Navigieren zum Framework-Dokument implementiert werden
-                      console.log('Navigate to framework:', frameworkId);
-                    }}
-                    className="w-full text-left px-3 py-2 text-sm text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-md transition-colors"
-                  >
-                    → Zum Rahmendokument ({frameworkId})
-                  </button>
-                </div>
+                  {/* Framework-Navigation für einzelne Normen */}
+                  {!isFramework && frameworkId && (
+                    <div className="mb-6">
+                      <h4 className="text-sm font-medium text-gray-900 mb-3 pb-1 border-b border-gray-300">
+                        Navigation
+                      </h4>
+                      <button
+                        onClick={() => {
+                          // Hier könnte eine Funktion zum Navigieren zum Framework-Dokument implementiert werden
+                          console.log('Navigate to framework:', frameworkId);
+                        }}
+                        className="w-full text-left px-3 py-2 text-sm text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-md transition-colors"
+                      >
+                        → Zum Rahmendokument ({frameworkId})
+                      </button>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </div>
