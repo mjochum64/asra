@@ -1,7 +1,7 @@
 import jsPDF from 'jspdf';
 import { searchDocuments } from '../services/solrService'; // Path adjusted
 import { uiHelpers } from '../config/uiConfig'; // Path adjusted
-import { getContentForPDF } from '../utils/textFormatters'; // Path adjusted
+import { getContentForPDF } from '../utils/textFormatters.jsx'; // Path adjusted
 import { generateFilename } from '../utils/fileUtils'; // Path adjusted
 
 export const exportAsPDF = async (docs) => {

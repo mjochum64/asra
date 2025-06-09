@@ -1,6 +1,6 @@
 import React from 'react';
 import { uiHelpers } from '../config/uiConfig'; // For getFieldValue, getFieldLabel
-import { highlightSearchTerms, truncateText } from '../utils/textFormatters';
+import { highlightSearchTerms, truncateText } from '../utils/textFormatters.jsx';
 import { getDocumentType, getDocumentTypeLabel } from '../utils/documentUtils';
 import { formatFieldValue } from '../utils/formatUtils';
 

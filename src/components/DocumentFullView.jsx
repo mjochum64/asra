@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { uiConfig } from '../config/uiConfig'; // uiHelpers will be removed or replaced by specific imports
 import TableOfContents from './TableOfContents';
 import DocumentExport from './DocumentExport';
-import { getContentForDisplay, formatLegalTextAsFallback } from '../utils/textFormatters';
+import { getContentForDisplay, formatLegalTextAsFallback } from '../utils/textFormatters.jsx';
 import { getDocumentType, getFrameworkId, getDocumentTypeLabel } from '../utils/documentUtils'; // Import document utils
 import { formatFieldValue } from '../utils/formatUtils'; // Import format utils
 

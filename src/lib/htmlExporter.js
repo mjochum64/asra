@@ -1,6 +1,6 @@
 import { searchDocuments } from '../services/solrService';
 import { uiHelpers } from '../config/uiConfig';
-import { getContentForExport } from '../utils/textFormatters';
+import { getContentForExport } from '../utils/textFormatters.jsx';
 import { generateFilename, downloadFile } from '../utils/fileUtils';
 
 export const exportAsHTML = async (docs) => {
