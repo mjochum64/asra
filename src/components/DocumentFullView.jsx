@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { uiConfig } from '../config/uiConfig'; // uiHelpers will be removed or replaced by specific imports
 import TableOfContents from './TableOfContents';
 import DocumentExport from './DocumentExport';
@@ -13,10 +13,32 @@ export default function DocumentFullView({ document, onClose }) {
   const [searchInContent, setSearchInContent] = useState('');
   const [highlightedContent, setHighlightedContent] = useState(null);
   const [selectedNorm, setSelectedNorm] = useState(null);
-  const [isMetadataVisible, setIsMetadataVisible] = useState(true);
+  const [isMetadataVisible, setIsMetadataVisible] = useState(() => {
+    const storedPreference = localStorage.getItem('metadataVisiblePreference');
+    if (storedPreference !== null) {
+      try {
+        return JSON.parse(storedPreference);
+      } catch (error) {
+        console.error('Error parsing metadataVisiblePreference from localStorage:', error);
+        // Fallback to default if parsing fails
+        return false;
+      }
+    }
+    // Default value if nothing is in localStorage
+    return false;
+  });
   
   // Ref für das Main Content Area Element
   const mainContentRef = useRef(null);
+
+  // Effect to save preference to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem('metadataVisiblePreference', JSON.stringify(isMetadataVisible));
+    } catch (error) {
+      console.error('Error saving metadataVisiblePreference to localStorage:', error);
+    }
+  }, [isMetadataVisible]);
 
   const fullTextConfig = uiConfig.fulltext;
   
