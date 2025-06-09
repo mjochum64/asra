@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { uiConfig } from '../config/uiConfig'; // uiHelpers will be removed or replaced by specific imports
 import TableOfContents from './TableOfContents';
 import DocumentExport from './DocumentExport';
@@ -13,9 +13,32 @@ export default function DocumentFullView({ document, onClose }) {
   const [searchInContent, setSearchInContent] = useState('');
   const [highlightedContent, setHighlightedContent] = useState(null);
   const [selectedNorm, setSelectedNorm] = useState(null);
+  const [isMetadataVisible, setIsMetadataVisible] = useState(() => {
+    const storedPreference = localStorage.getItem('metadataVisiblePreference');
+    if (storedPreference !== null) {
+      try {
+        return JSON.parse(storedPreference);
+      } catch (error) {
+        console.error('Error parsing metadataVisiblePreference from localStorage:', error);
+        // Fallback to default if parsing fails
+        return false;
+      }
+    }
+    // Default value if nothing is in localStorage
+    return false;
+  });
   
   // Ref für das Main Content Area Element
   const mainContentRef = useRef(null);
+
+  // Effect to save preference to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem('metadataVisiblePreference', JSON.stringify(isMetadataVisible));
+    } catch (error) {
+      console.error('Error saving metadataVisiblePreference to localStorage:', error);
+    }
+  }, [isMetadataVisible]);
 
   const fullTextConfig = uiConfig.fulltext;
   
@@ -85,11 +108,41 @@ export default function DocumentFullView({ document, onClose }) {
       <div className="bg-white rounded-lg shadow-xl max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         
         {/* Header with Close Button */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-900">Dokumentenansicht</h2>
+        <div className="flex items-center justify-between p-4 border-b border-gray-200">
+          <div className="flex items-center flex-grow min-w-0">
+            <h2 className="text-xl font-semibold text-gray-900 mr-3 truncate">Dokumentenansicht</h2>
+            <div className="flex items-center space-x-1"> {/* Wrapper for export and toggle */}
+              <DocumentExport
+                document={getCurrentDocument()}
+                frameworkId={frameworkId}
+                documentType={localDocumentType}
+              />
+              <button
+                onClick={() => setIsMetadataVisible(!isMetadataVisible)}
+                className="p-2 text-gray-500 hover:text-blue-600 transition-colors"
+                title={isMetadataVisible ? "Metadaten ausblenden" : "Metadaten einblenden"}
+              >
+                {isMetadataVisible ? (
+                  // Icon for "hide sidebar" (e.g., layout-sidebar-left-collapse)
+                  <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="9" y1="3" x2="9" y2="21"></line>
+                    <path d="m14 9-3 3 3 3"></path>
+                  </svg>
+                ) : (
+                  // Icon for "show sidebar" (e.g., layout-sidebar-left-expand)
+                  <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="9" y1="3" x2="9" y2="21"></line>
+                    <path d="m15 9 3 3-3 3"></path>
+                  </svg>
+                )}
+              </button>
+            </div>
+          </div>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className="text-gray-400 hover:text-gray-600 transition-colors ml-4 flex-shrink-0"
           >
             <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -231,68 +284,62 @@ export default function DocumentFullView({ document, onClose }) {
           </div>
 
           {/* Rechte Sidebar - Metadaten und Export */}
-          <div className="w-80 bg-gray-50 border-l border-gray-200 overflow-y-auto">
-            
-            {/* Export-Bereich */}
-            <div className="p-4 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Export</h3>
-              <DocumentExport 
-                document={getCurrentDocument()}
-                frameworkId={frameworkId}
-                documentType={localDocumentType}
-              />
-            </div>
+          <div className={`bg-gray-50 border-l border-gray-200 overflow-y-auto transition-all duration-300 ease-in-out ${isMetadataVisible ? 'w-80' : 'w-0 overflow-hidden'}`}>
             
             {/* Metadaten */}
-            <div className="p-6">
+            {/* Child div for content, controls opacity and padding */}
+            <div className={`transition-opacity duration-300 ease-in-out overflow-hidden ${isMetadataVisible ? 'opacity-100 p-6' : 'opacity-0 p-0'}`}>
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Metadaten</h3>
               
-              {/*
+              {/* Content of metadata, will be hidden by opacity-0 and p-0 and overflow-hidden on parent */}
+              <>
+                {/*
                 Metadata rendering section assessed for potential extraction into MetadataDisplay.jsx.
                 Decision: For this subtask, the complexity is manageable within DocumentFullView.jsx.
                 Extraction is not performed at this time to keep focus on text formatter centralization.
                 This section can be a candidate for future refactoring if it grows in complexity or
                 if a similar metadata display is needed elsewhere.
               */}
-              {fullTextConfig.sidebar.map((section) => (
-                <div key={section.section} className="mb-6">
-                  <h4 className="text-sm font-medium text-gray-900 mb-3 pb-1 border-b border-gray-300">
-                    {section.section}
-                  </h4>
-                  <div className="space-y-3">
-                    {section.fields.map((field) => 
-                      shouldShowField(field, getCurrentDocument()) && getCurrentDocument()[field.solrField] && (
-                        <div key={field.solrField}>
-                          <dt className="text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            {field.label}
-                          </dt>
-                          <dd className={`mt-1 text-sm ${getFieldStyle(field.style) || 'text-gray-900'}`}>
-                            {formatFieldValue(getCurrentDocument()[field.solrField], field.format)}
-                          </dd>
-                        </div>
-                      )
-                    )}
-                  </div>
-                </div>
-              ))}
+                  {fullTextConfig.sidebar.map((section) => (
+                    <div key={section.section} className="mb-6">
+                      <h4 className="text-sm font-medium text-gray-900 mb-3 pb-1 border-b border-gray-300">
+                        {section.section}
+                      </h4>
+                      <div className="space-y-3">
+                        {section.fields.map((field) =>
+                          shouldShowField(field, getCurrentDocument()) && getCurrentDocument()[field.solrField] && (
+                            <div key={field.solrField}>
+                              <dt className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                {field.label}
+                              </dt>
+                              <dd className={`mt-1 text-sm ${getFieldStyle(field.style) || 'text-gray-900'}`}>
+                                {formatFieldValue(getCurrentDocument()[field.solrField], field.format)}
+                              </dd>
+                            </div>
+                          )
+                        )}
+                      </div>
+                    </div>
+                  ))}
               
-              {/* Framework-Navigation für einzelne Normen */}
-              {!isFramework && frameworkId && (
-                <div className="mb-6">
-                  <h4 className="text-sm font-medium text-gray-900 mb-3 pb-1 border-b border-gray-300">
-                    Navigation
-                  </h4>
-                  <button
-                    onClick={() => {
-                      // Hier könnte eine Funktion zum Navigieren zum Framework-Dokument implementiert werden
-                      console.log('Navigate to framework:', frameworkId);
-                    }}
-                    className="w-full text-left px-3 py-2 text-sm text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-md transition-colors"
-                  >
-                    → Zum Rahmendokument ({frameworkId})
-                  </button>
-                </div>
-              )}
+                  {/* Framework-Navigation für einzelne Normen */}
+                  {!isFramework && frameworkId && (
+                    <div className="mb-6">
+                      <h4 className="text-sm font-medium text-gray-900 mb-3 pb-1 border-b border-gray-300">
+                        Navigation
+                      </h4>
+                      <button
+                        onClick={() => {
+                          // Hier könnte eine Funktion zum Navigieren zum Framework-Dokument implementiert werden
+                          console.log('Navigate to framework:', frameworkId);
+                        }}
+                        className="w-full text-left px-3 py-2 text-sm text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-md transition-colors"
+                      >
+                        → Zum Rahmendokument ({frameworkId})
+                      </button>
+                    </div>
+                  )}
+                </>
             </div>
           </div>
         </div>
