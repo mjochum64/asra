@@ -9,7 +9,7 @@ import { formatFieldValue } from '../utils/formatUtils'; // Import format utils
 /**
  * DocumentFullView Component - Structured full-text display of a document
  */
-export default function DocumentFullView({ document, onClose }) {
+export default function DocumentFullView({ document, onClose }) { // Removed onNavigateToFramework
   const [searchInContent, setSearchInContent] = useState('');
   const [highlightedContent, setHighlightedContent] = useState(null);
   const [selectedNorm, setSelectedNorm] = useState(null);
@@ -322,23 +322,6 @@ export default function DocumentFullView({ document, onClose }) {
                     </div>
                   ))}
               
-                  {/* Framework-Navigation für einzelne Normen */}
-                  {!isFramework && frameworkId && (
-                    <div className="mb-6">
-                      <h4 className="text-sm font-medium text-gray-900 mb-3 pb-1 border-b border-gray-300">
-                        Navigation
-                      </h4>
-                      <button
-                        onClick={() => {
-                          // Hier könnte eine Funktion zum Navigieren zum Framework-Dokument implementiert werden
-                          console.log('Navigate to framework:', frameworkId);
-                        }}
-                        className="w-full text-left px-3 py-2 text-sm text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-md transition-colors"
-                      >
-                        → Zum Rahmendokument ({frameworkId})
-                      </button>
-                    </div>
-                  )}
                 </>
             </div>
           </div>

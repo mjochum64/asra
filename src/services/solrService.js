@@ -488,3 +488,37 @@ export const mockGetFacets = () => {
   console.error('❌ Mock-Facetten sind deaktiviert. Verwenden Sie echte Solr-Daten.');
   throw new Error('Mock-Facetten sind in der Produktionsversion deaktiviert. Bitte stellen Sie sicher, dass Solr verfügbar ist.');
 };
+
+/**
+ * Fetches a single document by its ID from Solr.
+ * @param {string} documentId - The ID of the document to fetch.
+ * @returns {Promise<Object|null>} The document object if found, otherwise null.
+ */
+export const fetchDocumentById = async (documentId) => {
+  try {
+    console.log(`Fetching document by ID: ${documentId}`);
+    const params = {
+      q: `id:"${documentId}"`, // Query for the specific ID
+      wt: 'json',
+      rows: 1 // We expect only one document
+    };
+
+    const response = await solrClient.get('documents/select', { params });
+
+    if (response.data.response && response.data.response.numFound === 1) {
+      // Use processSearchResponse to ensure consistent document structure,
+      // even though highlighting might not be relevant for a direct ID fetch.
+      const processedDocs = processSearchResponse(response);
+      return processedDocs[0];
+    } else {
+      console.warn(`Document with ID ${documentId} not found.`);
+      return null;
+    }
+  } catch (error) {
+    console.error(`Error fetching document by ID ${documentId}:`, error);
+    if (error.response) {
+      console.error('Error response data:', error.response.data);
+    }
+    throw error; // Re-throw the error to be handled by the caller
+  }
+};

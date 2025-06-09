@@ -10,15 +10,24 @@ import ResultItem from './ResultItem'; // Import the new ResultItem component
  * UI-konfigurierte ResultsDisplay - basierend auf UI-Konfiguration statt dynamischem Schema
  */
 export default function DynamicResultsDisplay({ 
-  results = [], 
-  isLoading = false, 
-  searchQuery = '', 
+  results = [],
+  isLoading = false,
+  searchQuery = '',
   totalResults = 0,
   error = null,
-  uiMode = 'normal'
+  uiMode = 'normal',
+  onSearchExecuteRefine, // New prop for framework navigation
+  onSelectedDocumentChange // New prop to notify parent of selection change
 }) {
   const [resultConfig, setResultConfig] = useState({ primary: [], secondary: [], metadata: [] });
   const [selectedDocument, setSelectedDocument] = useState(null);
+
+  // Effect to call onSelectedDocumentChange when selectedDocument changes
+  useEffect(() => {
+    if (onSelectedDocumentChange) {
+      onSelectedDocumentChange(selectedDocument);
+    }
+  }, [selectedDocument, onSelectedDocumentChange]);
 
   useEffect(() => {
     loadDisplayConfiguration();
@@ -51,6 +60,13 @@ export default function DynamicResultsDisplay({
   // However, if they were used by parts of DynamicResultsDisplay that are NOT in ResultItem,
   // they would need to remain or be passed down. For this refactor, we assume they are
   // primarily for the item rendering itself.
+
+  // const handleNavigateToFramework = (frameworkId) => { // This function is no longer used
+  //   if (onSearchExecuteRefine) {
+  //     setSelectedDocument(null);
+  //     onSearchExecuteRefine(frameworkId, {});
+  //   }
+  // };
 
   if (isLoading) {
     return (
@@ -136,7 +152,11 @@ export default function DynamicResultsDisplay({
           searchQuery={searchQuery}
           uiMode={uiMode}
           resultConfig={resultConfig}
-          onViewFullText={(doc) => setSelectedDocument(doc)}
+          onViewFullText={(doc) => {
+            setSelectedDocument(doc);
+            // Direct call also possible: if (onSelectedDocumentChange) onSelectedDocumentChange(doc);
+            // but useEffect handles it.
+          }}
           // uiHelpers can be passed if ResultItem needs more than getDocumentType, getFieldValue, getDocumentTypeLabel, formatFieldValue
           // For now, assuming uiHelpers is imported directly in ResultItem for those specific functions.
         />
@@ -159,8 +179,13 @@ export default function DynamicResultsDisplay({
       {selectedDocument && (
         <DocumentFullView
           document={selectedDocument}
-          onClose={() => setSelectedDocument(null)}
+          onClose={() => {
+            setSelectedDocument(null);
+            // Direct call also possible: if (onSelectedDocumentChange) onSelectedDocumentChange(null);
+            // but useEffect handles it.
+          }}
           searchQuery={searchQuery}
+          // onNavigateToFramework={handleNavigateToFramework} // Removed unused prop
         />
       )}
     </div>

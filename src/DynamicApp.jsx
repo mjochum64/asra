@@ -3,8 +3,9 @@ import DynamicSearchBar from './components/DynamicSearchBar';
 import DynamicSidebar from './components/DynamicSidebar';
 import DynamicResultsDisplay from './components/DynamicResultsDisplay';
 import ModeSwitcher from './components/ModeSwitcher';
-import { searchDocuments } from './services/solrService';
+import { searchDocuments, fetchDocumentById } from './services/solrService';
 import { analyzeSchemaForUI } from './services/schemaService';
+import { getFrameworkId, getDocumentType } from './utils/documentUtils'; // Added for framework link in header
 
 /**
  * Dynamische, schema-basierte ASRA App - Proof of Concept
@@ -21,6 +22,7 @@ export default function DynamicApp() {
   const [totalResults, setTotalResults] = useState(0);
   const [currentFacets, setCurrentFacets] = useState({});
   const [uiMode, setUIMode] = useState('normal'); // UI mode state (normal | expert)
+  const [currentDocumentDetails, setCurrentDocumentDetails] = useState({ id: null, frameworkId: null, isFramework: false }); // For header link
 
   // Lade Schema-Informationen beim Mount
   useEffect(() => {
@@ -83,6 +85,66 @@ export default function DynamicApp() {
     }
   };
 
+  // Function to handle navigation to a framework document
+  const handleNavigateToFrameworkSearch = async (frameworkId) => {
+    if (!frameworkId) {
+      console.warn('handleNavigateToFrameworkSearch called with no frameworkId');
+      return;
+    }
+    try {
+      setIsLoading(true);
+      setError(null);
+      console.log(`Navigating to framework document: ${frameworkId}`);
+
+      const frameworkDocument = await fetchDocumentById(frameworkId);
+
+      if (frameworkDocument) {
+        setSearchResults([frameworkDocument]);
+        setTotalResults(1);
+        setCurrentFacets({});
+        setLastSearchQuery(`Rahmendokument: ${frameworkId}`);
+        // Automatically select the fetched framework document to open it in DocumentFullView
+        // This assumes DocumentFullView will be shown if searchResults has one item and it's selected.
+        // The selection logic itself is in DynamicResultsDisplay, which needs to be adapted
+        // OR DocumentFullView needs to be rendered here based on a selectedDocument state.
+        // For now, this sets up the data. The actual display will be handled by passing this down.
+        // We also update currentDocumentDetails here, as we've effectively selected a document.
+        const docType = getDocumentType(frameworkDocument.id);
+        setCurrentDocumentDetails({
+          id: frameworkDocument.id,
+          frameworkId: getFrameworkId(frameworkDocument.id), // This will be itself if it's a framework
+          isFramework: docType === 'framework'
+        });
+      } else {
+        setError(`Rahmendokument mit ID ${frameworkId} nicht gefunden.`);
+        setSearchResults([]);
+        setTotalResults(0);
+      }
+    } catch (err) {
+      console.error('Framework navigation search failed:', err);
+      setError(err.message || `Fehler beim Laden des Rahmendokuments ${frameworkId}`);
+      setSearchResults([]);
+      setTotalResults(0);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSelectedDocumentChange = (doc) => {
+    if (doc && doc.id) {
+      const docType = getDocumentType(doc.id);
+      const frameworkId = getFrameworkId(doc.id);
+      setCurrentDocumentDetails({
+        id: doc.id,
+        frameworkId: frameworkId,
+        isFramework: docType === 'framework',
+      });
+    } else {
+      // Reset if doc is null (e.g., DocumentFullView closed)
+      setCurrentDocumentDetails({ id: null, frameworkId: null, isFramework: false });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -106,7 +168,18 @@ export default function DynamicApp() {
               </div>
             </div>
             
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2"> {/* Reduced space-x-4 to space-x-2 to accommodate new button */}
+              {/* Rahmendokument Navigation Button */}
+              {currentDocumentDetails && currentDocumentDetails.id && !currentDocumentDetails.isFramework && currentDocumentDetails.frameworkId && (
+                <button
+                  onClick={() => handleNavigateToFrameworkSearch(currentDocumentDetails.frameworkId)}
+                  className="px-3 py-2 text-sm font-medium text-blue-700 hover:bg-blue-100 hover:text-blue-800 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75 transition-colors"
+                  title={`Zum Rahmendokument (${currentDocumentDetails.frameworkId})`}
+                >
+                  {/* Using a simple arrow icon for now, can be replaced with SVG */}
+                  ➔ Rahmendokument
+                </button>
+              )}
               {/* UI Mode Switcher - kompakter */}
               <ModeSwitcher 
                 currentMode={uiMode} 
@@ -151,6 +224,8 @@ export default function DynamicApp() {
               totalResults={totalResults}
               error={error}
               uiMode={uiMode}
+              onSearchExecuteRefine={handleNavigateToFrameworkSearch}
+              onSelectedDocumentChange={handleSelectedDocumentChange} // Pass the new handler
             />
           </div>
 
