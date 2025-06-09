@@ -4,7 +4,7 @@ import { uiHelpers } from '../config/uiConfig';
 /**
  * ConfigUI-driven SearchBar - basierend auf UI-Konfiguration statt dynamischem Schema
  */
-export default function DynamicSearchBar({ onSearch, uiMode = 'normal' }) {
+export default function DynamicSearchBar({ onSearch, uiMode = 'normal', schemaInfo = null }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [searchMode, setSearchMode] = useState('all');
   const [fieldOptions, setFieldOptions] = useState([]);
@@ -153,10 +153,20 @@ export default function DynamicSearchBar({ onSearch, uiMode = 'normal' }) {
           )}
         </form>
         
-        {/* UI-Modus Info */}
+        {/* UI-Modus Info und Schema-Info */}
         <div className="mt-3 pt-3 border-t border-gray-100">
           <div className="flex items-center justify-between text-xs text-gray-500">
-            <span>UI-konfigurierte Suche • {uiMode === 'normal' ? 'Normal-Modus' : 'Experten-Modus'}</span>
+            <div className="flex items-center space-x-4">
+              <span>UI-konfigurierte Suche • {uiMode === 'normal' ? 'Normal-Modus' : 'Experten-Modus'}</span>
+              {schemaInfo && (
+                <span className="inline-flex items-center px-2 py-1 rounded bg-green-100 text-green-700">
+                  <svg className="h-3 w-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                  Schema erkannt: {schemaInfo.searchableFields.length} durchsuchbare • {schemaInfo.facetableFields.length} filterbare Felder
+                </span>
+              )}
+            </div>
             <span>{fieldOptions.length} Suchfeld{fieldOptions.length !== 1 ? 'er' : ''} verfügbar</span>
           </div>
         </div>
