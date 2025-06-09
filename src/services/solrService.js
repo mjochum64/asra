@@ -1,27 +1,8 @@
 import axios from 'axios';
 import { getContextualFacets } from './schemaService';
+import { buildGermanLegalQuery } from '../utils/queryUtils'; // Import the centralized function
 
-// Helper function to build German legal abbreviation queries
-// Grund: Wildcard queries with spaces fail in Solr, so we split them into compound AND queries
-const buildGermanLegalQuery = (fieldName, query, isWildcard = false) => {
-  if (!query || query.trim() === '') {
-    return `${fieldName}:*`;
-  }
-  
-  // Für deutsche Rechtsabkürzungen bevorzugen wir exakte Suche
-  // wenn die Query Leerzeichen oder Punkte enthält
-  if (query.includes(' ') || query.includes('.')) {
-    // Exakte Suche mit Anführungszeichen (wie im Solr Admin UI)
-    return `${fieldName}:"${query}"`;
-  }
-  
-  // Für einfache Begriffe ohne Leerzeichen verwenden wir Wildcard
-  if (isWildcard) {
-    return `${fieldName}:*${query}*`;
-  } else {
-    return `${fieldName}:"${query}"`;
-  }
-};
+// buildGermanLegalQuery has been moved to ../utils/queryUtils.js
 
 // Konfigurierbare Solr-URL basierend auf der Umgebung
 // Im Produktionsbetrieb mit Docker wird "/solr/" verwendet (relativ zur gleichen Domain wie Frontend)

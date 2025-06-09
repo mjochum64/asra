@@ -1,7 +1,10 @@
 import React, { useState, useRef } from 'react';
-import { uiConfig, uiHelpers } from '../config/uiConfig';
+import { uiConfig } from '../config/uiConfig'; // uiHelpers will be removed or replaced by specific imports
 import TableOfContents from './TableOfContents';
 import DocumentExport from './DocumentExport';
+import { getContentForDisplay, formatLegalTextAsFallback } from '../utils/textFormatters';
+import { getDocumentType, getFrameworkId, getDocumentTypeLabel } from '../utils/documentUtils'; // Import document utils
+import { formatFieldValue } from '../utils/formatUtils'; // Import format utils
 
 /**
  * DocumentFullView Component - Structured full-text display of a document
@@ -17,9 +20,9 @@ export default function DocumentFullView({ document, onClose }) {
   const fullTextConfig = uiConfig.fulltext;
   
   // Erkenne Dokumenttyp und Framework-ID
-  const documentType = uiHelpers.getDocumentType(document.id);
-  const isFramework = documentType === 'framework';
-  const frameworkId = isFramework ? document.id : uiHelpers.getFrameworkId(document.id);
+  const localDocumentType = getDocumentType(document.id); // Renamed to avoid conflict with prop if any, and use imported
+  const isFramework = localDocumentType === 'framework';
+  const frameworkId = isFramework ? document.id : getFrameworkId(document.id); // Use imported
 
   // Helper function to check field conditions
   const shouldShowField = (field, document) => {
@@ -60,65 +63,7 @@ export default function DocumentFullView({ document, onClose }) {
     return selectedNorm || document;
   };
 
-  // Grund: Hilfsfunktion um bevorzugt HTML-Felder zu verwenden
-  const getContentForDisplay = (document, fieldType = 'text_content') => {
-    // Bevorzuge HTML-Felder wenn verfügbar
-    const htmlField = fieldType + '_html';
-    if (document[htmlField]) {
-      return (
-        <div 
-          className="prose prose-sm max-w-none text-gray-700 leading-relaxed" 
-          dangerouslySetInnerHTML={{ __html: document[htmlField] }}
-        />
-      );
-    }
-    
-    // Fallback auf Textfelder mit manueller Formatierung
-    if (document[fieldType]) {
-      return formatLegalTextAsFallback(document[fieldType]);
-    }
-    
-    return null;
-  };
-
-  // Grund: Fallback-Formatierung nur wenn keine HTML-Felder verfügbar sind
-  const formatLegalTextAsFallback = (text) => {
-    if (!text) return '';
-    
-    // Entferne HTML-Tags falls vorhanden
-    let cleanText = text.replace(/<[^>]*>/g, '');
-    
-    // Erkenne numerierte Absätze: (1), (2), (3) etc. oder 1., 2., 3. etc.
-    // Auch römische Ziffern: I., II., III. oder (I), (II), (III)
-    const paragraphPatterns = [
-      /(\(\d+\))/g,           // (1), (2), (3)
-      /(\d+\.)/g,             // 1., 2., 3.
-      /(\([IVX]+\))/g,        // (I), (II), (III), (IV), (V)
-      /([IVX]+\.)/g,          // I., II., III., IV., V.
-      /(\([a-z]\))/g,         // (a), (b), (c)
-      /([a-z]\.)/g            // a., b., c.
-    ];
-    
-    // Erstelle Absätze vor jedem nummerierten Absatz
-    paragraphPatterns.forEach(pattern => {
-      cleanText = cleanText.replace(pattern, '\n\n$1');
-    });
-    
-    // Entferne mehrfache Zeilenwechsel und normalisiere
-    cleanText = cleanText
-      .replace(/\n{3,}/g, '\n\n')  // Maximal 2 Zeilenwechsel
-      .replace(/^\n+/, '')          // Entferne führende Zeilenwechsel
-      .trim();
-    
-    // Konvertiere zu JSX mit <p> Tags
-    const paragraphs = cleanText.split('\n\n').filter(p => p.trim());
-    
-    return paragraphs.map((paragraph, index) => (
-      <p key={index} className="mb-4 leading-relaxed">
-        {paragraph.trim()}
-      </p>
-    ));
-  };
+  // getContentForDisplay and formatLegalTextAsFallback moved to ../utils/textFormatters.js
 
   const getFieldStyle = (style) => {
     const styles = {
@@ -160,7 +105,7 @@ export default function DocumentFullView({ document, onClose }) {
               <div className="p-4 border-b border-gray-200">
                 <h3 className="text-lg font-semibold text-gray-900">Inhaltsverzeichnis</h3>
                 <p className="text-sm text-gray-600 mt-1">
-                  {uiHelpers.getDocumentTypeLabel(documentType)}
+                  {getDocumentTypeLabel(localDocumentType)}
                 </p>
               </div>
               <TableOfContents
@@ -178,13 +123,13 @@ export default function DocumentFullView({ document, onClose }) {
             <div className="mb-4">
               <div className="flex items-center gap-2 mb-2">
                 <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                  documentType === 'framework' 
+                  localDocumentType === 'framework'
                     ? 'bg-blue-100 text-blue-800' 
-                    : documentType === 'norm'
+                    : localDocumentType === 'norm'
                     ? 'bg-green-100 text-green-800'
                     : 'bg-gray-100 text-gray-800'
                 }`}>
-                  {uiHelpers.getDocumentTypeLabel(documentType)}
+                  {getDocumentTypeLabel(localDocumentType)}
                 </span>
                 {!isFramework && frameworkId && (
                   <span className="text-sm text-gray-500">
@@ -217,10 +162,10 @@ export default function DocumentFullView({ document, onClose }) {
                   <div key={field.solrField} className={getFieldStyle(field.style)}>
                     {field.style?.includes('badge') ? (
                       <span className={getFieldStyle(field.style)}>
-                        {uiHelpers.formatFieldValue(getCurrentDocument()[field.solrField], field.format)}
+                        {formatFieldValue(getCurrentDocument()[field.solrField], field.format)}
                       </span>
                     ) : (
-                      uiHelpers.formatFieldValue(getCurrentDocument()[field.solrField], field.format)
+                      formatFieldValue(getCurrentDocument()[field.solrField], field.format)
                     )}
                   </div>
                 )
@@ -275,7 +220,7 @@ export default function DocumentFullView({ document, onClose }) {
                         getContentForDisplay(getCurrentDocument(), 'text_content')
                       ) : (
                         <div>
-                          {uiHelpers.formatFieldValue(getCurrentDocument()[field.solrField], field.format)}
+                          {formatFieldValue(getCurrentDocument()[field.solrField], field.format)}
                         </div>
                       )}
                     </div>
@@ -294,7 +239,7 @@ export default function DocumentFullView({ document, onClose }) {
               <DocumentExport 
                 document={getCurrentDocument()}
                 frameworkId={frameworkId}
-                documentType={documentType}
+                documentType={localDocumentType}
               />
             </div>
             
@@ -302,6 +247,13 @@ export default function DocumentFullView({ document, onClose }) {
             <div className="p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Metadaten</h3>
               
+              {/*
+                Metadata rendering section assessed for potential extraction into MetadataDisplay.jsx.
+                Decision: For this subtask, the complexity is manageable within DocumentFullView.jsx.
+                Extraction is not performed at this time to keep focus on text formatter centralization.
+                This section can be a candidate for future refactoring if it grows in complexity or
+                if a similar metadata display is needed elsewhere.
+              */}
               {fullTextConfig.sidebar.map((section) => (
                 <div key={section.section} className="mb-6">
                   <h4 className="text-sm font-medium text-gray-900 mb-3 pb-1 border-b border-gray-300">
@@ -315,7 +267,7 @@ export default function DocumentFullView({ document, onClose }) {
                             {field.label}
                           </dt>
                           <dd className={`mt-1 text-sm ${getFieldStyle(field.style) || 'text-gray-900'}`}>
-                            {uiHelpers.formatFieldValue(getCurrentDocument()[field.solrField], field.format)}
+                            {formatFieldValue(getCurrentDocument()[field.solrField], field.format)}
                           </dd>
                         </div>
                       )
@@ -356,12 +308,12 @@ export default function DocumentFullView({ document, onClose }) {
               )}
             </div>
             <div className="flex items-center gap-2">
-              {documentType === 'framework' && (
+              {localDocumentType === 'framework' && (
                 <span className="text-blue-600 text-xs">
                   📋 Hierarchisches Dokument mit Inhaltsverzeichnis
                 </span>
               )}
-              {documentType === 'norm' && (
+              {localDocumentType === 'norm' && (
                 <span className="text-green-600 text-xs">
                   📄 Einzelne Rechtsnorm
                 </span>

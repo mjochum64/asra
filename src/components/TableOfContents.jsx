@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { searchDocuments } from '../services/solrService';
-import { uiHelpers } from '../config/uiConfig';
+// import { uiHelpers } from '../config/uiConfig'; // To be replaced
+import { isFrameworkDocument, getDocumentTypeLabel } from '../utils/documentUtils'; // Import specific helpers
 
 /**
  * TableOfContents Component - Inhaltsverzeichnis für Rahmendokumente
@@ -49,10 +50,10 @@ export default function TableOfContents({ frameworkId, onNormSelect, currentNorm
     console.log('🔍 DEBUG - All docs received:', docs.map(doc => ({ id: doc.id, norm_type: doc.norm_type, enbez: doc.enbez })));
     
     // Separiere die verschiedenen Dokumenttypen
-    const framework = docs.find(doc => uiHelpers.isFrameworkDocument(doc.id));
+    const framework = docs.find(doc => isFrameworkDocument(doc.id)); // Use imported
     const sections = docs.filter(doc => doc.norm_type === 'section');
     const articles = docs.filter(doc => doc.norm_type === 'article');
-    const specialNorms = docs.filter(doc => doc.norm_type === 'norm' && !uiHelpers.isFrameworkDocument(doc.id));
+    const specialNorms = docs.filter(doc => doc.norm_type === 'norm' && !isFrameworkDocument(doc.id)); // Use imported
     
     console.log('🔍 DEBUG - Framework:', framework?.id);
     console.log('🔍 DEBUG - Sections found:', sections.length);
@@ -171,7 +172,7 @@ export default function TableOfContents({ frameworkId, onNormSelect, currentNorm
           <div className="mt-2">
             <h4 className="font-medium text-gray-800">{contents.framework.kurzue}</h4>
             <div className="text-xs text-gray-500 mt-1">
-              {uiHelpers.getDocumentTypeLabel(contents.framework.id)} • ID: {contents.framework.id}
+              {getDocumentTypeLabel(contents.framework.id)} • ID: {contents.framework.id}
             </div>
           </div>
         )}

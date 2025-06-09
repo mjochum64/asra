@@ -1,27 +1,7 @@
 import axios from 'axios';
+import { buildGermanLegalQuery } from '../utils/queryUtils'; // Import the centralized function
 
-// Helper function to build German legal abbreviation queries
-// Grund: Wildcard queries with spaces fail in Solr, so we split them into compound AND queries
-const buildGermanLegalQuery = (fieldName, query, isWildcard = false) => {
-  if (!query || query.trim() === '') {
-    return `${fieldName}:*`;
-  }
-  
-  // If the query contains spaces and we're doing a wildcard search,
-  // split it into separate terms and combine with AND
-  if (isWildcard && query.includes(' ')) {
-    const terms = query.trim().split(/\s+/);
-    const wildcardTerms = terms.map(term => `${fieldName}:*${term}*`);
-    return wildcardTerms.join(' AND ');
-  }
-  
-  // For exact match or simple wildcard (no spaces)
-  if (isWildcard) {
-    return `${fieldName}:*${query}*`;
-  } else {
-    return `${fieldName}:"${query}"`;
-  }
-};
+// buildGermanLegalQuery has been moved to ../utils/queryUtils.js
 
 // Schema Discovery Service für dynamische Solr-Integration
 // Dieser Service liest das Solr-Schema aus und erstellt automatisch UI-Konfigurationen
@@ -106,7 +86,12 @@ export const analyzeSchemaForUI = async () => {
 };
 
 /**
- * Holt dynamisch verfügbare Facetten basierend auf Schema-Analyse
+ * Holt dynamisch verfügbare Facetten basierend auf Schema-Analyse.
+ * Diese Funktion ist nützlich für eine Schema-Explorations-UI oder Admin-Tool,
+ * um alle potenziell facettierbaren Felder anzuzeigen.
+ * Für die Hauptanwendungs-UI werden Facetten typischerweise über `getContextualFacets`
+ * (welches uiConfig verwendet) oder direkt über `solrService.getFacets` mit
+ * in uiConfig definierten Feldern abgerufen.
  * @returns {Promise<Object>} Verfügbare Facetten mit Werten und Anzahlen
  */
 export const getDynamicFacets = async () => {
@@ -190,8 +175,11 @@ export const getDynamicFacets = async () => {
 };
 
 /**
- * Holt Facetten basierend auf aktuellen Suchparametern (kontextuelle Facetten)
- * Dies zeigt nur die Filter-Optionen, die in den aktuellen Suchergebnissen verfügbar sind
+ * Holt Facetten basierend auf aktuellen Suchparametern (kontextuelle Facetten).
+ * Diese Funktion ist die primäre Methode zum Abrufen von Facetten für die UI-Filterleiste,
+ * da sie die in `uiConfig.filters` definierten Felder verwendet, um Relevanz und Reihenfolge
+ * der Facetten UI-gesteuert zu halten.
+ * Die eigentliche Facetten-Abfrage an Solr ist dynamisch basierend auf diesen konfigurierten Feldern.
  * @param {string} query - Aktueller Suchterm
  * @param {string} searchMode - Suchmodus (all, title, etc.)
  * @param {Object} currentFilters - Bereits angewendete Filter
@@ -199,9 +187,9 @@ export const getDynamicFacets = async () => {
  */
 export const getContextualFacets = async (query = '*:*', searchMode = 'all', currentFilters = {}) => {
   try {
-    // Verwende die UI-konfigurierten Filter-Felder statt das dynamische Schema
+    // Verwendet uiConfig, um zu bestimmen, FÜR WELCHE FELDER Facetten angefragt werden sollen.
     const { uiHelpers } = await import('../config/uiConfig.js');
-    const configuredFilters = uiHelpers.getFilterFields('normal'); // Hole alle Filter (normal + expert wenn nötig)
+    const configuredFilters = uiHelpers.getFilterFields('normal');
     const expertFilters = uiHelpers.getFilterFields('expert');
     const allConfiguredFilters = [...configuredFilters, ...expertFilters];
     
@@ -345,7 +333,11 @@ export const getContextualFacets = async (query = '*:*', searchMode = 'all', cur
 };
 
 /**
- * Erstellt automatisch Suchfeld-Konfiguration basierend auf Schema
+ * Erstellt automatisch Suchfeld-Optionen basierend auf dem Schema.
+ * Diese Funktion kann für eine dynamische Suchoberfläche verwendet werden, die sich automatisch
+ * an das Solr-Schema anpasst (z.B. für ein Admin-Tool oder eine Schema-Exploration).
+ * Die Hauptanwendung verwendet typischerweise die statisch in `uiConfig.search.modes`
+ * definierten und über `uiHelpers.getSearchFields()` abgerufenen Suchoptionen.
  * @returns {Promise<Array>} Array von Suchfeld-Optionen für die UI
  */
 export const getSearchFieldOptions = async () => {
@@ -400,7 +392,11 @@ const formatFieldLabel = (fieldName) => {
 };
 
 /**
- * Bestimmt automatisch die besten Anzeigefelder für Suchergebnisse
+ * Bestimmt automatisch die besten Anzeigefelder für Suchergebnisse basierend auf dem Schema.
+ * Diese Funktion kann nützlich sein, wenn die Anzeigefelder dynamisch aus dem Schema
+ * generiert werden sollen (z.B. für ein Admin-Tool oder eine generische Datenanzeige).
+ * Die Hauptanwendung verwendet typischerweise die in `uiConfig.results` definierten
+ * und über `uiHelpers.getResultFields()` abgerufenen Anzeigekonfigurationen.
  * @returns {Promise<Array>} Array von Feldnamen für die Ergebnisanzeige
  */
 export const getDisplayFields = async () => {
