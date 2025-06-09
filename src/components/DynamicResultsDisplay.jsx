@@ -17,17 +17,18 @@ export default function DynamicResultsDisplay({
   error = null,
   uiMode = 'normal',
   onSearchExecuteRefine, // New prop for framework navigation
-  onSelectedDocumentChange // New prop to notify parent of selection change
+  onNavigateToDocumentById // Added prop from DynamicApp
+  // onSelectedDocumentChange // Removed for revert
 }) {
   const [resultConfig, setResultConfig] = useState({ primary: [], secondary: [], metadata: [] });
   const [selectedDocument, setSelectedDocument] = useState(null);
 
-  // Effect to call onSelectedDocumentChange when selectedDocument changes
-  useEffect(() => {
-    if (onSelectedDocumentChange) {
-      onSelectedDocumentChange(selectedDocument);
-    }
-  }, [selectedDocument, onSelectedDocumentChange]);
+  // Effect to call onSelectedDocumentChange when selectedDocument changes - REMOVED FOR REVERT
+  // useEffect(() => {
+  //   if (onSelectedDocumentChange) {
+  //     onSelectedDocumentChange(selectedDocument);
+  //   }
+  // }, [selectedDocument, onSelectedDocumentChange]);
 
   useEffect(() => {
     loadDisplayConfiguration();
@@ -185,7 +186,7 @@ export default function DynamicResultsDisplay({
             // but useEffect handles it.
           }}
           searchQuery={searchQuery}
-          // onNavigateToFramework={handleNavigateToFramework} // Removed unused prop
+          onNavigateToFrameworkId={onNavigateToDocumentById} // Wired up the prop
         />
       )}
     </div>

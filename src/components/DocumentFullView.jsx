@@ -9,7 +9,7 @@ import { formatFieldValue } from '../utils/formatUtils'; // Import format utils
 /**
  * DocumentFullView Component - Structured full-text display of a document
  */
-export default function DocumentFullView({ document, onClose }) { // Removed onNavigateToFramework
+export default function DocumentFullView({ document, onClose, onNavigateToFrameworkId }) { // Added onNavigateToFrameworkId
   const [searchInContent, setSearchInContent] = useState('');
   const [highlightedContent, setHighlightedContent] = useState(null);
   const [selectedNorm, setSelectedNorm] = useState(null);
@@ -184,9 +184,23 @@ export default function DocumentFullView({ document, onClose }) { // Removed onN
                 }`}>
                   {getDocumentTypeLabel(localDocumentType)}
                 </span>
-                {!isFramework && frameworkId && (
-                  <span className="text-sm text-gray-500">
-                    Gehört zu: {frameworkId}
+                {!isFramework && frameworkId && !selectedNorm && (
+                  <button
+                    onClick={() => {
+                      if (onNavigateToFrameworkId) {
+                        onNavigateToFrameworkId(frameworkId);
+                      }
+                    }}
+                    className="ml-2 text-sm text-blue-600 hover:text-blue-800 underline focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
+                    title={`Zum Rahmendokument ${frameworkId} navigieren`}
+                  >
+                    (Zum Rahmendokument: {frameworkId})
+                  </button>
+                )}
+                {/* Case 2: Main document is a Framework, and a norm has been selected from its ToC */}
+                {isFramework && selectedNorm && frameworkId && ( // frameworkId here is the ID of the main framework doc
+                  <span className="text-sm text-gray-500 ml-2">
+                    (Gehört zu Rahmendokument: {frameworkId})
                   </span>
                 )}
               </div>
