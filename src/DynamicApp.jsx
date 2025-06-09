@@ -93,12 +93,12 @@ export default function DynamicApp() {
               {/* Logo */}
               <img 
                 src="/logo_small.png" 
-                alt="ASRA – GermanLaw Logo" 
+                alt="ASRA – Deutsche Gesetze Logo" 
                 className="h-12 w-auto object-contain"
               />
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">
-                  ASRA – GermanLaw
+                  ASRA – Deutsche Gesetze
                 </h1>
                 <p className="text-sm text-gray-600">
                   Recherchieren im Bundesrecht

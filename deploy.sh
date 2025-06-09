@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Deployment-Skript für ASRA – GermanLaw
+# Deployment-Skript für ASRA – Deutsche Gesetze
 
 # Sicherstellen, dass das Skript mit root-Rechten ausgeführt wird
 if [ "$EUID" -ne 0 ]; then
