@@ -3,8 +3,9 @@ import DynamicSearchBar from './components/DynamicSearchBar';
 import DynamicSidebar from './components/DynamicSidebar';
 import DynamicResultsDisplay from './components/DynamicResultsDisplay';
 import ModeSwitcher from './components/ModeSwitcher';
-import { searchDocuments } from './services/solrService';
+import { searchDocuments, fetchDocumentById } from './services/solrService';
 import { analyzeSchemaForUI } from './services/schemaService';
+// import { getFrameworkId, getDocumentType } from './utils/documentUtils'; // Removed for revert - no longer used here
 
 /**
  * Dynamische, schema-basierte ASRA App - Proof of Concept
@@ -21,6 +22,7 @@ export default function DynamicApp() {
   const [totalResults, setTotalResults] = useState(0);
   const [currentFacets, setCurrentFacets] = useState({});
   const [uiMode, setUIMode] = useState('normal'); // UI mode state (normal | expert)
+  // const [currentDocumentDetails, setCurrentDocumentDetails] = useState({ id: null, frameworkId: null, isFramework: false }); // Removed for revert
 
   // Lade Schema-Informationen beim Mount
   useEffect(() => {
@@ -83,6 +85,61 @@ export default function DynamicApp() {
     }
   };
 
+  // Function to handle navigation to a framework document
+  const handleNavigateToFrameworkSearch = async (frameworkId) => {
+    if (!frameworkId) {
+      console.warn('handleNavigateToFrameworkSearch called with no frameworkId');
+      return;
+    }
+    try {
+      setIsLoading(true);
+      setError(null);
+      console.log(`Navigating to framework document: ${frameworkId}`);
+
+      const frameworkDocument = await fetchDocumentById(frameworkId);
+
+      if (frameworkDocument) {
+        setSearchResults([frameworkDocument]);
+        setTotalResults(1);
+        setCurrentFacets({});
+        setLastSearchQuery(`id:${frameworkId}`); // Standardized query format
+        setLastSearchMode('id_lookup_direct'); // Set search mode for this specific type of search
+        // Automatically select the fetched framework document to open it in DocumentFullView
+        // This assumes DocumentFullView will be shown if searchResults has one item and it's selected.
+        // The selection logic itself is in DynamicResultsDisplay, which needs to be adapted
+        // The logic to update currentDocumentDetails for the fetched framework document is removed as currentDocumentDetails itself is removed.
+        // The primary purpose of handleNavigateToFrameworkSearch is now to fetch and display the framework document as a search result.
+      } else {
+        setError(`Rahmendokument mit ID ${frameworkId} nicht gefunden.`);
+        setSearchResults([]);
+        setTotalResults(0);
+        setLastSearchMode('all'); // Reset search mode on failure
+      }
+    } catch (err) {
+      console.error('Framework navigation search failed:', err);
+      setError(err.message || `Fehler beim Laden des Rahmendokuments ${frameworkId}`);
+      setSearchResults([]);
+      setTotalResults(0);
+      setLastSearchMode('all'); // Reset search mode on error
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // const handleSelectedDocumentChange = (doc) => { // Removed for revert
+  //   if (doc && doc.id) {
+  //     const docType = getDocumentType(doc.id);
+  //     const frameworkId = getFrameworkId(doc.id);
+  //     setCurrentDocumentDetails({
+  //       id: doc.id,
+  //       frameworkId: frameworkId,
+  //       isFramework: docType === 'framework',
+  //     });
+  //   } else {
+  //     setCurrentDocumentDetails({ id: null, frameworkId: null, isFramework: false });
+  //   }
+  // };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -106,7 +163,8 @@ export default function DynamicApp() {
               </div>
             </div>
             
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-4"> {/* Reverted space-x-2 to space-x-4 */}
+              {/* Rahmendokument Navigation Button - Removed */}
               {/* UI Mode Switcher - kompakter */}
               <ModeSwitcher 
                 currentMode={uiMode} 
@@ -151,6 +209,9 @@ export default function DynamicApp() {
               totalResults={totalResults}
               error={error}
               uiMode={uiMode}
+              onSearchExecuteRefine={handleNavigateToFrameworkSearch}
+              onNavigateToDocumentById={handleNavigateToFrameworkSearch}
+              lastSearchMode={lastSearchMode} // Pass lastSearchMode to DynamicResultsDisplay
             />
           </div>
 

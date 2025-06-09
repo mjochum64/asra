@@ -9,7 +9,7 @@ import { formatFieldValue } from '../utils/formatUtils'; // Import format utils
 /**
  * DocumentFullView Component - Structured full-text display of a document
  */
-export default function DocumentFullView({ document, onClose }) {
+export default function DocumentFullView({ document, onClose, onNavigateToFrameworkId }) { // Added onNavigateToFrameworkId
   const [searchInContent, setSearchInContent] = useState('');
   const [highlightedContent, setHighlightedContent] = useState(null);
   const [selectedNorm, setSelectedNorm] = useState(null);
@@ -184,9 +184,23 @@ export default function DocumentFullView({ document, onClose }) {
                 }`}>
                   {getDocumentTypeLabel(localDocumentType)}
                 </span>
-                {!isFramework && frameworkId && (
-                  <span className="text-sm text-gray-500">
-                    Gehört zu: {frameworkId}
+                {!isFramework && frameworkId && !selectedNorm && (
+                  <button
+                    onClick={() => {
+                      if (onNavigateToFrameworkId) {
+                        onNavigateToFrameworkId(frameworkId);
+                      }
+                    }}
+                    className="ml-2 text-sm text-blue-600 hover:text-blue-800 underline focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
+                    title={`Zum Rahmendokument ${frameworkId} navigieren`}
+                  >
+                    (Zum Rahmendokument: {frameworkId})
+                  </button>
+                )}
+                {/* Case 2: Main document is a Framework, and a norm has been selected from its ToC */}
+                {isFramework && selectedNorm && frameworkId && ( // frameworkId here is the ID of the main framework doc
+                  <span className="text-sm text-gray-500 ml-2">
+                    (Gehört zu Rahmendokument: {frameworkId})
                   </span>
                 )}
               </div>
@@ -322,23 +336,6 @@ export default function DocumentFullView({ document, onClose }) {
                     </div>
                   ))}
               
-                  {/* Framework-Navigation für einzelne Normen */}
-                  {!isFramework && frameworkId && (
-                    <div className="mb-6">
-                      <h4 className="text-sm font-medium text-gray-900 mb-3 pb-1 border-b border-gray-300">
-                        Navigation
-                      </h4>
-                      <button
-                        onClick={() => {
-                          // Hier könnte eine Funktion zum Navigieren zum Framework-Dokument implementiert werden
-                          console.log('Navigate to framework:', frameworkId);
-                        }}
-                        className="w-full text-left px-3 py-2 text-sm text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-md transition-colors"
-                      >
-                        → Zum Rahmendokument ({frameworkId})
-                      </button>
-                    </div>
-                  )}
                 </>
             </div>
           </div>
