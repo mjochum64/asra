@@ -35,18 +35,6 @@ export const uiConfig = {
         label: 'Amtliche Abkürzung',
         description: 'z.B. "1. BImSchV", "GG", "BGB"',
         icon: '⚖️'
-      },
-      {
-        id: 'kurzue',
-        label: 'Kurztitel',
-        description: 'Suche in deutschen Rechtsdokument-Kurztiteln',
-        icon: '📋'
-      },
-      {
-        id: 'jurabk',
-        label: 'Juristische Abkürzung', 
-        description: 'Juristische Kurznamen für Gesetze',
-        icon: '📚'
       }
     ],
     
