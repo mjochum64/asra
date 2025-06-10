@@ -54,6 +54,25 @@
 - [ ] Erweiterte Sortieroptionen
 - [ ] Suchhistorie mit LocalStorage
 
+---
+
+## Phase 2: Hybrid Search Implementation (Qdrant & Ollama)
+
+### Backend Development (Hybrid Search)
+- [ ] Implement API endpoint for hybrid search (Solr + Qdrant).
+- [ ] Develop logic for optional LLM-based query expansion (Ollama).
+- [ ] Implement parallel querying to Solr and Qdrant.
+- [ ] Create logic for merging and ranking results from Solr and Qdrant.
+- [ ] Develop API endpoint for optional RAG-based answer generation (Ollama).
+
+### Data Pipeline (Qdrant)
+- [ ] Develop scripts/processes to generate vector embeddings for legal documents.
+- [ ] Implement indexing of embeddings into Qdrant.
+
+### Frontend Development (Hybrid Search)
+- [ ] Adapt UI to display combined/RAG results if necessary.
+- [ ] Integrate new API endpoints for hybrid search and RAG.
+
 **📋 Detaillierte Aufgabenliste:**
 
 ---

@@ -24,10 +24,16 @@ ASRA – Deutsche Gesetze ist eine spezialisierte webbasierte Anwendung für die
    - **ModeSwitcher**: Benutzerfreundlicher Toggle zwischen Modi
 
 2. **Search Backend**
-   - Apache Solr 9.4 Suchplattform
-   - Angepasste Schema-Konfiguration für deutsche Rechtsdokumente
-   - RESTful API mit spezieller Unterstützung für deutsche Rechtsabkürzungen ("1. BImSchV", etc.)
-   - Content-Highlighting mit korrigierten Feldkonfigurationen
+   - **Hybride Sucharchitektur**:
+     - **Apache Solr 9.4**: Für klassische Volltextsuche und Facettierung.
+       - Angepasste Schema-Konfiguration für deutsche Rechtsdokumente.
+       - RESTful API mit spezieller Unterstützung für deutsche Rechtsabkürzungen ("1. BImSchV", etc.).
+       - Content-Highlighting mit korrigierten Feldkonfigurationen.
+     - **Qdrant**: Für semantische Vektor-Suche.
+       - Speicherung und Abfrage von Vektor-Embeddings der Rechtsdokumente.
+     - **Ollama (optional)**: Für LLM-gestützte Funktionen.
+       - Query-Erweiterung.
+       - RAG-basierte Antwortgenerierung.
    - Docker-Containerisierung für Deployment-Konsistenz
 
 3. **Infrastructure**
@@ -56,10 +62,15 @@ ASRA – Deutsche Gesetze ist eine spezialisierte webbasierte Anwendung für die
 ### Data Flow
 
 1. User inputs search query in the frontend
-2. Query is sent to Solr via the REST API
-3. Solr processes the query against indexed documents
-4. Results are returned to the frontend
-5. Frontend renders the results in a user-friendly format
+2. Query is sent to the backend API
+3. **Backend API processes the query**:
+   - Optional: LLM-gestützte Query-Erweiterung (Ollama)
+   - Parallel query to Apache Solr (full-text search)
+   - Parallel query to Qdrant (semantic vector search)
+4. **Results Combination**: Backend API combines and ranks results from Solr and Qdrant.
+5. Results are returned to the frontend
+6. Frontend renders the results in a user-friendly format
+7. Optional: RAG-basierte Antwortgenerierung durch Ollama basierend auf den kombinierten Suchergebnissen.
 
 ---
 
@@ -128,13 +139,17 @@ ASRA – Deutsche Gesetze ist eine spezialisierte webbasierte Anwendung für die
 - [ ] Search suggestions
 - [ ] Result highlighting
 - [ ] Sorting options
+- [ ] **Integration semantische Suche (Qdrant)**
+- [ ] **Optionale LLM-Integration (Ollama) für Query-Erweiterung**
 
-### Phase 3: Document Management
+### Phase 3: Document Management & Advanced AI Features
 - [ ] Document preview
 - [ ] User authentication
 - [ ] Saved searches
 - [ ] Export functionality
 - [ ] Analytics dashboard
+- [ ] **Optionale RAG-Implementierung (Ollama)**
+- [ ] **Fine-tuning von Embeddings und LLM-Modellen**
 
 ---
 
