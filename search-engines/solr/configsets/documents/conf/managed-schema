@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<schema name="german-legal-documents" version="1.6">
+
+  <!-- Field Types -->
+  
+  <!-- Basic field types -->
+  <fieldType name="string" class="solr.StrField" sortMissingLast="true" />
+  <fieldType name="boolean" class="solr.BoolField" sortMissingLast="true"/>
+  <fieldType name="int" class="solr.IntPointField" docValues="true"/>
+  <fieldType name="long" class="solr.LongPointField" docValues="true"/>
+  <fieldType name="float" class="solr.FloatPointField" docValues="true"/>
+  <fieldType name="double" class="solr.DoublePointField" docValues="true"/>
+  <fieldType name="pint" class="solr.IntPointField" docValues="true"/>
+  <fieldType name="plong" class="solr.LongPointField" docValues="true"/>
+  <fieldType name="pfloat" class="solr.FloatPointField" docValues="true"/>
+  <fieldType name="pdouble" class="solr.DoublePointField" docValues="true"/>
+  
+  <!-- Date field type -->
+  <fieldType name="pdate" class="solr.DatePointField" docValues="true"/>
+  
+  <!-- German text analysis for legal documents -->
+  <fieldType name="text_de" class="solr.TextField" positionIncrementGap="100">
+    <analyzer type="index">
+      <tokenizer class="solr.StandardTokenizerFactory"/>
+      <filter class="solr.LowerCaseFilterFactory"/>
+      <filter class="solr.StopFilterFactory" ignoreCase="true" words="lang/stopwords_de_legal.txt" format="snowball"/>
+      <filter class="solr.SynonymGraphFilterFactory" synonyms="lang/synonyms_de_legal.txt" ignoreCase="true" expand="true"/>
+      <filter class="solr.FlattenGraphFilterFactory"/>
+      <filter class="solr.GermanNormalizationFilterFactory"/>
+      <filter class="solr.GermanLightStemFilterFactory"/>
+      <filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
+    </analyzer>
+    <analyzer type="query">
+      <tokenizer class="solr.StandardTokenizerFactory"/>
+      <filter class="solr.LowerCaseFilterFactory"/>
+      <filter class="solr.StopFilterFactory" ignoreCase="true" words="lang/stopwords_de_legal.txt" format="snowball"/>
+      <filter class="solr.SynonymGraphFilterFactory" synonyms="lang/synonyms_de_legal.txt" ignoreCase="true" expand="true"/>
+      <filter class="solr.GermanNormalizationFilterFactory"/>
+      <filter class="solr.GermanLightStemFilterFactory"/>
+      <filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
+    </analyzer>
+  </fieldType>
+
+  <!-- German text with minimal processing for exact searches -->
+  <fieldType name="text_de_exact" class="solr.TextField" positionIncrementGap="100">
+    <analyzer>
+      <tokenizer class="solr.KeywordTokenizerFactory"/>
+      <filter class="solr.LowerCaseFilterFactory"/>
+      <filter class="solr.TrimFilterFactory"/>
+    </analyzer>
+  </fieldType>
+
+  <!-- Text field for legal citations and references -->
+  <fieldType name="text_legal_ref" class="solr.TextField" positionIncrementGap="100">
+    <analyzer>
+      <tokenizer class="solr.StandardTokenizerFactory"/>
+      <filter class="solr.LowerCaseFilterFactory"/>
+      <filter class="solr.SynonymGraphFilterFactory" synonyms="lang/synonyms_de_legal.txt" ignoreCase="true" expand="true"/>
+      <filter class="solr.TrimFilterFactory"/>
+    </analyzer>
+  </fieldType>
+
+  <!-- Edge n-gram field for autocomplete -->
+  <fieldType name="text_suggest" class="solr.TextField" positionIncrementGap="100">
+    <analyzer type="index">
+      <tokenizer class="solr.StandardTokenizerFactory"/>
+      <filter class="solr.LowerCaseFilterFactory"/>
+      <filter class="solr.EdgeNGramFilterFactory" minGramSize="2" maxGramSize="25"/>
+    </analyzer>
+    <analyzer type="query">
+      <tokenizer class="solr.StandardTokenizerFactory"/>
+      <filter class="solr.LowerCaseFilterFactory"/>
+    </analyzer>
+  </fieldType>
+
+  <!-- Fields -->
+
+  <!-- Required Solr fields -->
+  <field name="id" type="string" indexed="true" stored="true" required="true" multiValued="false" />
+  <field name="_version_" type="long" indexed="false" stored="false"/>
+
+  <!-- Document metadata fields -->
+  <field name="builddate" type="pdate" indexed="true" stored="true" multiValued="false" />
+  <field name="doknr" type="string" indexed="true" stored="true" multiValued="false" />
+
+  <!-- Metadaten fields -->
+  
+  <!-- jurabk - Juristische Abkürzung (can be multiple) -->
+  <field name="jurabk" type="text_de_exact" indexed="true" stored="true" multiValued="true" />
+  <field name="jurabk_suggest" type="text_suggest" indexed="true" stored="false" multiValued="true" />
+  
+  <!-- amtabk - Amtliche Abkürzung -->
+  <field name="amtabk" type="text_de_exact" indexed="true" stored="true" multiValued="false" />
+  
+  <!-- ausfertigung-datum - Ausfertigungsdatum -->
+  <field name="ausfertigung_datum" type="pdate" indexed="true" stored="true" multiValued="false" />
+  <field name="ausfertigung_datum_manuell" type="boolean" indexed="true" stored="true" multiValued="false" />
+  
+  <!-- fundstelle - Fundstelle(n) -->
+  <field name="fundstelle_typ" type="string" indexed="true" stored="true" multiValued="true" />
+  <field name="fundstelle_periodikum" type="string" indexed="true" stored="true" multiValued="true" />
+  <field name="fundstelle_zitstelle" type="text_legal_ref" indexed="true" stored="true" multiValued="true" />
+  <field name="fundstelle_anlagedat" type="pdate" indexed="true" stored="true" multiValued="true" />
+  <field name="fundstelle_dokst" type="string" indexed="true" stored="true" multiValued="true" />
+  <field name="fundstelle_abgabedat" type="pdate" indexed="true" stored="true" multiValued="true" />
+  
+  <!-- kurzue - Kurze Überschrift -->
+  <field name="kurzue" type="text_de" indexed="true" stored="true" multiValued="false" />
+  <field name="kurzue_exact" type="text_de_exact" indexed="true" stored="true" multiValued="false" />
+  
+  <!-- langue - Lange Überschrift -->
+  <field name="langue" type="text_de" indexed="true" stored="true" multiValued="false" />
+  <field name="langue_exact" type="text_de_exact" indexed="true" stored="true" multiValued="false" />
+  
+  <!-- gliederungseinheit -->
+  <field name="gliederungskennzahl" type="string" indexed="true" stored="true" multiValued="false" />
+  <field name="gliederungsbez" type="text_de" indexed="true" stored="true" multiValued="false" />
+  <field name="gliederungstitel" type="text_de" indexed="true" stored="true" multiValued="false" />
+  
+  <!-- enbez - Einzelnormbezeichnung -->
+  <field name="enbez" type="string" indexed="true" stored="true" multiValued="false" />
+  
+  <!-- titel - Titel -->
+  <field name="titel" type="text_de" indexed="true" stored="true" multiValued="false" />
+  <field name="titel_exact" type="text_de_exact" indexed="true" stored="true" multiValued="false" />
+  <field name="titel_format" type="string" indexed="true" stored="true" multiValued="false" />
+  
+  <!-- standangabe - Standangaben -->
+  <field name="standangabe_typ" type="string" indexed="true" stored="true" multiValued="true" />
+  <field name="standangabe_kommentar" type="text_de" indexed="true" stored="true" multiValued="true" />
+  <field name="standangabe_checked" type="boolean" indexed="true" stored="true" multiValued="true" />
+
+  <!-- Textdaten fields -->
+  
+  <!-- Main text content -->
+  <field name="text_content" type="text_de" indexed="true" stored="true" multiValued="false" />
+  <field name="text_format" type="string" indexed="true" stored="true" multiValued="false" />
+  
+  <!-- Footnotes content -->
+  <field name="fussnoten_content" type="text_de" indexed="true" stored="true" multiValued="false" />
+  <field name="fussnoten_format" type="string" indexed="true" stored="true" multiValued="false" />
+  
+  <!-- Full text search field (combines all text fields) -->
+  <field name="full_text" type="text_de" indexed="true" stored="false" multiValued="true" />
+  
+  <!-- Structured content fields -->
+  <field name="toc_content" type="text_de" indexed="true" stored="true" multiValued="false" />
+  <field name="content_paragraphs" type="text_de" indexed="true" stored="true" multiValued="true" />
+  <field name="footnote_ids" type="string" indexed="true" stored="true" multiValued="true" />
+  <field name="footnote_texts" type="text_de" indexed="true" stored="true" multiValued="true" />
+  
+  <!-- Table content -->
+  <field name="table_content" type="text_de" indexed="true" stored="true" multiValued="true" />
+  
+  <!-- Comments -->
+  <field name="kommentar_stand" type="text_de" indexed="true" stored="true" multiValued="true" />
+  <field name="kommentar_hinweis" type="text_de" indexed="true" stored="true" multiValued="true" />
+  <field name="kommentar_fundstelle" type="text_de" indexed="true" stored="true" multiValued="true" />
+  <field name="kommentar_verarbeitung" type="text_de" indexed="true" stored="true" multiValued="true" />
+
+  <!-- Additional utility fields -->
+  <field name="xml_lang" type="string" indexed="true" stored="true" multiValued="false" />
+  <field name="document_type" type="string" indexed="true" stored="true" multiValued="false" />
+  
+  <!-- Norm-specific fields for norm-level indexing -->
+  <field name="norm_doknr" type="string" indexed="true" stored="true" multiValued="false" />
+  <field name="norm_builddate" type="pdate" indexed="true" stored="true" multiValued="false" />
+  <field name="parent_document_id" type="string" indexed="true" stored="true" multiValued="false" />
+  <field name="norm_type" type="string" indexed="true" stored="true" multiValued="false" />
+  
+  <!-- Formatted content fields to preserve XHTML -->
+  <field name="text_content_html" type="string" indexed="false" stored="true" multiValued="false" />
+  <field name="fussnoten_content_html" type="string" indexed="false" stored="true" multiValued="false" />
+  
+  <!-- Search optimization fields -->
+  <field name="all_text" type="text_de" indexed="true" stored="false" multiValued="true" />
+  <field name="suggest" type="text_suggest" indexed="true" stored="false" multiValued="true" />
+
+  <!-- Copy fields for full-text search -->
+  <copyField source="kurzue" dest="full_text"/>
+  <copyField source="langue" dest="full_text"/>
+  <copyField source="titel" dest="full_text"/>
+  <copyField source="gliederungsbez" dest="full_text"/>
+  <copyField source="gliederungstitel" dest="full_text"/>
+  <copyField source="text_content" dest="full_text"/>
+  <copyField source="fussnoten_content" dest="full_text"/>
+  <copyField source="content_paragraphs" dest="full_text"/>
+  <copyField source="footnote_texts" dest="full_text"/>
+  <copyField source="standangabe_kommentar" dest="full_text"/>
+  
+  <!-- Copy fields for suggestions -->
+  <copyField source="titel" dest="suggest"/>
+  <copyField source="kurzue" dest="suggest"/>
+  <copyField source="langue" dest="suggest"/>
+  <copyField source="jurabk" dest="jurabk_suggest"/>
+  
+  <!-- Copy fields for comprehensive text search -->
+  <copyField source="kurzue" dest="all_text"/>
+  <copyField source="langue" dest="all_text"/>
+  <copyField source="titel" dest="all_text"/>
+  <copyField source="text_content" dest="all_text"/>
+  <copyField source="fussnoten_content" dest="all_text"/>
+
+  <!-- Unique key -->
+  <uniqueKey>id</uniqueKey>
+
+</schema>
