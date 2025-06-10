@@ -6,9 +6,45 @@
  * - SUCHE: Felder die in der Suchoberfläche angeboten werden
  * - TREFFERLISTE: Felder die in den Suchergebnissen angezeigt werden
  * - VOLLTEXT: Felder die in der Dokumentenansicht verfügbar sind
+ * - HYBRID_SEARCH: Konfiguration für die hybride Suche (Solr + Qdrant)
  */
 
 export const uiConfig = {
+  
+  /**
+   * HYBRID_SEARCH - Konfiguration für die hybride Suche
+   * Kombiniert Solr (keyword) und Qdrant (semantic) Suchergebnisse
+   */
+  hybridSearch: {
+    // Verfügbare Such-Engines
+    engines: [
+      {
+        id: 'keyword',
+        name: 'Solr (Klassisch)',
+        description: 'Klassische Volltextsuche nach Schlüsselwörtern',
+        icon: '🔍',
+        default: true
+      },
+      {
+        id: 'semantic',
+        name: 'Qdrant (Semantisch)',
+        description: 'Semantische Suche nach Bedeutung mit Vektorembeddings',
+        icon: '🧠'
+      },
+      {
+        id: 'hybrid',
+        name: 'Hybrid',
+        description: 'Kombinierte Suche aus klassischer und semantischer Suche',
+        icon: '⚡'
+      }
+    ],
+    
+    // Standardgewichtungen für die hybride Suche
+    defaultWeights: {
+      keyword: 0.7,  // Solr Gewichtung
+      semantic: 0.3  // Qdrant Gewichtung
+    }
+  },
   
   /**
    * SUCHE - Suchfelder für normale Benutzer
@@ -520,5 +556,10 @@ export const uiHelpers = {
   // getFrameworkId moved to src/utils/documentUtils.js
   // getDocumentTypeLabel moved to src/utils/documentUtils.js
 };
+
+// API configuration
+export const apiBase = process.env.NODE_ENV === 'production' 
+  ? '/api' // Production API path
+  : 'http://localhost:3001/api'; // Development API path
 
 export default uiConfig;

@@ -7,8 +7,10 @@ import { uiHelpers } from '../config/uiConfig';
 export default function DynamicSearchBar({ onSearch, uiMode = 'normal', schemaInfo = null }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [searchMode, setSearchMode] = useState('all');
+  const [searchEngine, setSearchEngine] = useState('keyword'); // 'keyword', 'semantic', or 'hybrid'
   const [fieldOptions, setFieldOptions] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [searchWeights, setSearchWeights] = useState({ keyword: 0.7, semantic: 0.3 });
 
   // Lade verfügbare Suchfelder basierend auf UI-Modus beim Mount oder Modus-Änderung
   useEffect(() => {
@@ -57,15 +59,22 @@ export default function DynamicSearchBar({ onSearch, uiMode = 'normal', schemaIn
         // Expertensuche: Verwende direkte Solr-Query-Syntax
         // Wenn die Query bereits Solr-Syntax enthält (Doppelpunkt), verwende sie direkt
         if (searchTerm.includes(':') || searchTerm.includes('AND') || searchTerm.includes('OR')) {
-          onSearch(searchTerm, 'expert_query', ['all']);
+          onSearch(searchTerm, 'expert_query', ['all'], { searchEngine });
         } else {
           // Automatische Suche über alle durchsuchbaren Felder
-          onSearch(searchTerm, 'expert_all_fields', ['all']);
+          onSearch(searchTerm, 'expert_all_fields', ['all'], { searchEngine });
         }
       } else {
         // Normal-Modus: Verwende die ausgewählte Suchfeld-Option
         const selectedOption = fieldOptions.find(opt => opt.value === searchMode);
-        onSearch(searchTerm, searchMode, selectedOption?.fields || []);
+        
+        // Pass additional search engine type and weights
+        const searchOptions = {
+          searchEngine,
+          weights: searchWeights
+        };
+        
+        onSearch(searchTerm, searchMode, selectedOption?.fields || [], searchOptions);
       }
     }
   };
@@ -122,6 +131,89 @@ export default function DynamicSearchBar({ onSearch, uiMode = 'normal', schemaIn
           {/* UI-konfigurierte Suchfeld-Optionen - nur im Normal-Modus */}
           {uiMode === 'normal' && !isLoading && fieldOptions.length > 0 && (
             <div className="mt-4">
+              {/* Search Engine Type Selector */}
+              <div className="mb-4">
+                <h3 className="text-sm font-medium text-gray-600 mb-2">Suchmethode:</h3>
+                <div className="flex flex-wrap gap-3">
+                  <div className="relative">
+                    <input
+                      type="radio"
+                      id="search-engine-keyword"
+                      name="search-engine"
+                      checked={searchEngine === 'keyword'}
+                      onChange={() => setSearchEngine('keyword')}
+                      className="sr-only"
+                    />
+                    <label
+                      htmlFor="search-engine-keyword"
+                      className={`flex items-center p-3 rounded-lg border-2 cursor-pointer transition-all duration-200 ${
+                        searchEngine === 'keyword'
+                          ? 'border-solr-primary bg-solr-primary bg-opacity-5 text-solr-primary'
+                          : 'border-gray-200 hover:border-gray-300 text-gray-700'
+                      }`}
+                    >
+                      <span className="mr-2">🔍</span>
+                      <div>
+                        <div className="font-medium">Solr (Klassisch)</div>
+                        <div className="text-xs mt-1 text-gray-500">Volltextsuche nach Schlüsselwörtern</div>
+                      </div>
+                    </label>
+                  </div>
+
+                  <div className="relative">
+                    <input
+                      type="radio"
+                      id="search-engine-semantic"
+                      name="search-engine"
+                      checked={searchEngine === 'semantic'}
+                      onChange={() => setSearchEngine('semantic')}
+                      className="sr-only"
+                    />
+                    <label
+                      htmlFor="search-engine-semantic"
+                      className={`flex items-center p-3 rounded-lg border-2 cursor-pointer transition-all duration-200 ${
+                        searchEngine === 'semantic'
+                          ? 'border-solr-primary bg-solr-primary bg-opacity-5 text-solr-primary'
+                          : 'border-gray-200 hover:border-gray-300 text-gray-700'
+                      }`}
+                    >
+                      <span className="mr-2">🧠</span>
+                      <div>
+                        <div className="font-medium">Qdrant (Semantisch)</div>
+                        <div className="text-xs mt-1 text-gray-500">Ähnlichkeitssuche nach Bedeutung</div>
+                      </div>
+                    </label>
+                  </div>
+
+                  <div className="relative">
+                    <input
+                      type="radio"
+                      id="search-engine-hybrid"
+                      name="search-engine"
+                      checked={searchEngine === 'hybrid'}
+                      onChange={() => setSearchEngine('hybrid')}
+                      className="sr-only"
+                    />
+                    <label
+                      htmlFor="search-engine-hybrid"
+                      className={`flex items-center p-3 rounded-lg border-2 cursor-pointer transition-all duration-200 ${
+                        searchEngine === 'hybrid'
+                          ? 'border-solr-primary bg-solr-primary bg-opacity-5 text-solr-primary'
+                          : 'border-gray-200 hover:border-gray-300 text-gray-700'
+                      }`}
+                    >
+                      <span className="mr-2">⚡</span>
+                      <div>
+                        <div className="font-medium">Hybrid</div>
+                        <div className="text-xs mt-1 text-gray-500">Kombiniert beide Suchmethoden</div>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              {/* Search Field Options */}
+              <h3 className="text-sm font-medium text-gray-600 mb-2">Suchfeld:</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mb-3">
                 {fieldOptions.map((option) => (
                   <div key={option.value} className="relative">
