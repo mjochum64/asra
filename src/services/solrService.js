@@ -73,7 +73,8 @@ export const searchDocuments = async (query, searchMode = 'all', filters = {}, o
         };
       } else {
         // Erweiterte Multi-Feld-Suche für deutsche Rechtsdokumente
-        const expertQuery = `(kurzue:"${query}" OR kurzue:*${query}*) OR (langue:"${query}" OR langue:*${query}*) OR (amtabk:"${query}" OR amtabk:*${query}*) OR (jurabk:"${query}" OR jurabk:*${query}*) OR (text_content:(${query})) OR (enbez:"${query}" OR enbez:*${query}*)`;
+        // KORRIGIERT: Verwende auch für text_content eine Phrase-Suche für besseres Highlighting
+        const expertQuery = `(kurzue:"${query}" OR kurzue:*${query}*) OR (langue:"${query}" OR langue:*${query}*) OR (amtabk:"${query}" OR amtabk:*${query}*) OR (jurabk:"${query}" OR jurabk:*${query}*) OR (text_content:"${query}" OR text_content:*${query}*) OR (enbez:"${query}" OR enbez:*${query}*)`;
         queryParams = {
           q: expertQuery,
           ...defaultParams
@@ -101,16 +102,32 @@ export const searchDocuments = async (query, searchMode = 'all', filters = {}, o
       };
     } else if (searchMode === 'kurzue') {
       // Deutsche Rechtsdokument: Kurztitel
-      queryParams = {
-        q: isWildcardQuery ? 'kurzue:*' : `kurzue:(${query})`,
-        ...defaultParams
-      };
+      if (query.includes('"')) {
+        // Behalte die Phrase-Syntax bei
+        queryParams = {
+          q: isWildcardQuery ? 'kurzue:*' : `kurzue:${query}`,
+          ...defaultParams
+        };
+      } else {
+        queryParams = {
+          q: isWildcardQuery ? 'kurzue:*' : `kurzue:(${query})`,
+          ...defaultParams
+        };
+      }
     } else if (searchMode === 'langue') {
       // Deutsche Rechtsdokument: Langtitel
-      queryParams = {
-        q: isWildcardQuery ? 'langue:*' : `langue:(${query})`,
-        ...defaultParams
-      };
+      if (query.includes('"')) {
+        // Behalte die Phrase-Syntax bei
+        queryParams = {
+          q: isWildcardQuery ? 'langue:*' : `langue:${query}`,
+          ...defaultParams
+        };
+      } else {
+        queryParams = {
+          q: isWildcardQuery ? 'langue:*' : `langue:(${query})`,
+          ...defaultParams
+        };
+      }
     } else if (searchMode === 'jurabk') {
       // Deutsche Rechtsdokument: Juristische Abkürzung
       let jurabkQuery;
@@ -145,10 +162,19 @@ export const searchDocuments = async (query, searchMode = 'all', filters = {}, o
       };
     } else if (searchMode === 'text_content') {
       // Deutsche Rechtsdokument: Textinhalt
-      queryParams = {
-        q: isWildcardQuery ? 'text_content:*' : `text_content:(${query})`,
-        ...defaultParams
-      };
+      // Prüfe ob die ursprüngliche Query Anführungszeichen enthält (Phrase-Suche)
+      if (query.includes('"')) {
+        // Behalte die Phrase-Syntax bei
+        queryParams = {
+          q: isWildcardQuery ? 'text_content:*' : `text_content:${query}`,
+          ...defaultParams
+        };
+      } else {
+        queryParams = {
+          q: isWildcardQuery ? 'text_content:*' : `text_content:(${query})`,
+          ...defaultParams
+        };
+      }
     } else {
       // Für allgemeine Suche
       if (isWildcardQuery) {
@@ -186,6 +212,39 @@ export const searchDocuments = async (query, searchMode = 'all', filters = {}, o
     queryParams['hl.fragsize'] = 200;
     queryParams['hl.maxAnalyzedChars'] = 100000;
     queryParams['hl.snippets'] = 1;  // Reduzierte Snippets für Stabilität
+    
+    // Spezielle Highlighting-Konfiguration für Phrase-Suchen
+    // Grund: Phrase-Suchen benötigen spezielle Parameter für korrekte Phrase-Hervorhebung
+    // Prüfe sowohl die ursprüngliche Query als auch die verarbeitete Query auf Anführungszeichen
+    const hasQuotes = query.includes('"') || queryParams.q.includes('"');
+    const isPhraseSearch = hasQuotes || searchMode === 'expert_all_fields' || searchMode === 'expert_query';
+    
+    if (isPhraseSearch) {
+      // Versuche verschiedene Highlighting-Methoden für besseres Phrase-Highlighting
+      queryParams['hl.method'] = 'original'; // Ursprünglicher Highlighter, oft besser für Phrasen
+      queryParams['hl.usePhraseHighlighter'] = 'true';
+      queryParams['hl.highlightMultiTerm'] = 'true';
+      queryParams['hl.requireFieldMatch'] = 'false'; // Wichtig für feldübergreifende Phrase-Suche
+      queryParams['hl.maxAnalyzedChars'] = 500000; // Deutlich erhöht für bessere Phrase-Erkennung
+      queryParams['hl.fragmenter'] = 'gap'; // Verwende gap fragmenter für bessere Phrase-Behandlung
+      queryParams['hl.regex.slop'] = '0.5'; // Reduzierte Toleranz für präzisere Phrasen
+      queryParams['hl.regex.pattern'] = '[-\\w ,/\\n\\\"\\\']+'; // Pattern für deutsche Texte
+      queryParams['hl.preserveMulti'] = 'true'; // Behalte mehrere Werte bei
+      console.log('🎨 HIGHLIGHTING DEBUG - Enhanced phrase highlighting enabled for query:', queryParams.q);
+      console.log('🎨 HIGHLIGHTING DEBUG - Original query contains quotes:', query.includes('"'));
+      console.log('🎨 HIGHLIGHTING DEBUG - Final query contains quotes:', queryParams.q.includes('"'));
+      console.log('🎨 HIGHLIGHTING DEBUG - All highlighting params:', {
+        method: queryParams['hl.method'],
+        usePhraseHighlighter: queryParams['hl.usePhraseHighlighter'],
+        highlightMultiTerm: queryParams['hl.highlightMultiTerm'],
+        requireFieldMatch: queryParams['hl.requireFieldMatch'],
+        maxAnalyzedChars: queryParams['hl.maxAnalyzedChars'],
+        fragmenter: queryParams['hl.fragmenter']
+      });
+    } else {
+      queryParams['hl.method'] = 'fastVector'; // Standard highlighter
+      console.log('🎨 HIGHLIGHTING DEBUG - Standard highlighting for query:', queryParams.q);
+    }
     
     // Grund: Vereinfachtes Highlighting ohne komplexe Parameter für bessere Kompatibilität
     
@@ -282,41 +341,31 @@ export const searchDocuments = async (query, searchMode = 'all', filters = {}, o
         total: response.data.response.numFound
       };
     } else {
-      // Einfache Lösung: Verwende direkte Solr-Query ohne komplexe Parameter-Serialisierung
+      // Einfache Lösung: Verwende Axios direkt ohne komplexe URL-Manipulation
       console.log('Query params (no filters):', queryParams);
       console.log('Full query string to be sent:', queryParams.q);
       
-      // Debug: Erstelle die finale URL zum Logging
-      const baseUrl = getSolrBaseUrl() + 'documents/select';
-      const urlParams = new URLSearchParams();
-      Object.keys(queryParams).forEach(key => {
-        urlParams.append(key, queryParams[key]);
-      });
-      console.log('Final request URL would be:', baseUrl + '?' + urlParams.toString());
-      
-      const response = await solrClient.get('documents/select', {
+      const response = await solrClient.post('documents/select', null, {
         params: queryParams,
-        // Grund: Verwende benutzerdefinierten Parameter-Serializer für korrekte Query-Kodierung
-        paramsSerializer: {
-          encode: (param, key) => {
-            // Für Query-Parameter: Verwende normale Kodierung aber ersetze + mit %20
-            if (key === 'q') {
-              return encodeURIComponent(param).replace(/\+/g, '%20');
-            }
-            return encodeURIComponent(param);
-          }
+        paramsSerializer: params => {
+          // Standard-Serialisierung
+          return Object.keys(params)
+            .map(key => {
+              const value = params[key];
+              if (Array.isArray(value)) {
+                return value.map(v => `${key}=${encodeURIComponent(v)}`).join('&');
+              }
+              return `${key}=${encodeURIComponent(value)}`;
+            })
+            .join('&');
         }
       });
       
+      console.log(`📊 Response status: ${response.status}`);
+      console.log(`📊 Response numFound: ${response.data.response.numFound}`);
+      
       // Hole kontextuelle Facetten basierend auf den Suchparametern
       const contextualFacets = await getContextualFacets(query, searchMode, filters);
-      
-      // Debug: Logge die Rohantwort von Solr
-      console.log('Solr response numFound:', response.data.response.numFound);
-      console.log('Solr response docs length:', response.data.response.docs.length);
-      if (response.data.response.docs.length > 0) {
-        console.log('First document fields:', Object.keys(response.data.response.docs[0]));
-      }
       
       // Verarbeite die Suchergebnisse
       const searchResults = processSearchResponse(response);
@@ -346,13 +395,87 @@ export const searchDocuments = async (query, searchMode = 'all', filters = {}, o
   }
 };
 
+/**
+ * Manuelle Phrase-Highlighting-Funktion als Fallback
+ * Wird verwendet, wenn Solr das Phrase-Highlighting nicht korrekt durchführt
+ */
+function manualPhraseHighlight(text, phrase) {
+  if (!text || !phrase) return text;
+  
+  // Entferne Anführungszeichen aus der Phrase
+  const cleanPhrase = phrase.replace(/['"]/g, '');
+  
+  // Erstelle Regex für case-insensitive Suche
+  const regex = new RegExp(cleanPhrase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+  
+  // Ersetze alle Vorkommen mit <mark>-Tags
+  return text.replace(regex, '<mark>$&</mark>');
+}
+
+/**
+ * Verbessert Phrase-Highlighting in Solr-Response
+ * Prüft, ob die Phrase vollständig hervorgehoben wurde, und korrigiert bei Bedarf
+ */
+function enhancePhraseHighlighting(highlights, originalQuery) {
+  if (!highlights || !originalQuery || !originalQuery.includes('"')) {
+    return highlights;
+  }
+  
+  // Extrahiere Phrase aus der Query
+  const phraseMatch = originalQuery.match(/"([^"]+)"/);
+  if (!phraseMatch) return highlights;
+  
+  const phrase = phraseMatch[1];
+  console.log(`🎨 MANUAL HIGHLIGHT - Attempting to enhance phrase highlighting for: "${phrase}"`);
+  
+  const enhanced = {};
+  
+  Object.keys(highlights).forEach(field => {
+    if (Array.isArray(highlights[field])) {
+      enhanced[field] = highlights[field].map(snippet => {
+        // Prüfe, ob die vollständige Phrase bereits hervorgehoben ist
+        const hasCompletePhrase = snippet.includes(`<mark>${phrase}</mark>`);
+        
+        if (!hasCompletePhrase) {
+          console.log(`🎨 MANUAL HIGHLIGHT - Field ${field}: phrase not fully highlighted, applying manual highlighting`);
+          console.log(`🎨 MANUAL HIGHLIGHT - Original snippet:`, snippet);
+          
+          // Entferne vorhandene <mark>-Tags und füge korrekte hinzu
+          const cleaned = snippet.replace(/<\/?mark>/g, '');
+          const enhanced = manualPhraseHighlight(cleaned, phrase);
+          
+          console.log(`🎨 MANUAL HIGHLIGHT - Enhanced snippet:`, enhanced);
+          return enhanced;
+        }
+        
+        return snippet;
+      });
+    } else {
+      enhanced[field] = highlights[field];
+    }
+  });
+  
+  return enhanced;
+}
+
 function processSearchResponse(response) {
   const docs = response.data.response.docs;
-  const responseHighlighting = response.data.highlighting || {};
+  let responseHighlighting = response.data.highlighting || {};
+  
+  // Debug: Log highlighting response
+  console.log('🎨 HIGHLIGHTING DEBUG - Response highlighting keys:', Object.keys(responseHighlighting));
+  if (Object.keys(responseHighlighting).length > 0) {
+    const firstDocId = Object.keys(responseHighlighting)[0];
+    console.log('🎨 HIGHLIGHTING DEBUG - First document highlights:', responseHighlighting[firstDocId]);
+  }
   
   // Füge Highlighting zu den Dokumenten hinzu und normalisiere Array-Felder
   return docs.map(doc => {
-    const docHighlights = responseHighlighting[doc.id] || {};
+    let docHighlights = responseHighlighting[doc.id] || {};
+    
+    // Verbessere Phrase-Highlighting falls notwendig
+    const originalQuery = response.config?.params?.q || '';
+    docHighlights = enhancePhraseHighlighting(docHighlights, originalQuery);
     
     // Normalisiere Array-Felder zu Strings (Solr gibt Arrays zurück)
     const normalizedDoc = {
@@ -374,6 +497,11 @@ function processSearchResponse(response) {
       titel: Array.isArray(doc.titel) ? doc.titel[0] : doc.titel
     };
     
+    // Debug: Log highlights for this document
+    if (Object.keys(docHighlights).length > 0) {
+      console.log(`🎨 HIGHLIGHTING DEBUG - Doc ${doc.id} highlights:`, docHighlights);
+    }
+    
     // Ersetze Inhalte mit hervorgehobenem Text, falls verfügbar
     if (docHighlights.titel && docHighlights.titel.length > 0) {
       normalizedDoc.titel = docHighlights.titel[0];
@@ -390,9 +518,12 @@ function processSearchResponse(response) {
       normalizedDoc.text_content = docHighlights.text_content[0];
       normalizedDoc.content = docHighlights.text_content[0]; // Legacy compatibility
       
+      console.log(`🎨 HIGHLIGHTING DEBUG - text_content highlight for doc ${doc.id}:`, docHighlights.text_content[0]);
+      
       // Falls mehrere Snippets vorhanden sind, zeige sie zusammen
       if (docHighlights.text_content.length > 1) {
         normalizedDoc.contentSnippets = docHighlights.text_content;
+        console.log(`🎨 HIGHLIGHTING DEBUG - Multiple text_content snippets for doc ${doc.id}:`, docHighlights.text_content);
       }
     }
     

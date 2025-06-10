@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { searchDocuments } from '../services/solrService';
-// import { uiHelpers } from '../config/uiConfig'; // To be replaced
-import { isFrameworkDocument, getDocumentTypeLabel } from '../utils/documentUtils'; // Import specific helpers
+import { loadDocumentContents } from '../services/documentService';
+import { getDocumentTypeLabel } from '../utils/documentUtils'; // Import specific helpers
 
 /**
  * TableOfContents Component - Inhaltsverzeichnis für Rahmendokumente
@@ -24,85 +23,15 @@ export default function TableOfContents({ frameworkId, onNormSelect, currentNorm
     setError(null);
     
     try {
-      // Suche alle Unterdokumente des Rahmendokuments
-      // Grund: Verwende korrekte Solr-Query-Syntax für hierarchische Dokument-IDs
-      const query = `id:"${frameworkId}" OR id:${frameworkId}*`;
-      const response = await searchDocuments(query, 'all', {}, {
-        rows: 1000,
-        sort: 'id asc', // Sortierung nach ID für logische Reihenfolge
-        fl: 'id,enbez,norm_type,kurzue,text_content,text_content_html'
-      });
-
-      if (response?.docs) {
-        // Strukturiere die Ergebnisse hierarchisch
-        const structured = structureContents(response.docs);
-        setContents(structured);
-      }
+      // Verwende den neuen dokumentService für robustes Laden der Inhalte
+      const contentData = await loadDocumentContents(frameworkId);
+      setContents(contentData);
     } catch (err) {
       console.error('Fehler beim Laden des Inhaltsverzeichnisses:', err);
       setError('Inhaltsverzeichnis konnte nicht geladen werden');
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const structureContents = (docs) => {
-    console.log('🔍 DEBUG - All docs received:', docs.map(doc => ({ id: doc.id, norm_type: doc.norm_type, enbez: doc.enbez })));
-    
-    // Separiere die verschiedenen Dokumenttypen
-    const framework = docs.find(doc => isFrameworkDocument(doc.id)); // Use imported
-    const sections = docs.filter(doc => doc.norm_type === 'section');
-    const articles = docs.filter(doc => doc.norm_type === 'article');
-    const specialNorms = docs.filter(doc => doc.norm_type === 'norm' && !isFrameworkDocument(doc.id)); // Use imported
-    
-    console.log('🔍 DEBUG - Framework:', framework?.id);
-    console.log('🔍 DEBUG - Sections found:', sections.length);
-    console.log('🔍 DEBUG - Articles found:', articles.length);
-    console.log('🔍 DEBUG - Special norms found:', specialNorms.length);
-
-    // Vereinfachte Struktur: Nur sinnvolle Sections (mit Titel oder Inhalt) anzeigen
-    const meaningfulSections = sections.filter(section => 
-      section.enbez && section.enbez.trim() !== ''
-    );
-    
-    // Für jede Section die zugehörigen Artikel finden
-    const structuredSections = meaningfulSections.map(section => {
-      const sectionArticles = articles.filter(article => 
-        article.id.startsWith(section.id)
-      );
-      
-      console.log(`🔍 DEBUG - Section ${section.id} "${section.enbez}" has ${sectionArticles.length} articles`);
-      
-      return {
-        ...section,
-        norms: sectionArticles
-      };
-    }).filter(section => section.norms.length > 0); // Nur Sections mit Artikeln anzeigen
-    
-    // Alle Artikel, die nicht zu einer Section gehören + spezielle Normen
-    const orphanNorms = [
-      ...articles.filter(article => 
-        !meaningfulSections.some(section => article.id.startsWith(section.id))
-      ),
-      ...specialNorms
-    ];
-    
-    console.log('🔍 DEBUG - Meaningful sections:', structuredSections.length);
-    console.log('🔍 DEBUG - Orphan norms:', orphanNorms.length);
-    
-    const result = {
-      framework,
-      sections: structuredSections,
-      orphanNorms
-    };
-    
-    console.log('🔍 DEBUG - Final structure:', {
-      framework: result.framework?.id,
-      sectionsCount: result.sections.length,
-      orphanNormsCount: result.orphanNorms.length
-    });
-
-    return result;
   };
 
   const toggleSection = (sectionId) => {
@@ -161,18 +90,18 @@ export default function TableOfContents({ frameworkId, onNormSelect, currentNorm
       <div className="border-b border-gray-200 pb-4 mb-4">
         <h3 className="text-lg font-semibold text-gray-900 flex items-center">
           📋 Inhaltsverzeichnis
-          {contents.framework && (
+          {contents?.framework && (
             <span className="ml-2 text-sm text-gray-500">
-              ({contents.sections.length + contents.orphanNorms.length} Einträge)
+              ({(contents?.sections?.length || 0) + (contents?.orphanNorms?.length || 0)} Einträge)
             </span>
           )}
         </h3>
         
-        {contents.framework && (
+        {contents?.framework && (
           <div className="mt-2">
-            <h4 className="font-medium text-gray-800">{contents.framework.kurzue}</h4>
+            <h4 className="font-medium text-gray-800">{contents.framework?.kurzue || 'Rahmendokument'}</h4>
             <div className="text-xs text-gray-500 mt-1">
-              {getDocumentTypeLabel(contents.framework.id)} • ID: {contents.framework.id}
+              {contents.framework?.id ? `${getDocumentTypeLabel(contents.framework.id)} • ID: ${contents.framework.id}` : 'ID nicht verfügbar'}
             </div>
           </div>
         )}
@@ -180,28 +109,28 @@ export default function TableOfContents({ frameworkId, onNormSelect, currentNorm
 
       <div className="space-y-2 max-h-96 overflow-y-auto">
         {/* Gliederungseinheiten mit Untergliederungen */}
-        {contents.sections.map((section) => (
-          <div key={section.id} className="border-l-2 border-gray-200 pl-3">
+        {contents?.sections?.map((section) => (
+          <div key={section?.id || Math.random().toString()} className="border-l-2 border-gray-200 pl-3">
             <div
-              onClick={() => toggleSection(section.id)}
+              onClick={() => section?.id && toggleSection(section.id)}
               className="flex items-center justify-between p-2 hover:bg-gray-50 rounded cursor-pointer group"
             >
               <div className="flex items-center flex-1">
                 <span className="text-gray-400 mr-2">
-                  {expandedSections.has(section.id) ? '📂' : '📁'}
+                  {section?.id && expandedSections.has(section.id) ? '📂' : '📁'}
                 </span>
                 <div>
                   <div className="text-sm font-medium text-gray-700">
-                    {section.enbez || `Abschnitt ${section.id.slice(-8)}`}
+                    {section?.enbez || (section?.id ? `Abschnitt ${section.id.slice(-8)}` : 'Unbekannter Abschnitt')}
                   </div>
                   <div className="text-xs text-gray-500">
-                    {section.norms.length} Artikel
+                    {section?.norms?.length || 0} Artikel
                   </div>
                 </div>
               </div>
               <svg 
                 className={`h-4 w-4 text-gray-400 transition-transform ${
-                  expandedSections.has(section.id) ? 'rotate-90' : ''
+                  expandedSections.has(section?.id || '') ? 'rotate-90' : ''
                 }`} 
                 fill="none" 
                 viewBox="0 0 24 24" 
@@ -212,14 +141,14 @@ export default function TableOfContents({ frameworkId, onNormSelect, currentNorm
             </div>
 
             {/* Untergeordnete Normen */}
-            {expandedSections.has(section.id) && (
+            {section?.id && expandedSections.has(section.id) && (
               <div className="ml-4 border-l border-gray-100 pl-3 space-y-1">
-                {section.norms.map((norm) => (
+                {section?.norms?.map((norm) => (
                   <div
-                    key={norm.id}
-                    onClick={() => handleNormClick(norm)}
+                    key={norm?.id || Math.random().toString()}
+                    onClick={() => norm && handleNormClick(norm)}
                     className={`p-2 rounded text-sm cursor-pointer transition-colors ${
-                      currentNormId === norm.id
+                      norm?.id && currentNormId === norm.id
                         ? 'bg-solr-primary bg-opacity-10 border-l-2 border-solr-primary'
                         : 'hover:bg-gray-50'
                     }`}
@@ -228,9 +157,9 @@ export default function TableOfContents({ frameworkId, onNormSelect, currentNorm
                       <span className="text-green-600 mr-2 mt-0.5">📄</span>
                       <div className="flex-1">
                         <div className="font-medium text-gray-800">
-                          {norm.enbez || `Norm ${norm.id.slice(-6)}`}
+                          {norm?.enbez || (norm?.id ? `Norm ${norm.id.slice(-6)}` : 'Unbekannte Norm')}
                         </div>
-                        {norm.text_content && (
+                        {norm?.text_content && (
                           <div className="text-xs text-gray-500 mt-1">
                             {getNormPreview(norm.text_content)}
                           </div>
@@ -245,12 +174,12 @@ export default function TableOfContents({ frameworkId, onNormSelect, currentNorm
         ))}
 
         {/* Direkte Normen (ohne übergeordnete Gliederung) */}
-        {contents.orphanNorms.map((norm) => (
+        {contents?.orphanNorms?.map((norm) => (
           <div
-            key={norm.id}
-            onClick={() => handleNormClick(norm)}
+            key={norm?.id || Math.random().toString()}
+            onClick={() => norm && handleNormClick(norm)}
             className={`p-2 rounded text-sm cursor-pointer transition-colors border-l-2 border-gray-200 pl-3 ${
-              currentNormId === norm.id
+              norm?.id && currentNormId === norm.id
                 ? 'bg-solr-primary bg-opacity-10 border-l-2 border-solr-primary'
                 : 'hover:bg-gray-50'
             }`}
@@ -259,9 +188,9 @@ export default function TableOfContents({ frameworkId, onNormSelect, currentNorm
               <span className="text-green-600 mr-2 mt-0.5">📄</span>
               <div className="flex-1">
                 <div className="font-medium text-gray-800">
-                  {norm.enbez || `Norm ${norm.id.slice(-6)}`}
+                  {norm?.enbez || (norm?.id ? `Norm ${norm.id.slice(-6)}` : 'Unbekannte Norm')}
                 </div>
-                {norm.text_content && (
+                {norm?.text_content && (
                   <div className="text-xs text-gray-500 mt-1">
                     {getNormPreview(norm.text_content)}
                   </div>
@@ -271,7 +200,7 @@ export default function TableOfContents({ frameworkId, onNormSelect, currentNorm
           </div>
         ))}
 
-        {contents.sections.length === 0 && contents.orphanNorms.length === 0 && (
+        {(!contents?.sections?.length && !contents?.orphanNorms?.length) && (
           <div className="text-center py-4 text-gray-500">
             <svg className="mx-auto h-8 w-8 text-gray-300 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />

@@ -22,6 +22,7 @@ export default function DynamicApp() {
   const [totalResults, setTotalResults] = useState(0);
   const [currentFacets, setCurrentFacets] = useState({});
   const [uiMode, setUIMode] = useState('normal'); // UI mode state (normal | expert)
+  const [showSchemaInfo, setShowSchemaInfo] = useState(false); // Neuer State für aufklappbares Element
   // const [currentDocumentDetails, setCurrentDocumentDetails] = useState({ id: null, frameworkId: null, isFramework: false }); // Removed for revert
 
   // Lade Schema-Informationen beim Mount
@@ -187,17 +188,36 @@ export default function DynamicApp() {
               schemaInfo={schemaInfo}
             />
             
-            {/* Schema-Informationen */}
+            {/* Schema-Informationen mit aufklappbarer Funktionalität */}
             {schemaInfo && !isLoading && uiMode === 'expert' && (
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <h3 className="text-sm font-medium text-blue-900 mb-2">
-                  🔍 Dynamische Schema-Konfiguration
-                </h3>
-                <div className="text-xs text-blue-700 space-y-1">
-                  <div><strong>Durchsuchbare Felder:</strong> {schemaInfo.searchableFields.map(f => f.name).join(', ')}</div>
-                  <div><strong>Filterbare Felder:</strong> {schemaInfo.filterableFields.map(f => f.name).join(', ')}</div>
-                  <div><strong>Anzeigefelder:</strong> {schemaInfo.displayFields.map(f => f.name).join(', ')}</div>
+              <div className="bg-blue-50 border border-blue-200 rounded-lg overflow-hidden">
+                <div 
+                  className="p-4 cursor-pointer flex items-center justify-between"
+                  onClick={() => setShowSchemaInfo(!showSchemaInfo)}
+                >
+                  <h3 className="text-sm font-medium text-blue-900 flex items-center">
+                    🔍 Dynamische Schema-Konfiguration 
+                    <span className="ml-2 text-xs text-blue-700">
+                      ({schemaInfo.searchableFields.length} durchsuchbare • {schemaInfo.filterableFields.length} filterbare • {schemaInfo.displayFields.length} anzeigbare Felder)
+                    </span>
+                  </h3>
+                  <span className="text-blue-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" 
+                      className={`h-5 w-5 transition-transform duration-200 ${showSchemaInfo ? 'transform rotate-180' : ''}`} 
+                      viewBox="0 0 20 20" 
+                      fill="currentColor"
+                    >
+                      <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
+                  </span>
                 </div>
+                {showSchemaInfo && (
+                  <div className="px-4 pb-4 text-xs text-blue-700 space-y-1 border-t border-blue-200">
+                    <div><strong>Durchsuchbare Felder:</strong> {schemaInfo.searchableFields.map(f => f.name).join(', ')}</div>
+                    <div><strong>Filterbare Felder:</strong> {schemaInfo.filterableFields.map(f => f.name).join(', ')}</div>
+                    <div><strong>Anzeigefelder:</strong> {schemaInfo.displayFields.map(f => f.name).join(', ')}</div>
+                  </div>
+                )}
               </div>
             )}
             

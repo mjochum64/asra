@@ -1,9 +1,9 @@
 # Project Tasks: ASRA – Deutsche Gesetze
 
 ## 🎯 Projektstatuts: Phase 1.1 VOLLSTÄNDIG ABGESCHLOSSEN ✅
-**Stand**: 8. Juni 2025
-**Version**: 1.1.1 PRODUCTION READY mit optimierter Export-Funktionalität
-**Status**: HTML-Felder-Integration und Export-Optimierung erfolgreich implementiert 🚀
+**Stand**: 12. Januar 2025
+**Version**: 1.1.2 PRODUCTION READY mit korrigierten Expertensuche-Beispielen
+**Status**: Expert Search Syntax-Hilfe mit verfügbaren Datenfeldern aktualisiert 🎯
 
 ### 🏆 Erfolgreich abgeschlossene Hauptziele:
 - ✅ **Konfigurierbare UI-Struktur**: Normal-Modus (5 Felder) vs. Experten-Modus (alle Felder)
@@ -304,7 +304,13 @@
 - [x] **Syntax-Hilfe**: Benutzerfreundliche Anleitung mit Beispielen
 - [x] **Build-Optimierung**: Mixed import warnings behoben
 
-**Ergebnis**: Alle Export- und Anzeigefunktionen funktionieren korrekt. Expertensuche bietet professionelle Solr-Query-Syntax mit erweiterten Funktionen.
+### 8.4 Expert Search Beispiele Korrektur (✅ ABGESCHLOSSEN - 12.01.2025)
+- [x] **Problem erkannt**: Syntax-Hilfe verwendete leere Felder `kurzue` und `amtabk`
+- [x] **Datenanalyse**: Verfügbare Felder identifiziert: `jurabk:"GG"`, `langue:"Grundgesetz"`
+- [x] **Beispiele aktualisiert**: Syntax-Hilfe zeigt jetzt funktionierende Beispiele mit tatsächlichen Daten
+- [x] **Benutzerfreundlichkeit verbessert**: Nutzer sehen sofort Ergebnisse bei Demo-Queries
+
+**Ergebnis**: Alle Export- und Anzeigefunktionen funktionieren korrekt. Expertensuche bietet professionelle Solr-Query-Syntax mit erweiterten Funktionen und funktionierenden Beispielen.
 
 ### Sprint 1: Facetten-Filter (KW 23-24) - ✅ VOLLSTÄNDIG ABGESCHLOSSEN
 **Ziel**: Dynamische Filter-Funktionalität mit Solr-Integration

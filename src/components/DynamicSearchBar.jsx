@@ -174,10 +174,10 @@ export default function DynamicSearchBar({ onSearch, uiMode = 'normal', schemaIn
                   🔬 Expertensuche - Erweiterte Solr-Syntax
                 </h4>
                 <div className="text-xs text-amber-700 space-y-1">
-                  <div><strong>Feldspezifisch:</strong> <code>kurzue:"Grundgesetz" OR amtabk:"GG"</code></div>
+                  <div><strong>Feldspezifisch:</strong> <code>jurabk:"GG" OR langue:"Grundgesetz"</code></div>
                   <div><strong>Boolean-Operatoren:</strong> <code>AND</code>, <code>OR</code>, <code>NOT</code></div>
-                  <div><strong>Wildcards:</strong> <code>amtabk:*BImSchV*</code></div>
-                  <div><strong>Phrase:</strong> <code>"Verordnung über kleine"</code></div>
+                  <div><strong>Wildcards:</strong> <code>langue:*Grundgesetz*</code></div>
+                  <div><strong>Phrase:</strong> <code>text_content:"für die Bundesrepublik"</code></div>
                 </div>
               </div>
             </div>
