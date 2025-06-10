@@ -32,6 +32,29 @@ services:
 #      timeout: 5s
 #      retries: 10
 
+  ollama:
+    image: ollama/ollama:rocm
+    container_name: ollama
+    devices:
+      - /dev/kfd:/dev/kfd
+      - /dev/dri:/dev/dri
+    volumes:
+      - ollama_data:/root/.ollama
+    ports:
+      - "11434:11434"
+    restart: always
+
+  openwebui:
+    image: ghcr.io/open-webui/open-webui
+    container_name: openwebui
+    ports:
+      - "8080:8080"
+    environment:
+      - OLLAMA_BASE_URL=http://ollama:11434
+    volumes:
+      - openwebui_data:/app/backend/data:rw
+    restart: unless-stopped
+
   qdrant:
     image: qdrant/qdrant
     container_name: qdrant
@@ -69,7 +92,7 @@ services:
       dockerfile: Dockerfile
     container_name: asra_frontend
     ports:
-      - "8080:80"
+      - "3000:80"
     depends_on:
       solr:
         condition: service_healthy
@@ -81,6 +104,8 @@ networks:
     driver: bridge
 
 volumes:
+  ollama_data:
+  openwebui_data:
   qdrant_data:
   postgres_data:
   solr_data:
