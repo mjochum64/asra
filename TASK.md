@@ -30,7 +30,7 @@
 - **Granularität**: Suche findet jetzt spezifische Artikel statt ganzer Gesetzbücher
 - **UI-Integration**: Norm-Badges, Typ-Anzeige und verbesserte Metadaten implementiert
 
-### 🎯 Neu abgeschlossen: Export-Funktionalität & HTML-Felder-Integration (8. Juni 2025)
+### 🎯 Neu abgeschlossen: Export-Funktionalität & HTML-Felder-Integration (9. Juni 2025)
 - ✅ **PDF-Export-Optimierung**: Korrekte Absatzformatierung mit (1), (2), (3) Nummerierung
 - ✅ **HTML-Export**: Saubere HTML-Ausgabe mit erhaltener Originalformatierung
 - ✅ **Intelligente Content-Konvertierung**: Bevorzugung von `text_content_html` Feldern vor Fallback
@@ -38,6 +38,9 @@
 - ✅ **Content-Filtering**: Konsistente Filterung redundanter Inhaltsverzeichnisse zwischen allen Ansichten
 - ✅ **Meaningful Filenames**: Automatische Generierung aussagekräftiger Dateinamen basierend auf Dokument-IDs
 - ✅ **Cross-Platform-Kompatibilität**: Universelle PDF-Navigation ohne proprietäre Features
+- ✅ **Import-Pfad-Korrekturen**: Export-Funktionen nach Refactoring vollständig korrigiert
+- ✅ **Volltextanzeige-Optimierung**: XHTML-Felder werden bevorzugt für perfekte Formatierung
+- ✅ **Dokumenttyp-Unterscheidung**: Korrekte Unterscheidung zwischen Rahmendokument und einzelnen Normen beim Export
 
 ### 🚀 Nächste Phase: Sprint 2 (Auto-Suggest & Sortierung)
 - [ ] Auto-Suggest/Autocomplete-Funktionalität

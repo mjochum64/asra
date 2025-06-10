@@ -111,12 +111,25 @@ export default function DocumentFullView({ document, onClose, onNavigateToFramew
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
           <div className="flex items-center flex-grow min-w-0">
             <h2 className="text-xl font-semibold text-gray-900 mr-3 truncate">Dokumentenansicht</h2>
-            <div className="flex items-center space-x-1"> {/* Wrapper for export and toggle */}
+            <div className="flex items-center space-x-1"> {/* Wrapper for export, framework link and toggle */}
               <DocumentExport
                 document={getCurrentDocument()}
                 frameworkId={frameworkId}
                 documentType={localDocumentType}
               />
+              {/* Rahmendokument-Link als Icon - nur wenn es ein anderes Framework-Dokument gibt */}
+              {!isFramework && frameworkId && !selectedNorm && onNavigateToFrameworkId && (
+                <button
+                  onClick={() => onNavigateToFrameworkId(frameworkId)}
+                  className="p-2 text-gray-500 hover:text-blue-600 transition-colors"
+                  title={`Zum Rahmendokument ${frameworkId} navigieren`}
+                >
+                  <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M4 6h16M4 12h16M4 18h16"></path>
+                    <path d="M8 6v12"></path>
+                  </svg>
+                </button>
+              )}
               <button
                 onClick={() => setIsMetadataVisible(!isMetadataVisible)}
                 className="p-2 text-gray-500 hover:text-blue-600 transition-colors"
@@ -172,7 +185,7 @@ export default function DocumentFullView({ document, onClose, onNavigateToFramew
           {/* Main Content Area */}
           <div className="flex-1 overflow-y-auto p-6 main-content-area" ref={mainContentRef}>
             
-            {/* Document Type Badge und Framework Info */}
+            {/* Document Type Badge */}
             <div className="mb-4">
               <div className="flex items-center gap-2 mb-2">
                 <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
@@ -184,25 +197,6 @@ export default function DocumentFullView({ document, onClose, onNavigateToFramew
                 }`}>
                   {getDocumentTypeLabel(localDocumentType)}
                 </span>
-                {!isFramework && frameworkId && !selectedNorm && (
-                  <button
-                    onClick={() => {
-                      if (onNavigateToFrameworkId) {
-                        onNavigateToFrameworkId(frameworkId);
-                      }
-                    }}
-                    className="ml-2 text-sm text-blue-600 hover:text-blue-800 underline focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
-                    title={`Zum Rahmendokument ${frameworkId} navigieren`}
-                  >
-                    (Zum Rahmendokument: {frameworkId})
-                  </button>
-                )}
-                {/* Case 2: Main document is a Framework, and a norm has been selected from its ToC */}
-                {isFramework && selectedNorm && frameworkId && ( // frameworkId here is the ID of the main framework doc
-                  <span className="text-sm text-gray-500 ml-2">
-                    (Gehört zu Rahmendokument: {frameworkId})
-                  </span>
-                )}
               </div>
               
               {selectedNorm && (

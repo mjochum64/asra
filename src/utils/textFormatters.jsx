@@ -183,7 +183,10 @@ export const truncateText = (text, maxLength = null) => {
 export const getContentForDisplay = (document, fieldType = 'text_content') => {
   // Bevorzuge HTML-Felder wenn verfügbar
   const htmlField = fieldType + '_html';
+  
+  // Prüfe explizit auf XHTML-Content in den _html Feldern
   if (document[htmlField]) {
+    // Falls HTML-Content verfügbar ist, verwende ihn direkt
     return (
       <div
         className="prose prose-sm max-w-none text-gray-700 leading-relaxed"

@@ -26,7 +26,7 @@ export const uiConfig = {
       },
       {
         id: 'all',
-        label: 'Alle Felder',
+        label: 'Wichtige Felder',
         description: 'Durchsucht Titel, Inhalt und deutsche Rechtsfelder',
         icon: '🔍'
       },
@@ -208,19 +208,12 @@ export const uiConfig = {
     // Hauptinhalt
     content: [
       {
-        solrField: 'text_content_html',
-        label: 'Volltext (formatiert)',
-        style: 'main-content',
-        highlight: false,
-        searchable: false,
-        condition: 'if_exists'
-      },
-      {
         solrField: 'text_content',
         label: 'Volltext',
         style: 'main-content',
         highlight: true,
-        searchable: true // ermöglicht Suche im Text
+        searchable: true, // ermöglicht Suche im Text
+        preferHtmlField: true // bevorzuge text_content_html falls vorhanden
       },
       {
         solrField: 'fussnoten_content_html',
