@@ -23,7 +23,7 @@ if [ ! -d "$DEMODATA_DIR" ]; then
 fi
 
 # Prüfen ob Python-Script existiert
-PYTHON_SCRIPT="$SCRIPT_DIR/solr_import.py"
+PYTHON_SCRIPT="$SCRIPT_DIR/solr_import_norms.py"
 if [ ! -f "$PYTHON_SCRIPT" ]; then
     echo "Fehler: Python-Script $PYTHON_SCRIPT nicht gefunden!"
     exit 1

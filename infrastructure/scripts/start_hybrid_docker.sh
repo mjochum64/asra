@@ -11,8 +11,8 @@ if ! command -v docker-compose &> /dev/null; then
     exit 1
 fi
 
-# Start services
-docker-compose -f docker-compose-hybrid.yml up -d
+# Start services (using relative path to infrastructure directory)
+docker-compose -f ../docker-compose-hybrid.yml up -d
 
 # Pull the Ollama model for embeddings if not already pulled
 echo "Pulling Ollama embedding model (this may take a while)..."
@@ -26,4 +26,4 @@ echo "- Solr: http://localhost:8983"
 echo "- Qdrant: http://localhost:6333"
 echo "- Ollama: http://localhost:11434"
 echo ""
-echo "Run './docker/qdrant/index_to_qdrant.sh' to index documents to Qdrant"
+echo "Run './search-engines/qdrant/index_to_qdrant.sh' to index documents to Qdrant"

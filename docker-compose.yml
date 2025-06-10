@@ -33,8 +33,10 @@ services:
 #      retries: 10
 
   ollama:
-    image: ollama/ollama:rocm
-    container_name: ollama
+    build: 
+      context: ./infrastructure
+      dockerfile: Dockerfile.ollama
+    container_name: asra_ollama
     devices:
       - /dev/kfd:/dev/kfd
       - /dev/dri:/dev/dri

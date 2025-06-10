@@ -30,8 +30,10 @@ router.get('/search', cors(), async (req, res) => {
     console.log(`Performing hybrid search: "${q}" with weights ${weights} and limit ${limit}`);
     
     // Execute the Python script
-    const scriptPath = path.join(__dirname, '../../docker/qdrant/hybrid_search.py');
-    const pythonProcess = spawn('python', [
+    const scriptPath = path.join(__dirname, '../../../search-engines/qdrant/hybrid_search.py');
+    // Use system Python in development, but respect PATH in production (which should include the venv)
+    const pythonBin = process.env.NODE_ENV === 'production' ? 'python' : 'python3';
+    const pythonProcess = spawn(pythonBin, [
       scriptPath,
       '--query', q,
       '--limit', limit.toString(),

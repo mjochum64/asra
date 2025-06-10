@@ -1,0 +1,11 @@
+# Custom Dockerfile für Ollama mit curl für Health-Checks
+
+FROM ollama/ollama:rocm
+
+# Installieren von curl für Health-Checks
+RUN apt-get update && apt-get install -y curl && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Standardmäßige Ollama-Konfiguration
+EXPOSE 11434
+ENTRYPOINT ["/bin/ollama"]
+CMD ["serve"]

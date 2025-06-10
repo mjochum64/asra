@@ -26,12 +26,22 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Register routes
 app.use('/api/hybrid', hybridRoutes);
 
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    message: 'API service is operational'
+  });
+});
+
 // Root endpoint
 app.get('/', (req, res) => {
   res.json({ 
     status: 'ok',
     message: 'ASRA API Server is running',
     endpoints: [
+      '/api/health - Health check endpoint',
       '/api/hybrid/search - Hybrid search combining Solr and Qdrant'
     ]
   });

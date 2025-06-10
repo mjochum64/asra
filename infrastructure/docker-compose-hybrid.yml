@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # Solr service (existing)
   solr:
@@ -8,7 +6,7 @@ services:
     ports:
       - "8983:8983"
     volumes:
-      - ./docker/solr/configsets:/configsets
+      - ../search-engines/solr/configsets:/configsets
       - solr_data:/var/solr
     command:
       - solr-precreate
@@ -31,26 +29,38 @@ services:
 
   # Ollama for embeddings generation
   ollama:
-    image: ollama/ollama:latest
+    build: 
+      context: .
+      dockerfile: Dockerfile.ollama
     container_name: asra_ollama
+    devices:
+      - /dev/kfd:/dev/kfd
+      - /dev/dri:/dev/dri
     ports:
       - "11434:11434"
     volumes:
       - ollama_data:/root/.ollama
     networks:
       - asra-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # API server
   api:
     build:
-      context: .
+      context: ..
       dockerfile: Dockerfile.api
     container_name: asra_api
     ports:
       - "3001:3001"
     volumes:
-      - ./api:/app
-      - ./docker/qdrant:/app/scripts/qdrant
+      # Nur Quellcode mounten, nicht den ganzen Ordner, um node_modules zu erhalten
+      - ../backend/api/routes:/app/routes
+      - ../backend/api/server.js:/app/server.js
+      - ../search-engines/qdrant:/app/scripts/qdrant
     depends_on:
       - solr
       - qdrant
@@ -65,19 +75,35 @@ services:
   # Frontend
   frontend:
     build:
-      context: .
+      context: ..
       dockerfile: Dockerfile
     container_name: asra_frontend
     ports:
-      - "80:80"
+      - "8080:80"
     volumes:
-      - ./src:/app/src
-      - ./public:/app/public
+      - ../frontend/src:/app/src
+      - ../frontend/public:/app/public
     depends_on:
       - api
       - solr
     networks:
       - asra-network
+
+  # OpenWebUI for Ollama
+  openwebui:
+    image: ghcr.io/open-webui/open-webui
+    container_name: asra_openwebui
+    ports:
+      - "8181:8080"  # Nota: Verwendung von Port 8181, um Konflikte mit Frontend-Port 8080 zu vermeiden
+    environment:
+      - OLLAMA_BASE_URL=http://ollama:11434
+    volumes:
+      - openwebui_data:/app/backend/data:rw
+    depends_on:
+      - ollama
+    networks:
+      - asra-network
+    restart: unless-stopped
 
 networks:
   asra-network:
@@ -87,3 +113,4 @@ volumes:
   solr_data:
   qdrant_data:
   ollama_data:
+  openwebui_data:
