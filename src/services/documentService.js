@@ -61,8 +61,6 @@ const processDocumentContentsData = (docs) => {
     return { framework: null, sections: [], orphanNorms: [] };
   }
   
-  // isFrameworkDocument-Funktion wurde bereits importiert
-  
   // Separiere die verschiedenen Dokumenttypen
   const framework = docs.find(doc => doc?.id && isFrameworkDocument(doc.id));
   const sections = docs.filter(doc => doc?.norm_type === 'section');
@@ -111,6 +109,9 @@ const processDocumentContentsData = (docs) => {
   };
 };
 
+// Der Named-Export wurde bereits oben mit "export const loadDocumentContents" definiert
+// und kann von anderen Modulen mit "import { loadDocumentContents } from '../services/documentService';" importiert werden.
+// Der Default-Export ist eigentlich nicht nötig, wird aber für Abwärtskompatibilität beibehalten.
 export default {
   loadDocumentContents
 };

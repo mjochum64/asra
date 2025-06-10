@@ -177,7 +177,7 @@ export default function DocumentFullView({ document, onClose, onNavigateToFramew
               <TableOfContents
                 frameworkId={frameworkId}
                 onNormSelect={handleNormSelection}
-                selectedNormId={selectedNorm?.id}
+                currentNormId={selectedNorm?.id}
               />
             </div>
           )}

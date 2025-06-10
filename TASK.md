@@ -1,9 +1,9 @@
 # Project Tasks: ASRA – Deutsche Gesetze
 
 ## 🎯 Projektstatuts: Phase 1.1 VOLLSTÄNDIG ABGESCHLOSSEN ✅
-**Stand**: 12. Januar 2025
-**Version**: 1.1.2 PRODUCTION READY mit korrigierten Expertensuche-Beispielen
-**Status**: Expert Search Syntax-Hilfe mit verfügbaren Datenfeldern aktualisiert 🎯
+**Stand**: 10. Juni 2025
+**Version**: 1.1.3 PRODUCTION READY mit korrigiertem Inhaltsverzeichnis (TableOfContents)
+**Status**: DocumentFullView TableOfContents Bugfix abgeschlossen ✅
 
 ### 🏆 Erfolgreich abgeschlossene Hauptziele:
 - ✅ **Konfigurierbare UI-Struktur**: Normal-Modus (5 Felder) vs. Experten-Modus (alle Felder)
@@ -41,6 +41,13 @@
 - ✅ **Import-Pfad-Korrekturen**: Export-Funktionen nach Refactoring vollständig korrigiert
 - ✅ **Volltextanzeige-Optimierung**: XHTML-Felder werden bevorzugt für perfekte Formatierung
 - ✅ **Dokumenttyp-Unterscheidung**: Korrekte Unterscheidung zwischen Rahmendokument und einzelnen Normen beim Export
+
+### 🎯 Neu abgeschlossen: TableOfContents-Bug behoben (10. Juni 2025)
+- ✅ **Inhaltsverzeichnis-Fehler behoben**: TableOfContents wird jetzt zuverlässig bei Volltextansicht angezeigt
+- ✅ **Import-Fehler korrigiert**: Konsistente ES6-Modul-Syntax in documentService.js statt gemischter Imports
+- ✅ **Defensive Programmierung**: Robuste Null-Checks und Standardwerte für die TableOfContents-Komponente
+- ✅ **Service-Modularisierung**: Spezialisierter documentService.js für zentralisierte Dokumenten-Verarbeitung
+- ✅ **Fehlerbehandlung verbessert**: Vollständiges Error-Handling in loadDocumentContents-Funktion
 
 ### 🚀 Nächste Phase: Sprint 2 (Auto-Suggest & Sortierung)
 - [ ] Auto-Suggest/Autocomplete-Funktionalität
@@ -275,6 +282,7 @@
 - [x] Fehler in der Umgebungserkennung von Vite und im Solr-Core-Pfad (18.05.2025) - Gelöst durch Anpassung von solrService.js
 - [x] CORS-Probleme im Entwicklungsmodus (18.05.2025) - Gelöst durch Einrichtung eines Proxys in der Vite-Konfiguration
 - [x] (HOCH) Optimierung der Ladezeiten durch Implementierung von Code-Splitting erforderlich (18.05.2025) - **Abgeschlossen (07.06.2025)**
+- [x] (HOCH) TableOfContents funktioniert nicht in der Dokumentenansicht (10.06.2025) - **Gelöst durch Korrektur der Import-Methoden in documentService.js und robustere Implementierung**
 - [ ] (HOCH) Bessere Fehlerbehandlung für Netzwerkprobleme einbauen (18.05.2025)
 - [ ] (MITTEL) Solr-Schema-Aktualisierungen ohne Container-Neustart ermöglichen (18.05.2025)
 - [x] (MITTEL) Integration der Sidebar-Filter mit Solr-Facetten für dynamische Filterung (19.05.2025) - **✅ VOLLSTÄNDIG ABGESCHLOSSEN (07.06.2025)**
@@ -452,3 +460,15 @@
 - [x] **Build-Fix**:
     - [x] `textFormatters.js` zu `textFormatters.jsx` umbenannt und Importe korrigiert, um Build-Fehler zu beheben.
 - **Ergebnis**: Deutlich verbesserte Code-Organisation, Reduktion von Duplikaten und klarere Verantwortlichkeiten der Module.
+
+### 13.2 Bugfixes und Robustheit (✅ VOLLSTÄNDIG ABGESCHLOSSEN - 2025-06-10)
+- **Ziel**: Stabilität der Anwendung verbessern und kritische Bugs beheben.
+- [x] **TableOfContents-Bugfix**:
+    - [x] Problem identifiziert: Inhaltsverzeichnis verschwand beim Öffnen der Volltextansicht mit TypeError "Cannot read properties of undefined (reading 'map')".
+    - [x] Ursache diagnostiziert: Mischung aus ES Modul-Imports und CommonJS-Require in documentService.js.
+    - [x] Lösung implementiert: 
+        - [x] Neuer documentService.js mit konsequenter ES-Modul-Syntax erstellt.
+        - [x] Import von isFrameworkDocument korrigiert (von require zu import).
+        - [x] Defensive Programmierung mit Null-Checks und Standardwerten in TableOfContents.jsx hinzugefügt.
+    - [x] Tests durchgeführt: Vollständige Funktion des Inhaltsverzeichnisses bestätigt.
+- **Ergebnis**: Volltextanzeige funktioniert jetzt stabil mit korrekt angezeigtem Inhaltsverzeichnis.

@@ -18,6 +18,15 @@ und dieses Projekt folgt [Semantischer Versionierung](https://semver.org/lang/de
 - Webcrawler-Integration für automatischen Datenimport
 - Theme-Wechsler für hellen/dunklen Modus
 
+## [1.1.3] - 2025-06-10
+
+### Behoben
+- **Volltextansicht Bugfix**: Problem beim Anzeigen des Inhaltsverzeichnisses (TableOfContents) behoben
+  - Problem: Das Inhaltsverzeichnis verschwand beim Öffnen der Volltextansicht aufgrund eines Fehlers "Cannot read properties of undefined (reading 'map')"
+  - Ursache: Mischung aus ES Modul-Imports und CommonJS-Require in documentService.js
+  - Lösung: Konsistente Import-Methoden implementiert und Import-Fehler für isFrameworkDocument behoben
+  - Ergebnis: Inhaltsverzeichnis wird jetzt korrekt angezeigt und bleibt während der gesamten Dokumentansicht bestehen
+
 ## [1.1.2] - 2025-06-09 <!-- Assuming current date for consistency with example -->
 
 ### Geändert

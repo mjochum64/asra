@@ -200,7 +200,7 @@ Die Anwendung besteht aus zwei Docker-Containern:
 
 Dieses Projekt verwendet semantische Versionierung (SemVer). Alle Änderungen werden in der [CHANGELOG.md](CHANGELOG.md) dokumentiert.
 
-**Aktuelle Version: 1.1.1** - Export-System mit professioneller PDF/HTML-Funktionalität
+**Aktuelle Version: 1.1.3** - Bugfixes und Stabilitätsverbesserungen für TableOfContents
 
 ## Für neue Entwickler
 
