@@ -4,6 +4,7 @@ import DynamicSidebar from './components/DynamicSidebar';
 import DynamicResultsDisplay from './components/DynamicResultsDisplay';
 import ModeSwitcher from './components/ModeSwitcher';
 import { searchDocuments, fetchDocumentById } from './services/solrService';
+import hybridSearchService from './services/hybridSearchService';
 import { analyzeSchemaForUI } from './services/schemaService';
 // import { getFrameworkId, getDocumentType } from './utils/documentUtils'; // Removed for revert - no longer used here
 
@@ -40,18 +41,63 @@ export default function DynamicApp() {
     }
   };
 
-  const handleSearch = async (query, searchMode, searchFields = []) => {
+  const handleSearch = async (query, searchMode, searchFields = [], searchOptions = {}) => {
     try {
       setIsLoading(true);
       setError(null);
       setLastSearchQuery(query);
       setLastSearchMode(searchMode);
       
-      console.log('Dynamic search:', { query, searchMode, searchFields, activeFilters });
+      console.log('Dynamic search:', { 
+        query, 
+        searchMode, 
+        searchFields, 
+        activeFilters,
+        searchEngine: searchOptions.searchEngine || 'keyword',
+        weights: searchOptions.weights 
+      });
       
-      // Führe Suche durch - jetzt gibt searchDocuments ein Objekt mit results, facets und total zurück
+      // Check if we should use hybrid search service
+      if (searchOptions.searchEngine === 'hybrid' || searchOptions.searchEngine === 'semantic') {
+        console.log(`Using ${searchOptions.searchEngine} search engine`);
+        
+        try {
+          // Use the hybrid search service
+          const hybridResponse = await hybridSearchService.search(query, {
+            start: 0,
+            rows: 20,
+            weights: searchOptions.weights,
+            showScores: true
+          });
+          
+          // Convert hybrid search results to the expected format
+          const searchResponse = {
+            results: hybridResponse.docs || [],
+            facets: hybridResponse.facets || {},
+            total: hybridResponse.numFound || hybridResponse.docs?.length || 0
+          };
+          
+          setSearchResults(searchResponse.results);
+          setCurrentFacets(searchResponse.facets);
+          setTotalResults(searchResponse.total);
+          
+          return;
+        } catch (hybridError) {
+          console.error('Hybrid search failed, falling back to keyword search:', hybridError);
+          // If hybrid search fails, we'll fall through to the standard search
+        }
+      }
+      
+      // Default: Use standard Solr search
       const searchResponse = await searchDocuments(query, searchMode, activeFilters);
-      setSearchResults(searchResponse.results);
+      
+      // Add search_source property to each result for consistent display
+      const resultsWithSource = searchResponse.results.map(doc => ({
+        ...doc,
+        search_source: 'keyword'
+      }));
+      
+      setSearchResults(resultsWithSource);
       setCurrentFacets(searchResponse.facets);
       setTotalResults(searchResponse.total);
       

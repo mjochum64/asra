@@ -54,6 +54,36 @@
 - [ ] Erweiterte Sortieroptionen
 - [ ] Suchhistorie mit LocalStorage
 
+---
+
+## Phase 2: Hybrid Search Implementation (Qdrant & Ollama)
+
+### Backend Development (Hybrid Search)
+- [ ] Implement API endpoint for hybrid search (Solr + Qdrant).
+- [ ] Develop logic for optional LLM-based query expansion (Ollama).
+- [ ] Implement parallel querying to Solr and Qdrant.
+- [ ] Create logic for merging and ranking results from Solr and Qdrant.
+- [ ] Develop API endpoint for optional RAG-based answer generation (Ollama).
+
+### Data Pipeline (Qdrant)
+- [ ] Develop scripts/processes to generate vector embeddings for legal documents.
+  - [ ] Choose an appropriate embedding model (e.g., Sentence-Transformers for German).
+    - [x] **Selected Model**: `qllama/multilingual-e5-large-instruct:latest` via local Ollama instance.
+    - [ ] **Ollama Endpoint**: `http://ollama:11434` (within Docker network)
+  - [ ] Create a Python script (e.g., `docker/qdrant/qdrant_indexer.py` or in a new `docker/qdrant/` directory).
+    - [ ] Script should fetch documents (from Solr or original sources like XML).
+    - [ ] Script should extract relevant text for embedding.
+    - [ ] Script should generate embeddings using the chosen model via Ollama endpoint.
+- [ ] Implement indexing of embeddings into Qdrant.
+  - [ ] Script should connect to the Qdrant service.
+    - [ ] **Qdrant Endpoint**: `http://qdrant:6333` (within Docker network)
+  - [ ] Script should define and create a Qdrant collection if it doesn't exist (specify vector size, distance metric).
+  - [ ] Script should store embeddings along with a payload (e.g., document ID, title) in Qdrant.
+
+### Frontend Development (Hybrid Search)
+- [ ] Adapt UI to display combined/RAG results if necessary.
+- [ ] Integrate new API endpoints for hybrid search and RAG.
+
 **📋 Detaillierte Aufgabenliste:**
 
 ---

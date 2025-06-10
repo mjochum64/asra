@@ -63,9 +63,9 @@ export default function ResultItem({ result, searchQuery, uiMode, resultConfig, 
       isFramework ? 'border-l-4 border-blue-500' : isNorm ? 'border-l-4 border-green-500' : ''
     }`}>
 
-      {/* Document Type Indicator */}
-      {(isFramework || isNorm) && (
-        <div className="mb-3">
+      {/* Document Type and Search Source Indicator */}
+      <div className="mb-3 flex flex-wrap gap-2">
+        {(isFramework || isNorm) && (
           <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
             isFramework
               ? 'bg-blue-100 text-blue-800'
@@ -73,8 +73,30 @@ export default function ResultItem({ result, searchQuery, uiMode, resultConfig, 
           }`}>
             {getDocumentTypeLabel(localDocumentType)}
           </span>
-        </div>
-      )}
+        )}
+        
+        {/* Search Source Badge - only shown for hybrid search results */}
+        {result.search_source && (
+          <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+            result.search_source === 'keyword' 
+              ? 'bg-amber-100 text-amber-800'
+              : result.search_source === 'semantic' 
+                ? 'bg-purple-100 text-purple-800'
+                : 'bg-indigo-100 text-indigo-800' // hybrid
+          }`}>
+            {result.search_source === 'keyword' && '🔍 Solr'}
+            {result.search_source === 'semantic' && '🧠 Semantisch'}
+            {result.search_source === 'hybrid' && '⚡ Hybrid'}
+          </span>
+        )}
+        
+        {/* Relevance Score Badge - if available and in expert mode */}
+        {uiMode === 'expert' && result.score && (
+          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+            Score: {result.score.toFixed(2)}
+          </span>
+        )}
+      </div>
 
       {/* Primäre Felder */}
       <div className="mb-4">
