@@ -281,7 +281,30 @@
 - [ ] (NIEDRIG) Möglichkeit zum Exportieren von Suchergebnissen als CSV oder JSON (19.05.2025)
 - [ ] (NIEDRIG) Implementierung eines Theme-Wechslers für hellen/dunklen Modus (19.05.2025)
 
-## Aktuelle Sprint-Planung (Juni 2025)
+## Aktueller Sprint: Export-Korrektur und Expertensuche-Überarbeitung (✅ VOLLSTÄNDIG ABGESCHLOSSEN - 10.06.2025)
+
+### 8.1 Export-Funktionen Korrektur (✅ ABGESCHLOSSEN - 10.06.2025)
+- [x] **Import-Pfade korrigiert**: DocumentExport.jsx verwendet nun korrekte modulare Import-Pfade
+- [x] **Export-Logik überarbeitet**: Unterscheidung zwischen Rahmendokument vs. einzelne Norm
+- [x] **Dateinamen-Problem behoben**: generateFilename() nutzt erstes Dokument als Fallback
+- [x] **Volltextanzeige optimiert**: getContentForDisplay() priorisiert HTML-Felder
+- [x] **HTML-Tag-Bereinigung**: formatFieldValue() entfernt unerwünschte `<mark>`-Tags
+- [x] **UI-Verbesserungen**: Rahmendokument-Link als Icon im Header
+
+### 8.2 Stopword-Problem behoben (✅ ABGESCHLOSSEN - 10.06.2025)
+- [x] **Root-Cause identifiziert**: Frontend-Validierung blockierte kurze Begriffe
+- [x] **Lösung implementiert**: `.trim()` Validierung gelockert für Stopword-Tests
+- [x] **Funktionalität bestätigt**: Deutsche Artikel "der", "die", "das" können getestet werden
+
+### 8.3 Expertensuche-Überarbeitung (✅ ABGESCHLOSSEN - 10.06.2025)
+- [x] **Layout vereinfacht**: Suchfeld-Auswahl-Karten im Experten-Modus entfernt
+- [x] **Direkte Solr-Syntax**: Unterstützung für `field:"value" AND/OR ...` Queries
+- [x] **Automatische Multi-Feld-Suche**: Suche über alle deutschen Rechtsfelder
+- [x] **Erweiterte Highlighting**: Zusätzliche Felder für Experten-Modus
+- [x] **Syntax-Hilfe**: Benutzerfreundliche Anleitung mit Beispielen
+- [x] **Build-Optimierung**: Mixed import warnings behoben
+
+**Ergebnis**: Alle Export- und Anzeigefunktionen funktionieren korrekt. Expertensuche bietet professionelle Solr-Query-Syntax mit erweiterten Funktionen.
 
 ### Sprint 1: Facetten-Filter (KW 23-24) - ✅ VOLLSTÄNDIG ABGESCHLOSSEN
 **Ziel**: Dynamische Filter-Funktionalität mit Solr-Integration

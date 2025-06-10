@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { buildGermanLegalQuery } from '../utils/queryUtils'; // Import the centralized function
+import { uiHelpers } from '../config/uiConfig'; // Static import to avoid mixed import warning
 
 // buildGermanLegalQuery has been moved to ../utils/queryUtils.js
 
@@ -188,7 +189,6 @@ export const getDynamicFacets = async () => {
 export const getContextualFacets = async (query = '*:*', searchMode = 'all', currentFilters = {}) => {
   try {
     // Verwendet uiConfig, um zu bestimmen, FÜR WELCHE FELDER Facetten angefragt werden sollen.
-    const { uiHelpers } = await import('../config/uiConfig.js');
     const configuredFilters = uiHelpers.getFilterFields('normal');
     const expertFilters = uiHelpers.getFilterFields('expert');
     const allConfiguredFilters = [...configuredFilters, ...expertFilters];

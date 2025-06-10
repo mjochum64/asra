@@ -53,9 +53,20 @@ export default function DynamicSearchBar({ onSearch, uiMode = 'normal', schemaIn
   const handleSubmit = (e) => {
     e.preventDefault();
     if (searchTerm) { // Entferne .trim() um auch Leerzeichen und kurze Begriffe zu erlauben
-      // Finde die entsprechende Option für den ausgewählten Modus
-      const selectedOption = fieldOptions.find(opt => opt.value === searchMode);
-      onSearch(searchTerm, searchMode, selectedOption?.fields || []);
+      if (uiMode === 'expert') {
+        // Expertensuche: Verwende direkte Solr-Query-Syntax
+        // Wenn die Query bereits Solr-Syntax enthält (Doppelpunkt), verwende sie direkt
+        if (searchTerm.includes(':') || searchTerm.includes('AND') || searchTerm.includes('OR')) {
+          onSearch(searchTerm, 'expert_query', ['all']);
+        } else {
+          // Automatische Suche über alle durchsuchbaren Felder
+          onSearch(searchTerm, 'expert_all_fields', ['all']);
+        }
+      } else {
+        // Normal-Modus: Verwende die ausgewählte Suchfeld-Option
+        const selectedOption = fieldOptions.find(opt => opt.value === searchMode);
+        onSearch(searchTerm, searchMode, selectedOption?.fields || []);
+      }
     }
   };
 
@@ -81,7 +92,10 @@ export default function DynamicSearchBar({ onSearch, uiMode = 'normal', schemaIn
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Suche nach Dokumenten..."
+                placeholder={uiMode === 'expert' 
+                  ? 'Solr-Query (z.B. kurzue:"Grundgesetz" OR amtabk:"GG")...' 
+                  : 'Suche nach Dokumenten...'
+                }
                 className="w-full pl-10 pr-10 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-solr-primary focus:border-transparent shadow-sm text-gray-700"
               />
               {searchTerm && (
@@ -105,8 +119,8 @@ export default function DynamicSearchBar({ onSearch, uiMode = 'normal', schemaIn
             </button>
           </div>
           
-          {/* UI-konfigurierte Suchfeld-Optionen */}
-          {!isLoading && fieldOptions.length > 0 && (
+          {/* UI-konfigurierte Suchfeld-Optionen - nur im Normal-Modus */}
+          {uiMode === 'normal' && !isLoading && fieldOptions.length > 0 && (
             <div className="mt-4">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mb-3">
                 {fieldOptions.map((option) => (
@@ -148,6 +162,23 @@ export default function DynamicSearchBar({ onSearch, uiMode = 'normal', schemaIn
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 {getFieldInfo()}
+              </div>
+            </div>
+          )}
+
+          {/* Expertensuche - Erweiterte Syntax-Hilfe */}
+          {uiMode === 'expert' && (
+            <div className="mt-4">
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                <h4 className="text-sm font-semibold text-amber-800 mb-2">
+                  🔬 Expertensuche - Erweiterte Solr-Syntax
+                </h4>
+                <div className="text-xs text-amber-700 space-y-1">
+                  <div><strong>Feldspezifisch:</strong> <code>kurzue:"Grundgesetz" OR amtabk:"GG"</code></div>
+                  <div><strong>Boolean-Operatoren:</strong> <code>AND</code>, <code>OR</code>, <code>NOT</code></div>
+                  <div><strong>Wildcards:</strong> <code>amtabk:*BImSchV*</code></div>
+                  <div><strong>Phrase:</strong> <code>"Verordnung über kleine"</code></div>
+                </div>
               </div>
             </div>
           )}

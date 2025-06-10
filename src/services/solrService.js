@@ -51,24 +51,35 @@ export const searchDocuments = async (query, searchMode = 'all', filters = {}, o
       ...options // Überschreibt Standard-Parameter
     };
     
-    // Spezielle Behandlung für bereits formatierte Solr-Queries
-    if (query.includes(':') && (query.includes('OR') || query.includes('AND') || query.includes('"') || query.includes('*'))) {
-      // Dies ist bereits eine formatierte Solr-Query, verwende sie direkt
-      return await solrClient.get('/documents/select', {
-        params: {
-          q: query,
-          ...defaultParams
-        }
-      }).then(response => response.data.response);
-    }
-    
     // Bestimme, welches Feld durchsucht werden soll, basierend auf searchMode
     let queryParams;
     
     // Spezielle Behandlung für Wildcard-Suche
     const isWildcardQuery = query === '*' || query === '*:*' || query.trim() === '';
     
-    if (searchMode === 'title') {
+    // Spezielle Behandlung für bereits formatierte Solr-Queries oder Experten-Modus
+    if ((query.includes(':') && (query.includes('OR') || query.includes('AND') || query.includes('"') || query.includes('*'))) || searchMode === 'expert_query') {
+      // Dies ist bereits eine formatierte Solr-Query, verwende sie direkt
+      queryParams = {
+        q: query,
+        ...defaultParams
+      };
+    } else if (searchMode === 'expert_all_fields') {
+      // Automatische Suche über alle verfügbaren deutschen Rechtsfelder
+      if (isWildcardQuery) {
+        queryParams = {
+          q: '*:*',
+          ...defaultParams
+        };
+      } else {
+        // Erweiterte Multi-Feld-Suche für deutsche Rechtsdokumente
+        const expertQuery = `(kurzue:"${query}" OR kurzue:*${query}*) OR (langue:"${query}" OR langue:*${query}*) OR (amtabk:"${query}" OR amtabk:*${query}*) OR (jurabk:"${query}" OR jurabk:*${query}*) OR (text_content:(${query})) OR (enbez:"${query}" OR enbez:*${query}*)`;
+        queryParams = {
+          q: expertQuery,
+          ...defaultParams
+        };
+      }
+    } else if (searchMode === 'title') {
       queryParams = {
         q: isWildcardQuery ? 'titel:*' : `titel:(${query})`,
         ...defaultParams
@@ -162,7 +173,14 @@ export const searchDocuments = async (query, searchMode = 'all', filters = {}, o
     // Füge vereinfachtes Highlighting hinzu (für alle Suchmodi)
     // Grund: Entferne "content" und "title" da diese Felder nicht im deutschen Rechts-Schema existieren
     queryParams.hl = 'true';
-    queryParams['hl.fl'] = 'kurzue,langue,amtabk,jurabk,text_content,titel';
+    
+    // Erweiterte Highlighting-Felder für Expertensuche
+    if (searchMode === 'expert_query' || searchMode === 'expert_all_fields') {
+      queryParams['hl.fl'] = 'kurzue,langue,amtabk,jurabk,text_content,titel,enbez,norm_type,fundstelle_periodikum';
+    } else {
+      queryParams['hl.fl'] = 'kurzue,langue,amtabk,jurabk,text_content,titel';
+    }
+    
     queryParams['hl.simple.pre'] = '<mark>';
     queryParams['hl.simple.post'] = '</mark>';
     queryParams['hl.fragsize'] = 200;
