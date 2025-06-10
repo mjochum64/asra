@@ -33,7 +33,8 @@ Das Projekt wurde in eine funktionale Struktur reorganisiert:
 ./scripts/reset_qdrant_data.sh  # Alle Kollektionen aus Qdrant löschen (Vor Neuindexierung)
 
 # Hinweis: Die Skripte sind für die Verwendung mit Docker konfiguriert.
-# Die Docker-Konfiguration wurde optimiert - siehe /docs/DOCKER_CONFIGURATION.md
+# Die Docker-Konfiguration wurde optimiert und befindet sich im /infrastructure-Verzeichnis.
+# Weitere Informationen finden Sie in /docs/DOCKER_CONFIGURATION.md
 ```
 
 

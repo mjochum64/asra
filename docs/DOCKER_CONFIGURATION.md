@@ -88,6 +88,14 @@ Alle Skripte im `scripts/`-Verzeichnis sind für die Verwendung mit der Docker-U
 - Qdrant: `http://localhost:6333`
 - Ollama: `http://localhost:11434`
 
+Die Docker-Konfigurationsdateien befinden sich alle im `/infrastructure`-Verzeichnis:
+
+- `docker-compose.yml` - Hauptkonfiguration
+- `docker-compose-hybrid.yml` - Konfiguration für das hybride Suchsystem
+- `Dockerfile` - Frontend-Container
+- `Dockerfile.api` - API-Container
+- `Dockerfile.ollama` - Angepasster Ollama-Container mit curl
+
 ## Nächste Schritte
 
 1. **Einheitliches Logging-System**: Implementierung eines zentralisierten Logging-Systems für alle Container

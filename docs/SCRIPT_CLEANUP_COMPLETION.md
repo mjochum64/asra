@@ -60,7 +60,10 @@ Alle Skripte wurden erfolgreich getestet und funktionieren wie erwartet im Docke
 2. **✅ Weitere Dokumentation (10. Juni 2025)**
    - Die Docker-basierte Architektur wurde in einer separaten Dokumentation (`DOCKER_CONFIGURATION.md`) detailliert beschrieben, inklusive Lösungen für bekannte Probleme wie dem Ollama Health-Check.
 
-3. **Einheitliches Logging**
+3. **✅ Docker-Reorganisation (10. Juni 2025)**
+   - Die Docker-Konfigurationen wurden reorganisiert und befinden sich jetzt ausschließlich im `/infrastructure`-Verzeichnis (siehe `DOCKER_REORGANIZATION_REPORT.md`).
+
+4. **Einheitliches Logging**
    - Für zukünftige Verbesserungen könnte ein einheitliches Logging-System für alle Skripte implementiert werden.
 
 ## Fazit
