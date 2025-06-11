@@ -208,11 +208,7 @@ class HybridSearcher:
             # Build query parameters with more optimized field boosting
             params = {
                 "q": query,
-                "fq": [
-                    "-norm_type:repealed", 
-                    "-titel:\"(weggefallen)\"",
-                    "-text_content:\"(weggefallen)\""  # Filter documents where text_content is exactly "(weggefallen)"
-                ],
+                # No longer need fq filters - weggefallen docs are excluded at index time
                 "rows": limit,
                 "fl": "id,enbez,kurzue,langue,norm_type,parent_document_id,jurabk,amtabk,text_content,text_content_html,fussnoten_content_html,score",
                 "defType": "edismax",
@@ -263,13 +259,9 @@ class HybridSearcher:
             
             params = {
                 "q": id_query,
-                "fq": [
-                    "-norm_type:repealed", 
-                    "-titel:\"(weggefallen)\"",
-                    "-text_content:\"(weggefallen)\""  # Filter documents where text_content is exactly "(weggefallen)"
-                ],
+                # No longer need fq filters - weggefallen docs are excluded at index time
                 "rows": len(doc_ids),
-                "fl": "*",  # Get all fields for complete document data
+                "fl": "id,enbez,kurzue,langue,norm_type,parent_document_id,jurabk,amtabk,text_content,text_content_html,fussnoten_content_html",
                 "wt": "json"
             }
             
@@ -454,12 +446,7 @@ class HybridSearcher:
                 # Merge full document data with hybrid search scores
                 full_doc = full_documents[doc_id]
                 
-                # Final safety filter: Skip documents with "(weggefallen)" content
-                if (full_doc.get("norm_type") == "repealed" or 
-                    full_doc.get("titel") == "(weggefallen)" or 
-                    full_doc.get("text_content") == "(weggefallen)"):
-                    logger.debug(f"Filtering out document {doc_id} with weggefallen content")
-                    continue
+                # No longer need safety filter - weggefallen docs are excluded at index time
                 
                 full_doc.update({
                     "keyword_score": score_info["keyword_score"],

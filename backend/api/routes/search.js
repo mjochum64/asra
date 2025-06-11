@@ -46,12 +46,8 @@ router.get('/', async (req, res) => {
       'hl.simple.post': '</mark>',
       'hl.fragsize': 200,
       'hl.snippets': 1,
-      // Add filter queries to exclude repealed documents
-      fq: [
-        '-norm_type:repealed',
-        '-titel:"(weggefallen)"'
-        // Note: Removed -id:*BJNG* filter as it was too aggressive
-      ],
+      // Weggefallene Dokumente werden bereits bei der Index-Zeit gefiltert,
+      // daher sind hier keine Runtime-Filter mehr nötig
       ...otherParams
     };
 
@@ -135,11 +131,10 @@ router.post('/', async (req, res) => {
     console.log(`[SEARCH POST] Query: "${q}", Mode: ${searchMode}`);
 
     // Build filter queries
-    const filterQueries = [
-      '-norm_type:repealed',
-      '-titel:"(weggefallen)"'
-      // Note: Removed -id:*BJNG* filter as it was too aggressive
-    ];
+    const filterQueries = [];
+    
+    // Weggefallene Dokumente werden bereits bei der Index-Zeit gefiltert,
+    // daher sind hier keine Runtime-Filter mehr nötig
 
     // Add dynamic filters
     Object.keys(filters).forEach(fieldName => {

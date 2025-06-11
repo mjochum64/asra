@@ -256,10 +256,8 @@ export const getContextualFacets = async (query = '*:*', searchMode = 'all', cur
     // Baue Filter-Queries basierend auf aktuellen Filtern
     const filterQueries = [];
     
-    // Schließe aufgehobene Rechtsnormen aus (diese sind nicht mehr gültig)
-    // Filtere sowohl norm_type:repealed als auch Dokumente mit titel:"(weggefallen)"
-    filterQueries.push('-norm_type:repealed');
-    filterQueries.push('-titel:"(weggefallen)"');
+    // Weggefallene Dokumente werden bereits bei der Index-Zeit gefiltert, 
+    // daher sind hier keine Runtime-Filter mehr nötig
     
     Object.keys(currentFilters).forEach(fieldName => {
       const filterValues = currentFilters[fieldName];

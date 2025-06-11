@@ -255,11 +255,8 @@ export const searchDocuments = async (query, searchMode = 'all', filters = {}, o
     // Füge Filter-Queries hinzu
     const filterQueries = [];
     
-    // Schließe aufgehobene Rechtsnormen aus (diese sind nicht mehr gültig)
-    // Filtere sowohl norm_type:repealed als auch Dokumente mit titel:"(weggefallen)"
-    filterQueries.push('-norm_type:repealed');
-    filterQueries.push('-titel:"(weggefallen)"');
-    // Note: Removed -id:*BJNG* filter as it was filtering out relevant documents
+    // Weggefallene Dokumente werden bereits bei der Index-Zeit gefiltert, 
+    // daher sind hier keine Runtime-Filter mehr nötig
     
     // Dynamische Filter-Verarbeitung für alle verfügbaren Felder
     Object.keys(filters).forEach(fieldName => {

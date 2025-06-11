@@ -708,17 +708,23 @@ class SolrDocumentFetcher:
         """Fetch documents from Solr.
         
         Returns:
-            List of documents with their metadata
+            List of documents with their metadata (excluding weggefallen/repealed documents)
         """
         try:
             # Determine how many documents to fetch
             rows = self.limit if self.limit else 10000  # Large number to get all docs
             
-            # Query all documents
+            # Query all documents with filtering for weggefallen/repealed/BJNG documents
             response = requests.get(
                 f"{SOLR_ENDPOINT}/select",
                 params={
                     "q": "*:*",
+                    "fq": [
+                        "-norm_type:repealed",           # Exclude repealed documents
+                        "-titel:\"(weggefallen)\"",     # Exclude documents with "(weggefallen)" in title
+                        "-text_content:\"(weggefallen)\"",  # Exclude documents with "(weggefallen)" in content
+                        "-id:*BJNG*"                    # Exclude BJNG (structural/outline) documents
+                    ],
                     "rows": rows,
                     "fl": "id,enbez,kurzue,langue,text_content,text_content_html,norm_type,parent_document_id,jurabk,amtabk"
                 },
