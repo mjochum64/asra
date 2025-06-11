@@ -36,7 +36,10 @@ const solrClient = axios.create({
   timeout: 10000,
   withCredentials: false, // Wichtig für CORS-Anfragen
   headers: {
-    'Content-Type': 'application/json'
+    'Content-Type': 'application/json',
+    'Cache-Control': 'no-cache, no-store, must-revalidate',
+    'Pragma': 'no-cache',
+    'Expires': '0'
   }
 });
 
@@ -48,6 +51,7 @@ export const searchDocuments = async (query, searchMode = 'all', filters = {}, o
     const defaultParams = {
       wt: 'json',
       rows: 20,
+      _: Date.now(), // Cache buster - ensures fresh results
       ...options // Überschreibt Standard-Parameter
     };
     
@@ -250,6 +254,11 @@ export const searchDocuments = async (query, searchMode = 'all', filters = {}, o
     
     // Füge Filter-Queries hinzu
     const filterQueries = [];
+    
+    // Schließe aufgehobene Rechtsnormen aus (diese sind nicht mehr gültig)
+    // Filtere sowohl norm_type:repealed als auch Dokumente mit titel:"(weggefallen)"
+    filterQueries.push('-norm_type:repealed');
+    filterQueries.push('-titel:"(weggefallen)"');
     
     // Dynamische Filter-Verarbeitung für alle verfügbaren Felder
     Object.keys(filters).forEach(fieldName => {

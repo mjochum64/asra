@@ -51,8 +51,8 @@ services:
   # API server
   api:
     build:
-      context: .
-      dockerfile: Dockerfile.api
+      context: ..
+      dockerfile: infrastructure/Dockerfile.api
     container_name: asra_api
     ports:
       - "3001:3001"

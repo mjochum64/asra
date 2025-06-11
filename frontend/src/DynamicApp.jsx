@@ -43,8 +43,13 @@ export default function DynamicApp() {
 
   const handleSearch = async (query, searchMode, searchFields = [], searchOptions = {}) => {
     try {
-      setIsLoading(true);
+      // Clear previous search state immediately to prevent displaying old results
+      setSearchResults([]);
+      setCurrentFacets({});
+      setTotalResults(0);
       setError(null);
+      
+      setIsLoading(true);
       setLastSearchQuery(query);
       setLastSearchMode(searchMode);
       

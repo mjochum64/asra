@@ -208,6 +208,7 @@ class HybridSearcher:
             # Build query parameters with more optimized field boosting
             params = {
                 "q": query,
+                "fq": "-norm_type:repealed",  # Exclude repealed/aufgehobene legal norms
                 "rows": limit,
                 "fl": "id,enbez,kurzue,langue,norm_type,parent_document_id,jurabk,amtabk,text_content,text_content_html,fussnoten_content_html,score",
                 "defType": "edismax",
@@ -258,6 +259,7 @@ class HybridSearcher:
             
             params = {
                 "q": id_query,
+                "fq": ["-norm_type:repealed", "-titel:\"(weggefallen)\""],  # Exclude both types of repealed/abolished legal norms
                 "rows": len(doc_ids),
                 "fl": "*",  # Get all fields for complete document data
                 "wt": "json"

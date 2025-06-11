@@ -558,8 +558,6 @@ export const uiHelpers = {
 };
 
 // API configuration
-export const apiBase = process.env.NODE_ENV === 'production' 
-  ? '/api' // Production API path
-  : 'http://localhost:3001/api'; // Development API path
+export const apiBase = '/api'; // Always use the Nginx proxy path
 
 export default uiConfig;

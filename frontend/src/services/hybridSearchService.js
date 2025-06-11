@@ -46,11 +46,18 @@ class HybridSearchService {
         rows,
         keyword_weight: weights.keyword || this.defaultWeights.keyword,
         semantic_weight: weights.semantic || this.defaultWeights.semantic,
-        include_scores: showScores
+        include_scores: showScores,
+        _: Date.now() // Cache buster
       });
 
-      // Perform the search request
-      const response = await fetch(`${this.baseUrl}/search?${params.toString()}`);
+      // Perform the search request with anti-cache headers
+      const response = await fetch(`${this.baseUrl}/search?${params.toString()}`, {
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        }
+      });
       
       if (!response.ok) {
         throw new Error(`Hybrid search failed with status: ${response.status}`);

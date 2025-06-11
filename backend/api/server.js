@@ -10,6 +10,7 @@ const fs = require('fs');
 
 // Import route handlers
 const hybridRoutes = require('./routes/hybrid');
+const searchRoutes = require('./routes/search');
 
 // Initialize Express
 const app = express();
@@ -25,6 +26,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Register routes
 app.use('/api/hybrid', hybridRoutes);
+app.use('/api/search', searchRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
@@ -42,6 +44,7 @@ app.get('/', (req, res) => {
     message: 'ASRA API Server is running',
     endpoints: [
       '/api/health - Health check endpoint',
+      '/api/search - Standard Solr search with filtering',
       '/api/hybrid/search - Hybrid search combining Solr and Qdrant'
     ]
   });
