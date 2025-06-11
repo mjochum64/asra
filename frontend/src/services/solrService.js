@@ -50,6 +50,13 @@ export const searchDocuments = async (query, searchMode = 'all', filters = {}, o
       }
     });
     
+    // Füge alle anderen options Parameter hinzu (für Export-Funktionen wie fl)
+    Object.keys(options).forEach(key => {
+      if (key !== 'rows' && key !== 'start') {  // Diese sind bereits hinzugefügt
+        searchParams.append(key, options[key]);
+      }
+    });
+    
     // Nutze die gefilterte Backend-API
     const response = await apiClient.get(`search?${searchParams.toString()}`);
     

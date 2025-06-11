@@ -34,14 +34,18 @@ export default function DocumentExport({ document, frameworkId }) {
         fl: 'id,kurzue,langue,text_content,text_content_html,fussnoten_content_html,enbez,norm_type'
       });
 
-      if (response?.docs) {
+      // Backend-API gibt response.results zurück (nicht response.docs)
+      if (response?.results && response.results.length > 0) {
         if (format === 'html') {
           // Verwende die importierte Funktion
-          await exportAsHTML(response.docs);
+          await exportAsHTML(response.results);
         } else if (format === 'pdf') {
           // Verwende die importierte Funktion
-          await exportAsPDF(response.docs);
+          await exportAsPDF(response.results);
         }
+      } else {
+        console.warn('Keine Dokumente für Export gefunden:', response);
+        alert('Keine Dokumente für Export gefunden.');
       }
     } catch (error) {
       console.error('Export-Fehler:', error);
