@@ -76,13 +76,10 @@ services:
   frontend:
     build:
       context: ..
-      dockerfile: Dockerfile
+      dockerfile: infrastructure/Dockerfile
     container_name: asra_frontend
     ports:
       - "8080:80"
-    volumes:
-      - ../frontend/src:/app/src
-      - ../frontend/public:/app/public
     depends_on:
       - api
       - solr
