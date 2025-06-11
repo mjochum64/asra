@@ -50,6 +50,7 @@ router.get('/', async (req, res) => {
       fq: [
         '-norm_type:repealed',
         '-titel:"(weggefallen)"'
+        // Note: Removed -id:*BJNG* filter as it was too aggressive
       ],
       ...otherParams
     };
@@ -137,6 +138,7 @@ router.post('/', async (req, res) => {
     const filterQueries = [
       '-norm_type:repealed',
       '-titel:"(weggefallen)"'
+      // Note: Removed -id:*BJNG* filter as it was too aggressive
     ];
 
     // Add dynamic filters

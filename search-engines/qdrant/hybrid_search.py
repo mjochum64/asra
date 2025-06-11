@@ -208,7 +208,11 @@ class HybridSearcher:
             # Build query parameters with more optimized field boosting
             params = {
                 "q": query,
-                "fq": "-norm_type:repealed",  # Exclude repealed/aufgehobene legal norms
+                "fq": [
+                    "-norm_type:repealed", 
+                    "-titel:\"(weggefallen)\"",
+                    "-text_content:\"(weggefallen)\""  # Filter documents where text_content is exactly "(weggefallen)"
+                ],
                 "rows": limit,
                 "fl": "id,enbez,kurzue,langue,norm_type,parent_document_id,jurabk,amtabk,text_content,text_content_html,fussnoten_content_html,score",
                 "defType": "edismax",
@@ -259,7 +263,11 @@ class HybridSearcher:
             
             params = {
                 "q": id_query,
-                "fq": ["-norm_type:repealed", "-titel:\"(weggefallen)\""],  # Exclude both types of repealed/abolished legal norms
+                "fq": [
+                    "-norm_type:repealed", 
+                    "-titel:\"(weggefallen)\"",
+                    "-text_content:\"(weggefallen)\""  # Filter documents where text_content is exactly "(weggefallen)"
+                ],
                 "rows": len(doc_ids),
                 "fl": "*",  # Get all fields for complete document data
                 "wt": "json"
@@ -318,13 +326,24 @@ class HybridSearcher:
                 # Extract payload
                 payload = point.payload
                 
+                # Filter out repealed documents at the semantic search level
+                norm_type = payload.get("norm_type", "")
+                titel = payload.get("titel", "")
+                text_content = payload.get("text_content", "")
+                
+                # Skip documents that are repealed or contain "(weggefallen)"
+                if (norm_type == "repealed" or 
+                    titel == "(weggefallen)" or 
+                    text_content == "(weggefallen)"):
+                    continue
+                
                 # Create a document dict similar to Solr's output
                 doc = {
                     "id": payload.get("original_id", ""),
                     "enbez": payload.get("enbez", ""),
                     "kurzue": payload.get("kurzue", ""),
                     "langue": payload.get("langue", ""),
-                    "norm_type": payload.get("norm_type", ""),
+                    "norm_type": norm_type,
                     "parent_document_id": payload.get("parent_document_id", ""),
                     "jurabk": payload.get("jurabk", ""),
                     "amtabk": payload.get("amtabk", ""),
@@ -434,6 +453,14 @@ class HybridSearcher:
             if doc_id in full_documents:
                 # Merge full document data with hybrid search scores
                 full_doc = full_documents[doc_id]
+                
+                # Final safety filter: Skip documents with "(weggefallen)" content
+                if (full_doc.get("norm_type") == "repealed" or 
+                    full_doc.get("titel") == "(weggefallen)" or 
+                    full_doc.get("text_content") == "(weggefallen)"):
+                    logger.debug(f"Filtering out document {doc_id} with weggefallen content")
+                    continue
+                
                 full_doc.update({
                     "keyword_score": score_info["keyword_score"],
                     "semantic_score": score_info["semantic_score"], 

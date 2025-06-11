@@ -259,6 +259,7 @@ export const searchDocuments = async (query, searchMode = 'all', filters = {}, o
     // Filtere sowohl norm_type:repealed als auch Dokumente mit titel:"(weggefallen)"
     filterQueries.push('-norm_type:repealed');
     filterQueries.push('-titel:"(weggefallen)"');
+    // Note: Removed -id:*BJNG* filter as it was filtering out relevant documents
     
     // Dynamische Filter-Verarbeitung für alle verfügbaren Felder
     Object.keys(filters).forEach(fieldName => {
