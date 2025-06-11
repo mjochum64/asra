@@ -46,8 +46,6 @@ router.get('/', async (req, res) => {
       'hl.simple.post': '</mark>',
       'hl.fragsize': 200,
       'hl.snippets': 1,
-      // Weggefallene Dokumente werden bereits bei der Index-Zeit gefiltert,
-      // daher sind hier keine Runtime-Filter mehr nötig
       ...otherParams
     };
 
@@ -59,9 +57,29 @@ router.get('/', async (req, res) => {
       solrParams['facet.limit'] = 50;
     }
 
-    // Make request to Solr
-    const solrResponse = await axios.get(`${SOLR_ENDPOINT}/select`, {
-      params: solrParams,
+    // Use URLSearchParams to properly handle multiple fq parameters
+    const params = new URLSearchParams();
+    Object.keys(solrParams).forEach(key => {
+      if (Array.isArray(solrParams[key])) {
+        solrParams[key].forEach(value => params.append(key, value));
+      } else {
+        params.append(key, solrParams[key]);
+      }
+    });
+    
+    // Add filter queries for excluding weggefallene/repealed and BJNG documents
+    // (Qdrant uses Index-Time filtering, but Backend API makes direct Solr requests)
+    params.append('fq', '-norm_type:repealed');           // Exclude repealed documents
+    params.append('fq', '-titel:"(weggefallen)"');        // Exclude documents with "(weggefallen)" in title
+    params.append('fq', '-text_content:"(weggefallen)"'); // Exclude documents with "(weggefallen)" in content
+    params.append('fq', '-id:*BJNG*');                    // Exclude BJNG (structural/outline) documents
+
+    // Debug: Log the actual parameters being sent to Solr
+    console.log(`[SEARCH DEBUG] URLSearchParams being sent:`, params.toString());
+    console.log(`[SEARCH DEBUG] Full Solr URL: ${SOLR_ENDPOINT}/select`);
+
+    // Make request to Solr using URLSearchParams
+    const solrResponse = await axios.get(`${SOLR_ENDPOINT}/select?${params.toString()}`, {
       timeout: 10000
     });
 
@@ -133,8 +151,12 @@ router.post('/', async (req, res) => {
     // Build filter queries
     const filterQueries = [];
     
-    // Weggefallene Dokumente werden bereits bei der Index-Zeit gefiltert,
-    // daher sind hier keine Runtime-Filter mehr nötig
+    // Filter weggefallene/repealed und BJNG Dokumente für direkte Solr-Anfragen
+    // (Qdrant verwendet Index-Time-Filterung, aber Backend API macht direkte Solr-Anfragen)
+    filterQueries.push('-norm_type:repealed');           // Exclude repealed documents
+    filterQueries.push('-titel:"(weggefallen)"');        // Exclude documents with "(weggefallen)" in title
+    filterQueries.push('-text_content:"(weggefallen)"'); // Exclude documents with "(weggefallen)" in content
+    filterQueries.push('-id:*BJNG*');                    // Exclude BJNG (structural/outline) documents
 
     // Add dynamic filters
     Object.keys(filters).forEach(fieldName => {
@@ -170,6 +192,10 @@ router.post('/', async (req, res) => {
       solrParams['facet.mincount'] = 1;
       solrParams['facet.limit'] = 50;
     }
+
+    // Debug: Log the actual parameters being sent to Solr
+    console.log(`[SEARCH POST DEBUG] Solr params being sent:`, JSON.stringify(solrParams, null, 2));
+    console.log(`[SEARCH POST DEBUG] Full Solr URL: ${SOLR_ENDPOINT}/select`);
 
     // Make request to Solr
     const solrResponse = await axios.get(`${SOLR_ENDPOINT}/select`, {
