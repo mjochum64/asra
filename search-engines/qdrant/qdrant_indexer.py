@@ -63,12 +63,12 @@ EMBEDDING_MODEL = "qllama/multilingual-e5-large-instruct:latest"  # Updated to m
 # Vector dimension for E5 model (needs to be determined by testing)
 VECTOR_SIZE = 1024  # This is an estimate, we'll verify after the first embedding
 BATCH_SIZE = 5  # Reduzierte Batchgröße für stabilere Verarbeitung
-MAX_TEXT_LENGTH = 1800  # Optimale maximale Textlänge basierend auf Tests (sicher unter 2000)
+MAX_TEXT_LENGTH = 1950  # Optimiert basierend auf Textlängen-Analyse: erfasst 95% der Dokumente vollständig
 MAX_RETRIES = 3  # Anzahl von Wiederholungsversuchen
 RETRY_DELAY = 2  # Wartezeit zwischen Wiederholungsversuchen
 MAX_CONCURRENT_REQUESTS = 1  # Anzahl gleichzeitiger Anfragen an Ollama API
 REQUEST_THROTTLE_DELAY = 1  # Verzögerung zwischen aufeinanderfolgenden Anfragen in Sekunden
-CHUNK_SIZE = 1500  # Größe der Textchunks für Chunking-Verfahren (sicher unter MAX_TEXT_LENGTH)
+CHUNK_SIZE = 1800  # Optimiert: weniger unnötiges Chunking, näher an MAX_TEXT_LENGTH
 
 
 def generate_consistent_numeric_id(id_string: str) -> int:
