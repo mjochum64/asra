@@ -8,6 +8,10 @@ import { buildGermanLegalQuery } from '../utils/queryUtils'; // Import the centr
 // Verwendet die Backend-API mit Index-Time-Filterung statt direkter Solr-Zugriffe
 const getApiBaseUrl = () => {
   // Verwende die Backend-API, die bereits Index-Time-Filterung implementiert hat
+  // Prüfe ob wir in Development sind und verwende localhost:3001
+  if (import.meta.env.DEV) {
+    return 'http://localhost:3001/api/';
+  }
   return '/api/';
 };
 
@@ -50,16 +54,79 @@ export const searchDocuments = async (query, searchMode = 'all', filters = {}, o
     const response = await apiClient.get(`search?${searchParams.toString()}`);
     
     console.log(`📊 API Response status: ${response.status}`);
-    console.log(`📊 API Response total: ${response.data.total}`);
+    console.log(`📊 API Response structure:`, {
+      hasResults: !!response.data.results,
+      hasResultsDocs: !!response.data.results?.docs,
+      docsLength: response.data.results?.docs?.length || 0,
+      total: response.data.total
+    });
     
+    // Backend API gibt {results: {numFound, docs}, facets, total} zurück
+    // Frontend erwartet {results: [], facets, total}
     return {
-      results: response.data.results || [],
+      results: response.data.results?.docs || [],  // Extrahiere docs Array aus results Objekt
       facets: response.data.facets || {},
       total: response.data.total || 0
     };
     
   } catch (error) {
     console.error('API Search Error:', error);
+    console.error('Error details:', error.message);
+    if (error.response) {
+      console.error('Response data:', error.response.data);
+      console.error('Response status:', error.response.status);
+    }
+    throw error;
+  }
+};
+
+/**
+ * Hybrid Search - spezieller Endpoint für semantische und kombinierte Suche
+ * @param {string} query - Suchanfrage
+ * @param {Object} options - Suchoptionen (rows, start, keyword_weight, semantic_weight)
+ * @returns {Promise<Object>} Suchergebnisse im einheitlichen Format
+ */
+export const searchDocumentsHybrid = async (query, options = {}) => {
+  try {
+    console.log(`🔄 Hybrid search for "${query}" with options:`, options);
+    
+    // Verwende die hybride Backend-API-Route
+    const searchParams = new URLSearchParams({
+      q: query,
+      rows: options.rows || 20,
+      start: options.start || 0,
+      keyword_weight: options.keyword_weight || 0.5,
+      semantic_weight: options.semantic_weight || 0.5,
+      _: Date.now() // Cache buster
+    });
+    
+    // Nutze die hybride Backend-API
+    const response = await apiClient.get(`hybrid/search?${searchParams.toString()}`);
+    
+    console.log(`📊 Hybrid API Response status: ${response.status}`);
+    console.log(`📊 Hybrid API Response full data:`, response.data);
+    console.log(`📊 Hybrid API Response numFound: ${response.data.numFound}`);
+    
+    // Die hybride API gibt bereits die korrekte Struktur zurück: {numFound, docs, start}
+    // Konvertiere zu einheitlichem Format für Frontend-Kompatibilität
+    console.log('📊 DEBUG - Creating return object with:');
+    console.log('📊 DEBUG - results (docs):', response.data.docs?.length || 0, 'items');
+    console.log('📊 DEBUG - total (numFound):', response.data.numFound);
+    console.log('📊 DEBUG - start:', response.data.start);
+    
+    const returnObject = {
+      results: response.data.docs || [], // Hybride API nutzt "docs" direkt
+      facets: {}, // Hybride Suche hat keine Facetten
+      total: response.data.numFound || 0, // Hybride API nutzt "numFound"
+      start: response.data.start || 0 // Paginierungsstart
+    };
+    
+    console.log('📊 DEBUG - Final return object:', returnObject);
+    
+    return returnObject;
+    
+  } catch (error) {
+    console.error('Hybrid Search Error:', error);
     console.error('Error details:', error.message);
     if (error.response) {
       console.error('Response data:', error.response.data);
@@ -324,8 +391,17 @@ export const fetchDocumentById = async (documentId) => {
     // Verwende die Backend-API für konsistente Filterung
     const response = await apiClient.get(`search?q=id:"${documentId}"&rows=1`);
     
-    if (response.data.results && response.data.results.length === 1) {
-      return response.data.results[0];
+    console.log('📊 fetchDocumentById response structure:', {
+      hasResults: !!response.data.results,
+      hasResultsDocs: !!response.data.results?.docs,
+      docsLength: response.data.results?.docs?.length || 0
+    });
+    
+    // Backend API gibt {results: {numFound, docs}} zurück
+    const docs = response.data.results?.docs || [];
+    
+    if (docs.length === 1) {
+      return docs[0];
     } else {
       console.warn(`Document with ID ${documentId} not found.`);
       return null;
