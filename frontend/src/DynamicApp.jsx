@@ -3,8 +3,7 @@ import DynamicSearchBar from './components/DynamicSearchBar';
 import DynamicSidebar from './components/DynamicSidebar';
 import DynamicResultsDisplay from './components/DynamicResultsDisplay';
 import ModeSwitcher from './components/ModeSwitcher';
-import { searchDocuments, fetchDocumentById } from './services/solrService';
-import hybridSearchService from './services/hybridSearchService';
+import { searchDocuments, searchDocumentsHybrid, fetchDocumentById } from './services/solrService';
 import { analyzeSchemaForUI } from './services/schemaService';
 // import { getFrameworkId, getDocumentType } from './utils/documentUtils'; // Removed for revert - no longer used here
 
@@ -67,19 +66,19 @@ export default function DynamicApp() {
         console.log(`Using ${searchOptions.searchEngine} search engine`);
         
         try {
-          // Use the hybrid search service
-          const hybridResponse = await hybridSearchService.search(query, {
-            start: 0,
+          // Use the specialized hybrid search function from solrService
+          const hybridResponse = await searchDocumentsHybrid(query, {
             rows: 20,
-            weights: searchOptions.weights,
-            showScores: true
+            start: 0,
+            keyword_weight: searchOptions.weights?.keyword || 0.5,
+            semantic_weight: searchOptions.weights?.semantic || 0.5
           });
           
           // Convert hybrid search results to the expected format
           const searchResponse = {
-            results: hybridResponse.docs || [],
+            results: hybridResponse.results || [], // Already in correct format from searchDocumentsHybrid
             facets: hybridResponse.facets || {},
-            total: hybridResponse.numFound || hybridResponse.docs?.length || 0
+            total: hybridResponse.total || 0
           };
           
           setSearchResults(searchResponse.results);
