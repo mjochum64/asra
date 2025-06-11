@@ -1,9 +1,9 @@
 # Project Tasks: ASRA – Deutsche Gesetze
 
-## 🎯 Projektstatuts: Phase 1.1 VOLLSTÄNDIG ABGESCHLOSSEN ✅
-**Stand**: 10. Juni 2025
-**Version**: 1.1.3 PRODUCTION READY mit korrigiertem Inhaltsverzeichnis (TableOfContents)
-**Status**: DocumentFullView TableOfContents Bugfix abgeschlossen ✅
+## 🎯 Projektstatuts: Phase 1.2 VOLLSTÄNDIG ABGESCHLOSSEN ✅
+**Stand**: 11. Juni 2025
+**Version**: 1.2.0 PRODUCTION READY mit Project Cleanup & Hybrid Search
+**Status**: Vollständige Projektbereinigung und Hybrid Search Restauration abgeschlossen ✅
 
 ### 🏆 Erfolgreich abgeschlossene Hauptziele:
 - ✅ **Konfigurierbare UI-Struktur**: Normal-Modus (5 Felder) vs. Experten-Modus (alle Felder)
@@ -16,6 +16,8 @@
 - ✅ **Norm-Level-Indexierung**: Granulare Indexierung einzelner Rechtsnormen mit XHTML-Formatierung
 - ✅ **Export-Funktionalität**: PDF/HTML-Export mit korrekter Absatzformatierung und Inhaltsverzeichnis
 - ✅ **HTML-Felder-Integration**: Optimale Nutzung der text_content_html Felder für perfekte Formatierung
+- ✅ **Projekt-Bereinigung**: 27 leere Dateien entfernt, Docker-Konfiguration vereinheitlicht
+- ✅ **Hybrid Search Restauration**: Vollständige Wiederherstellung der Hybrid-Suchfunktionalität
 
 ### 🎯 Neu abgeschlossen: Norm-Level-Indexierung
 - ✅ **Granulare Suche**: Suchergebnisse zeigen spezifische Artikel/Paragraphen statt ganzer Gesetze
@@ -42,7 +44,29 @@
 - ✅ **Volltextanzeige-Optimierung**: XHTML-Felder werden bevorzugt für perfekte Formatierung
 - ✅ **Dokumenttyp-Unterscheidung**: Korrekte Unterscheidung zwischen Rahmendokument und einzelnen Normen beim Export
 
-### 🎯 Neu abgeschlossen: TableOfContents-Bug behoben (10. Juni 2025)
+### 🎯 Neu abgeschlossen: Projekt-Bereinigung & Hybrid Search Restauration (11. Juni 2025)
+- ✅ **Massive Datei-Bereinigung**: 27 leere/obsolete Dateien erfolgreich entfernt
+  - 4 leere Shell-Skripte aus Root-Verzeichnis entfernt
+  - 3 leere Docker-Skripte aus scripts/ entfernt  
+  - 2 leere Python-Analyse-Skripte entfernt
+  - 4 redundante Docker-Dateien aus Root entfernt
+  - Komplette obsolete Verzeichnisse entfernt (/api, /docker, /src)
+- ✅ **Docker-Konfiguration vereinheitlicht**: docker-compose-hybrid.yml → docker-compose.yml als Standard
+- ✅ **Frontend-Container-Reparatur**: 500 Internal Server Error behoben durch Container-Rebuild
+- ✅ **API-Route-Wiederherstellung**: POST /api/hybrid/search Route hinzugefügt für Hybrid Search
+- ✅ **Pfad-Korrekturen**: Python-Skript-Pfade von /search-engines/ zu /app/scripts/qdrant/ korrigiert
+- ✅ **Nginx-Proxy-Konfiguration**: API-Proxy-Route für nahtlose Frontend-API-Kommunikation implementiert
+- ✅ **System-Verifikation**: Alle Services (Frontend, API, Solr, Qdrant, Ollama) erfolgreich getestet
+- ✅ **Hybrid Search Funktionalität**: Sowohl GET als auch POST API-Endpunkte vollständig funktionsfähig
+- ✅ **Web-Interface-Validierung**: Browser-Zugriff auf http://localhost:8080 erfolgreich mit korrekter API-Anbindung
+
+### 📊 Projekt-Bereinigung Erfolgstatistik:
+- **Entfernte Dateien**: 27 total (100% leer oder obsolet)
+- **Bereinigte Verzeichnisse**: 3 komplette obsolete Strukturen entfernt
+- **Docker-Vereinfachung**: Von 2 parallelen docker-compose-Dateien zu 1 Standard-Konfiguration
+- **API-Endpunkte**: Hybrid Search sowohl über GET (Frontend) als auch POST (direkter API-Zugriff) verfügbar
+- **Container-Status**: 6/6 Services laufen stabil (Frontend, API, Solr, Qdrant, Ollama, OpenWebUI)
+- **Proxy-Konfiguration**: Nginx-Reverse-Proxy für /api/ und /solr/ Routen konfiguriert
 - ✅ **Inhaltsverzeichnis-Fehler behoben**: TableOfContents wird jetzt zuverlässig bei Volltextansicht angezeigt
 - ✅ **Import-Fehler korrigiert**: Konsistente ES6-Modul-Syntax in documentService.js statt gemischter Imports
 - ✅ **Defensive Programmierung**: Robuste Null-Checks und Standardwerte für die TableOfContents-Komponente
