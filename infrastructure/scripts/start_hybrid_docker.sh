@@ -12,7 +12,7 @@ if ! command -v docker-compose &> /dev/null; then
 fi
 
 # Start services (using relative path to infrastructure directory)
-docker-compose -f ../docker-compose-hybrid.yml up -d
+docker-compose -f ../docker-compose.yml up -d
 
 # Pull the Ollama model for embeddings if not already pulled
 echo "Pulling Ollama embedding model (this may take a while)..."

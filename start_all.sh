@@ -14,7 +14,7 @@ echo "✓ Docker läuft"
 
 # 2. Services starten
 echo "2. Container starten mit docker-compose..."
-docker-compose -f infrastructure/docker-compose-hybrid.yml up -d
+docker-compose -f infrastructure/docker-compose.yml up -d
 echo "✓ Container gestartet"
 
 # 3. Kurze Pause, um sicherzustellen, dass die Services hochgefahren sind
