@@ -63,6 +63,29 @@ EMBEDDING_MODEL = "qllama/multilingual-e5-large-instruct:latest"
 DEFAULT_LIMIT = 10  # Default number of results to return
 DEFAULT_WEIGHTS = (0.5, 0.5)  # Default weights for keyword vs semantic search
 
+# German stopwords list - common words that should not trigger semantic search
+GERMAN_STOPWORDS = {
+    'aber', 'alle', 'allem', 'allen', 'aller', 'alles', 'als', 'also', 'am', 'an', 'ander', 'andere', 
+    'anderem', 'anderen', 'anderer', 'anderes', 'anderm', 'andern', 'anderr', 'anders', 'auch', 'auf', 
+    'aus', 'bei', 'bin', 'bis', 'bist', 'da', 'damit', 'dann', 'das', 'dass', 'dasselbe', 'dazu', 
+    'den', 'denn', 'der', 'des', 'dessen', 'desselben', 'dem', 'demselben', 'die', 'dies', 'diese', 
+    'dieselbe', 'dieselben', 'diesem', 'diesen', 'dieser', 'dieses', 'dir', 'doch', 'dort', 'durch', 
+    'ein', 'eine', 'einem', 'einen', 'einer', 'eines', 'einig', 'einige', 'einigem', 'einigen', 
+    'einiger', 'einiges', 'einmal', 'er', 'es', 'etwas', 'für', 'gegen', 'gewesen', 'hab', 'habe', 
+    'haben', 'hat', 'hatte', 'hatten', 'hier', 'hin', 'hinter', 'ich', 'ihm', 'ihn', 'ihnen', 'ihr', 
+    'ihre', 'ihrem', 'ihren', 'ihrer', 'ihres', 'im', 'in', 'indem', 'ins', 'ist', 'ja', 'je', 'jeden', 
+    'jedem', 'jeder', 'jedes', 'jene', 'jenem', 'jenen', 'jener', 'jenes', 'jetzt', 'kann', 'kein', 
+    'keine', 'keinem', 'keinen', 'keiner', 'keines', 'können', 'könnte', 'machen', 'man', 'manche', 
+    'manchem', 'manchen', 'mancher', 'manches', 'mein', 'meine', 'meinem', 'meinen', 'meiner', 'meines', 
+    'mit', 'muss', 'musste', 'nach', 'nicht', 'nichts', 'noch', 'nun', 'nur', 'ob', 'oder', 'ohne', 
+    'sehr', 'sein', 'seine', 'seinem', 'seinen', 'seiner', 'seines', 'selbst', 'sich', 'sie', 'sind', 
+    'so', 'solche', 'solchem', 'solchen', 'solcher', 'solches', 'soll', 'sollte', 'sondern', 'sonst', 
+    'über', 'um', 'und', 'uns', 'unse', 'unsem', 'unsen', 'unser', 'unses', 'unter', 'viel', 'vom', 
+    'von', 'vor', 'war', 'waren', 'warst', 'was', 'weg', 'weil', 'weiter', 'welche', 'welchem', 'welchen', 
+    'welcher', 'welches', 'wenn', 'werde', 'werden', 'wie', 'wieder', 'will', 'wir', 'wird', 'wirst', 
+    'wo', 'wollen', 'wollte', 'würde', 'würden', 'zu', 'zum', 'zur', 'zwar', 'zwischen'
+}
+
 
 class HybridSearcher:
     """Class for hybrid search combining keyword and semantic search."""
@@ -82,6 +105,61 @@ class HybridSearcher:
         
         logger.info(f"Initialized hybrid search with weights: keyword={self.keyword_weight:.2f}, "
                   f"semantic={self.semantic_weight:.2f}")
+    
+    def is_stopword_query(self, query: str) -> bool:
+        """Check if the query consists mainly of stopwords.
+        
+        Args:
+            query: The search query text
+            
+        Returns:
+            True if query is mainly stopwords, False otherwise
+        """
+        if not query or not query.strip():
+            return True
+            
+        # Split query into words and normalize to lowercase
+        words = [word.strip().lower() for word in query.split() if word.strip()]
+        
+        if not words:
+            return True
+            
+        # Count stopwords
+        stopword_count = sum(1 for word in words if word in GERMAN_STOPWORDS)
+        
+        # If more than 80% are stopwords, consider it a stopword query
+        stopword_ratio = stopword_count / len(words)
+        
+        logger.info(f"Query '{query}': {stopword_count}/{len(words)} stopwords ({stopword_ratio:.1%})")
+        
+        return stopword_ratio > 0.8
+    
+    def should_use_semantic_search(self, query: str) -> bool:
+        """Determine if semantic search should be used for this query.
+        
+        Args:
+            query: The search query text
+            
+        Returns:
+            True if semantic search should be used, False otherwise
+        """
+        # Don't use semantic search for stopword queries
+        if self.is_stopword_query(query):
+            logger.info(f"Skipping semantic search for stopword query: '{query}'")
+            return False
+            
+        # Don't use semantic search for very short queries (1-2 characters)
+        if len(query.strip()) <= 2:
+            logger.info(f"Skipping semantic search for very short query: '{query}'")
+            return False
+            
+        # Don't use semantic search for single common words
+        words = query.strip().lower().split()
+        if len(words) == 1 and words[0] in GERMAN_STOPWORDS:
+            logger.info(f"Skipping semantic search for single stopword: '{query}'")
+            return False
+            
+        return True
     
     def generate_embedding(self, text: str) -> Optional[List[float]]:
         """Generate an embedding for the search query.
@@ -131,7 +209,7 @@ class HybridSearcher:
             params = {
                 "q": query,
                 "rows": limit,
-                "fl": "id,enbez,kurzue,langue,norm_type,parent_document_id,jurabk,amtabk,score",
+                "fl": "id,enbez,kurzue,langue,norm_type,parent_document_id,jurabk,amtabk,text_content,text_content_html,fussnoten_content_html,score",
                 "defType": "edismax",
                 "qf": "text_content^1.0 enbez^2.0 kurzue^1.5 amtabk^1.8 jurabk^1.8",
                 "mm": "2<70%",  # Match at least 70% of terms for multi-term queries
@@ -159,6 +237,50 @@ class HybridSearcher:
         except requests.exceptions.RequestException as e:
             logger.error(f"Error in Solr search: {e}")
             return []
+    
+    def get_solr_documents_by_ids(self, doc_ids: List[str]) -> Dict[str, Dict]:
+        """Retrieve full document data from Solr by document IDs.
+        
+        Args:
+            doc_ids: List of document IDs to retrieve
+            
+        Returns:
+            Dictionary mapping document ID to full document data
+        """
+        if not doc_ids:
+            return {}
+            
+        try:
+            start_time = time.time()
+            
+            # Build query to fetch documents by IDs
+            id_query = " OR ".join([f'id:"{doc_id}"' for doc_id in doc_ids])
+            
+            params = {
+                "q": id_query,
+                "rows": len(doc_ids),
+                "fl": "*",  # Get all fields for complete document data
+                "wt": "json"
+            }
+            
+            response = requests.get(
+                f"{SOLR_ENDPOINT}/select",
+                params=params
+            )
+            response.raise_for_status()
+            
+            result = response.json()
+            docs = result.get("response", {}).get("docs", [])
+            
+            # Create dictionary mapping ID to document
+            doc_dict = {doc["id"]: doc for doc in docs}
+            
+            logger.info(f"Retrieved {len(doc_dict)} full documents from Solr in {time.time() - start_time:.2f} seconds")
+            return doc_dict
+            
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Error retrieving documents from Solr: {e}")
+            return {}
     
     def semantic_search(self, query: str, limit: int = DEFAULT_LIMIT) -> List[Dict]:
         """Perform semantic search using Qdrant.
@@ -219,68 +341,116 @@ class HybridSearcher:
     def combined_search(self, query: str, limit: int = DEFAULT_LIMIT) -> List[Dict]:
         """Perform hybrid search combining results from both keyword and semantic search.
         
+        This method uses a two-stage approach:
+        1. Get relevance scores from both Solr (keyword) and Qdrant (semantic)
+        2. Retrieve full document data from Solr for all relevant documents
+        
+        Smart filtering is applied to avoid irrelevant semantic matches for stopword queries.
+        
         Args:
             query: Search query text
             limit: Maximum number of results to return
             
         Returns:
-            List of document dicts with combined ranking
+            List of document dicts with combined ranking and full content
         """
         # Start both searches
         start_time = time.time()
         
-        # Get results from both sources - increase the limit to get more candidates for hybrid ranking
+        # Always run keyword search
         fetch_limit = max(limit * 3, 20)  # Get at least 20 results or 3x requested limit
-        
-        # Run keyword (Solr) search
         solr_results = self.solr_search(query, limit=fetch_limit)
         
-        # Run semantic (Qdrant) search
-        semantic_results = self.semantic_search(query, limit=fetch_limit)
+        # Determine if we should use semantic search based on query quality
+        use_semantic = self.should_use_semantic_search(query)
+        
+        if use_semantic:
+            # Run semantic search only for meaningful queries
+            semantic_results = self.semantic_search(query, limit=fetch_limit)
+        else:
+            # Skip semantic search for stopword/low-quality queries
+            semantic_results = []
+            logger.info("Semantic search skipped - using keyword results only")
         
         # Create a dictionary to combine results by document ID
         combined_results = {}
+        all_doc_ids = set()
         
         # Process Solr results
         for doc in solr_results:
             doc_id = doc["id"]
+            all_doc_ids.add(doc_id)
             # Normalize Solr score (typically 0-20) to 0-1 scale
-            # Use a more robust normalization strategy
             raw_score = float(doc["score"])
             
             # Sigmoid normalization (ensures values between 0-1 with a smoother curve)
             normalized_score = 1.0 / (1.0 + math.exp(-raw_score / 5 + 1))
             
-            combined_results[doc_id] = {
-                **doc,
-                "keyword_score": normalized_score,
-                "semantic_score": 0.0,
-                "combined_score": normalized_score * self.keyword_weight
-            }
-        
-        # Process semantic results and combine with existing entries or add new ones
-        for doc in semantic_results:
-            doc_id = doc["id"]
-            if doc_id in combined_results:
-                # Document exists in both result sets - update scores
-                combined_results[doc_id]["semantic_score"] = doc["score"]
-                combined_results[doc_id]["combined_score"] += doc["score"] * self.semantic_weight
-                combined_results[doc_id]["search_source"] = "hybrid"
+            # If semantic search was skipped, give full weight to keyword results
+            if not use_semantic:
+                combined_results[doc_id] = {
+                    "keyword_score": normalized_score,
+                    "semantic_score": 0.0,
+                    "combined_score": normalized_score,  # Full score since no semantic
+                    "search_source": "keyword"
+                }
             else:
-                # New document from semantic search
-                doc["keyword_score"] = 0.0
-                doc["semantic_score"] = doc["score"]
-                doc["combined_score"] = doc["score"] * self.semantic_weight
-                combined_results[doc_id] = doc
+                combined_results[doc_id] = {
+                    "keyword_score": normalized_score,
+                    "semantic_score": 0.0,
+                    "combined_score": normalized_score * self.keyword_weight,
+                    "search_source": "keyword"
+                }
         
-        # Convert dict to list and sort by combined score
-        result_list = list(combined_results.values())
-        result_list.sort(key=lambda x: x["combined_score"], reverse=True)
+        # Process semantic results only if semantic search was used
+        if use_semantic:
+            for doc in semantic_results:
+                doc_id = doc["id"]
+                all_doc_ids.add(doc_id)
+                
+                if doc_id in combined_results:
+                    # Document exists in both result sets - update scores
+                    combined_results[doc_id]["semantic_score"] = doc["score"]
+                    combined_results[doc_id]["combined_score"] += doc["score"] * self.semantic_weight
+                    combined_results[doc_id]["search_source"] = "hybrid"
+                else:
+                    # New document from semantic search only
+                    combined_results[doc_id] = {
+                        "keyword_score": 0.0,
+                        "semantic_score": doc["score"],
+                        "combined_score": doc["score"] * self.semantic_weight,
+                        "search_source": "semantic"
+                    }
+        
+        # Retrieve full document data from Solr for all document IDs
+        logger.info(f"Retrieving full document data for {len(all_doc_ids)} documents from Solr")
+        full_documents = self.get_solr_documents_by_ids(list(all_doc_ids))
+        
+        # Merge scoring information with full document data
+        final_results = []
+        for doc_id, score_info in combined_results.items():
+            if doc_id in full_documents:
+                # Merge full document data with hybrid search scores
+                full_doc = full_documents[doc_id]
+                full_doc.update({
+                    "keyword_score": score_info["keyword_score"],
+                    "semantic_score": score_info["semantic_score"], 
+                    "combined_score": score_info["combined_score"],
+                    "search_source": score_info["search_source"],
+                    "score": score_info["combined_score"]  # Set score to combined score for sorting
+                })
+                final_results.append(full_doc)
+            else:
+                logger.warning(f"Document {doc_id} not found in Solr but was in search results")
+        
+        # Sort by combined score
+        final_results.sort(key=lambda x: x["combined_score"], reverse=True)
         
         # Limit results
-        final_results = result_list[:limit]
+        final_results = final_results[:limit]
         
-        logger.info(f"Hybrid search returned {len(final_results)} results "
+        search_type = "keyword-only" if not use_semantic else "hybrid"
+        logger.info(f"{search_type.title()} search returned {len(final_results)} results "
                    f"(from {len(solr_results)} keyword and {len(semantic_results)} semantic) "
                    f"in {time.time() - start_time:.2f} seconds")
         
