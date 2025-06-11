@@ -51,7 +51,7 @@ services:
   # API server
   api:
     build:
-      context: ..
+      context: .
       dockerfile: Dockerfile.api
     container_name: asra_api
     ports:

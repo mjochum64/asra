@@ -1,11 +1,36 @@
-# Custom Dockerfile für Ollama mit curl für Health-Checks
+# Custom Dockerfile für Ollama mit verbesserter Stabilität für Embedding-Generierung
 
 FROM ollama/ollama:rocm
 
-# Installieren von curl für Health-Checks
-RUN apt-get update && apt-get install -y curl && apt-get clean && rm -rf /var/lib/apt/lists/*
+# Installieren notwendiger Werkzeuge für Diagnose und Monitoring
+RUN apt-get update && apt-get install -y \
+    curl \
+    htop \
+    procps \
+    net-tools \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Environment-Variablen für Ollama-Performance-Tuning
+ENV OLLAMA_HOST="0.0.0.0"
+ENV OLLAMA_KEEP_ALIVE="5m"
+
+# Benchmark-Modus deaktivieren für stabileren Betrieb
+ENV OLLAMA_BENCHMARK="false"
+
+# GOMAXPROCS explizit setzen für eine bessere Kontrolle der CPU-Nutzung
+ENV GOMAXPROCS=4
+
+# Zusätzliche Ollama-Konfiguration
+ENV OLLAMA_MODEL_PATH="/root/.ollama/models"
+
+# Health-Check hinzufügen
+HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
+  CMD curl -f http://localhost:11434/api/tags || exit 1
+
+# Ports
+EXPOSE 11434
 
 # Standardmäßige Ollama-Konfiguration
-EXPOSE 11434
 ENTRYPOINT ["/bin/ollama"]
 CMD ["serve"]

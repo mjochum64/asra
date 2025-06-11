@@ -27,8 +27,9 @@ import sys
 import time
 import xml.etree.ElementTree as ET
 from typing import Dict, List, Optional, Tuple, Union
-
+import numpy as np
 import requests
+import concurrent.futures
 from qdrant_client import QdrantClient
 from qdrant_client.http import models as qdrant_models
 from qdrant_client.http.exceptions import UnexpectedResponse
@@ -61,10 +62,13 @@ COLLECTION_NAME = "deutsche_gesetze"
 EMBEDDING_MODEL = "qllama/multilingual-e5-large-instruct:latest"  # Updated to match exact model name with tag
 # Vector dimension for E5 model (needs to be determined by testing)
 VECTOR_SIZE = 1024  # This is an estimate, we'll verify after the first embedding
-BATCH_SIZE = 10  # Number of documents to process in a batch
-MAX_TEXT_LENGTH = 8000  # Maximum text length for embedding
-MAX_RETRIES = 3  # Maximum number of retries for failed embedding requests
-RETRY_DELAY = 2  # Delay in seconds between retries
+BATCH_SIZE = 5  # Reduzierte Batchgröße für stabilere Verarbeitung
+MAX_TEXT_LENGTH = 1800  # Optimale maximale Textlänge basierend auf Tests (sicher unter 2000)
+MAX_RETRIES = 3  # Anzahl von Wiederholungsversuchen
+RETRY_DELAY = 2  # Wartezeit zwischen Wiederholungsversuchen
+MAX_CONCURRENT_REQUESTS = 1  # Anzahl gleichzeitiger Anfragen an Ollama API
+REQUEST_THROTTLE_DELAY = 1  # Verzögerung zwischen aufeinanderfolgenden Anfragen in Sekunden
+CHUNK_SIZE = 1500  # Größe der Textchunks für Chunking-Verfahren (sicher unter MAX_TEXT_LENGTH)
 
 
 def generate_consistent_numeric_id(id_string: str) -> int:
@@ -95,10 +99,12 @@ class QdrantIndexer:
         self.qdrant_client = QdrantClient(url=QDRANT_ENDPOINT)
         self.actual_vector_size = None  # Will be set after the first embedding
         self.recreate = recreate
+        self.last_request_time = 0  # Zeitstempel der letzten Anfrage für Rate Limiting
+        self.request_executor = concurrent.futures.ThreadPoolExecutor(max_workers=MAX_CONCURRENT_REQUESTS)
         
         # Check Ollama API health
         self.check_ollama_health()
-        
+    
     def check_ollama_health(self) -> bool:
         """Check if Ollama API is healthy and the model is available.
         
@@ -115,15 +121,18 @@ class QdrantIndexer:
             # Check if the model is available
             tags = response.json().get("models", [])
             model_available = False
+            available_models = []
             
             for tag in tags:
-                if tag.get("name", "") == EMBEDDING_MODEL:
+                model_name = tag.get("name", "")
+                available_models.append(model_name)
+                if model_name == EMBEDDING_MODEL:
                     model_available = True
                     break
             
             if not model_available:
                 logger.warning(f"Model {EMBEDDING_MODEL} not found in Ollama. "
-                              f"Available models: {', '.join([tag.get('name', '') for tag in tags])}")
+                              f"Available models: {', '.join(available_models)}")
                 logger.warning("Indexing may fail if the model is not available.")
                 return False
                 
@@ -137,7 +146,6 @@ class QdrantIndexer:
         except requests.exceptions.RequestException as e:
             logger.error(f"Error checking Ollama health: {e}")
             return False
-        self.recreate = recreate
     
     def create_collection_if_not_exists(self) -> None:
         """Check if the collection exists, if not create it."""
@@ -172,6 +180,151 @@ class QdrantIndexer:
             logger.error(f"Error creating collection: {e}")
             raise
     
+    def _text_to_chunks(self, text: str, chunk_size: int = CHUNK_SIZE) -> List[str]:
+        """Split text into chunks of approximately equal size.
+        
+        Args:
+            text: Text to split into chunks
+            chunk_size: Maximum size of each chunk in characters
+            
+        Returns:
+            List of text chunks
+        """
+        if len(text) <= chunk_size:
+            return [text]
+        
+        # Einfaches Chunking nach Absätzen mit überlappenden Grenzen
+        chunks = []
+        paragraphs = text.split('\n\n')
+        current_chunk = ""
+        
+        for para in paragraphs:
+            if len(current_chunk) + len(para) <= chunk_size:
+                current_chunk += para + "\n\n"
+            else:
+                if current_chunk:
+                    chunks.append(current_chunk.strip())
+                current_chunk = para + "\n\n"
+        
+        if current_chunk:
+            chunks.append(current_chunk.strip())
+        
+        # Zu kurze Chunks zusammenfassen
+        optimized_chunks = []
+        current_chunk = ""
+        min_chunk_size = chunk_size // 3  # Mindestgröße für einen Chunk
+        
+        for chunk in chunks:
+            if len(current_chunk) + len(chunk) <= chunk_size:
+                current_chunk += chunk + " "
+            else:
+                if current_chunk:
+                    optimized_chunks.append(current_chunk.strip())
+                current_chunk = chunk + " "
+        
+        if current_chunk:
+            optimized_chunks.append(current_chunk.strip())
+        
+        logger.info(f"Split text of {len(text)} chars into {len(optimized_chunks)} chunks")
+        return optimized_chunks
+    
+    def _apply_rate_limit(self):
+        """Apply rate limiting to avoid overloading the Ollama API."""
+        current_time = time.time()
+        time_since_last_request = current_time - self.last_request_time
+        
+        if time_since_last_request < REQUEST_THROTTLE_DELAY:
+            sleep_time = REQUEST_THROTTLE_DELAY - time_since_last_request
+            logger.debug(f"Rate limiting applied: waiting {sleep_time:.2f} seconds")
+            time.sleep(sleep_time)
+        
+        self.last_request_time = time.time()
+    
+    def _single_embedding_request(self, text: str, timeout: int = 60) -> Optional[List[float]]:
+        """Make a single request to the Ollama API for embedding generation.
+        
+        Args:
+            text: Text to generate embedding for
+            timeout: Request timeout in seconds
+            
+        Returns:
+            Embedding vector or None if request failed
+        """
+        self._apply_rate_limit()
+        
+        request_data = {"model": EMBEDDING_MODEL, "prompt": text}
+        logger.debug(f"Sending embedding request for {len(text)} characters of text")
+        
+        try:
+            response = requests.post(
+                f"{OLLAMA_ENDPOINT}/api/embeddings",
+                json=request_data,
+                timeout=timeout
+            )
+            
+            if response.status_code != 200:
+                logger.error(f"HTTP {response.status_code}: {response.text}")
+                return None
+            
+            try:
+                json_response = response.json()
+                embedding = json_response.get("embedding", [])
+                
+                if not embedding or len(embedding) == 0:
+                    logger.warning(f"Empty embedding returned from Ollama")
+                    return None
+                
+                logger.debug(f"Successfully generated embedding with {len(embedding)} dimensions")
+                return embedding
+                
+            except json.JSONDecodeError as e:
+                logger.error(f"Failed to parse Ollama response as JSON: {e}")
+                logger.debug(f"Raw response: {response.text[:200]}...")
+                return None
+                
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Request error: {e}")
+            return None
+    
+    def _progressively_generate_embedding(self, text: str) -> Optional[List[float]]:
+        """Try to generate embeddings with progressively shorter text if necessary.
+        
+        Args:
+            text: Original text to generate embedding for
+            
+        Returns:
+            Embedding vector or None if all attempts failed
+        """
+        # Versuche zuerst mit der maximalen Länge
+        max_length = min(len(text), MAX_TEXT_LENGTH)
+        current_length = max_length
+        
+        # Progressive Textlängenreduktion - konservative Schritte basierend auf Testergebnissen
+        reduction_steps = [1.0, 0.9, 0.75, 0.6, 0.5, 0.33]
+        
+        for step in reduction_steps:
+            adjusted_length = int(max_length * step)
+            if adjusted_length < 100:  # Sehr kurze Texte vermeiden
+                continue
+                
+            shortened_text = text[:adjusted_length]
+            logger.info(f"Trying with text length of {len(shortened_text)} characters (reduction: {step:.2f})")
+            
+            # Versuche mit moderatem Timeout basierend auf Testergebnissen
+            timeout = 10 + (len(shortened_text) // 500)  # Basis 10s + 1s pro 500 Zeichen
+            embedding = self._single_embedding_request(shortened_text, timeout=timeout)
+            
+            if embedding:
+                if step < 1.0:
+                    logger.info(f"Successfully generated embedding after reducing text to {step:.0%} of original length")
+                return embedding
+            
+            # Kurze Pause vor dem nächsten Versuch
+            time.sleep(1)
+        
+        logger.error(f"Failed to generate embedding after multiple attempts with different text lengths")
+        return None
+    
     def generate_embedding(self, text: str, retries: int = MAX_RETRIES) -> Optional[List[float]]:
         """Generate embeddings for text using Ollama.
 
@@ -185,51 +338,85 @@ class QdrantIndexer:
         if not text or text.strip() == "":
             logger.warning("Empty text provided for embedding. Skipping.")
             return None
-            
+        
         current_retry = MAX_RETRIES - retries
         if current_retry > 0:
             logger.info(f"Retry {current_retry}/{MAX_RETRIES} for embedding generation")
-            time.sleep(RETRY_DELAY * (2**current_retry))  # Exponential backoff
+            # Exponential backoff with jitter für stabilere Wiederholungsversuche
+            delay = RETRY_DELAY * (2**current_retry) + (0.1 * (current_retry * np.random.random()))
+            time.sleep(delay)
         
-        # Prepare text excerpt for logging (first 50 chars)
-        text_sample = text[:50] + "..." if len(text) > 50 else text
+        text_length = len(text)
+        logger.info(f"Generating embedding for text with {text_length} characters")
         
-        try:
-            logger.debug(f"Generating embedding for text: '{text_sample}'")
-            
-            response = requests.post(
-                f"{OLLAMA_ENDPOINT}/api/embeddings",
-                json={"model": EMBEDDING_MODEL, "prompt": text},
-                timeout=30  # 30 second timeout
-            )
-            
-            if response.status_code != 200:
-                error_msg = f"HTTP {response.status_code}: {response.text}"
-                logger.error(f"Error from Ollama API: {error_msg}")
-                if retries > 0:
-                    return self.generate_embedding(text, retries - 1)
-                return None
-            
-            json_response = response.json()
-            embedding = json_response.get("embedding", [])
-            
-            if not embedding or len(embedding) == 0:
-                logger.warning(f"Empty embedding returned from Ollama: {json_response}")
-                if retries > 0:
-                    return self.generate_embedding(text, retries - 1)
-                return None
-            
-            # Update actual vector size if this is the first embedding
+        # For very short texts, make a direct request
+        if text_length <= 500:
+            embedding = self._single_embedding_request(text)
+            if embedding:
+                return embedding
+        
+        # Für längere Texte: chunking-Verfahren anwenden
+        if text_length > CHUNK_SIZE:
+            logger.info(f"Text exceeds chunk size ({text_length} > {CHUNK_SIZE}), using chunked processing")
+            return self._generate_chunked_embedding(text)
+        
+        # Standardfall: progressive Embedding-Generierung mit Verkürzung falls nötig
+        embedding = self._progressively_generate_embedding(text)
+        
+        if embedding:
+            # Update vector size if this is the first embedding
             if self.actual_vector_size is None:
                 self.actual_vector_size = len(embedding)
                 logger.info(f"Detected vector size: {self.actual_vector_size}")
-            
             return embedding
-        except requests.exceptions.RequestException as e:
-            logger.error(f"Error generating embedding: {e}")
-            if retries > 0:
-                return self.generate_embedding(text, retries - 1)
+        
+        # Wenn alle Versuche fehlgeschlagen sind und wir noch Wiederholungen übrig haben
+        if retries > 0:
+            logger.info(f"All embedding attempts failed, retrying (attempts left: {retries-1})")
+            return self.generate_embedding(text, retries - 1)
+        
+        logger.error("Failed to generate embedding after all attempts")
+        return None
+    
+    def _generate_chunked_embedding(self, text: str) -> Optional[List[float]]:
+        """Generate embedding by splitting text into chunks and averaging the embeddings.
+        
+        Args:
+            text: Text to generate embedding for
+            
+        Returns:
+            Averaged embedding vector or None if chunks failed
+        """
+        chunks = self._text_to_chunks(text)
+        logger.info(f"Processing text in {len(chunks)} chunks")
+        
+        # Generiere Embeddings für jeden Chunk
+        embeddings = []
+        for i, chunk in enumerate(chunks):
+            logger.info(f"Processing chunk {i+1}/{len(chunks)} with {len(chunk)} characters")
+            embedding = self._progressively_generate_embedding(chunk)
+            
+            if embedding:
+                embeddings.append(embedding)
+            else:
+                logger.warning(f"Failed to generate embedding for chunk {i+1}")
+        
+        if not embeddings:
+            logger.error("Failed to generate embeddings for all chunks")
             return None
+        
+        if len(embeddings) < len(chunks):
+            logger.warning(f"Only {len(embeddings)}/{len(chunks)} chunks successfully processed")
+        
+        # Durchschnitt der Chunk-Embeddings berechnen
+        if len(embeddings) == 1:
+            return embeddings[0]
+        
+        # Berechne Durchschnitt aller erfolgreichen Chunk-Embeddings
+        avg_embedding = np.mean(embeddings, axis=0).tolist()
+        logger.info(f"Generated combined embedding from {len(embeddings)} chunks")
+        
+        return avg_embedding
     
     def index_document(self, doc_id: str, text: str, payload: Dict) -> bool:
         """Index a single document into Qdrant.
@@ -243,14 +430,8 @@ class QdrantIndexer:
             bool: True if indexing succeeded, False otherwise
         """
         try:
-            # Limit text length to avoid potential issues with large texts
-            text_to_embed = text
-            if len(text_to_embed) > MAX_TEXT_LENGTH:
-                text_to_embed = text_to_embed[:MAX_TEXT_LENGTH]
-                logger.info(f"Truncated text to {MAX_TEXT_LENGTH} chars (original length: {len(text)})")
-            
             # Generate embedding
-            embedding = self.generate_embedding(text_to_embed)
+            embedding = self.generate_embedding(text)
             
             if not embedding:
                 logger.warning(f"Failed to generate embedding for document {doc_id}. Skipping.")
@@ -302,23 +483,21 @@ class QdrantIndexer:
                         logger.warning(f"Document {doc_id} has no text content. Skipping.")
                         continue
                     
-                    # Limit text length to avoid potential issues with large texts
+                    # Get the text to index
                     text_to_embed = doc["text"]
                     text_length = len(text_to_embed)
                     
                     if text_length < 10:  # Arbitrary minimum length for meaningful content
-                        logger.warning(f"Document {doc_id} has too little text ({text_length} chars): '{text_to_embed}'. Skipping.")
+                        logger.warning(f"Document {doc_id} has too little text ({text_length} chars). Skipping.")
                         continue
                     
-                    if text_length > MAX_TEXT_LENGTH:
-                        text_to_embed = text_to_embed[:MAX_TEXT_LENGTH]
-                        logger.info(f"Truncated document {doc_id} text to {MAX_TEXT_LENGTH} chars (original length: {text_length})")
+                    logger.info(f"Processing document {doc_id} with {text_length} characters")
                     
                     # Generate embedding
                     embedding = self.generate_embedding(text_to_embed)
                     
                     if not embedding:
-                        logger.warning(f"Failed to generate embedding for document {doc_id} with text length {text_length}. Skipping.")
+                        logger.warning(f"Failed to generate embedding for document {doc_id}. Skipping.")
                         continue
                     
                     if len(embedding) == 0:
@@ -331,6 +510,7 @@ class QdrantIndexer:
                     # Add original ID to payload
                     payload = doc["payload"].copy()
                     payload["original_id"] = doc_id
+                    payload["text_length"] = text_length  # Speichere Textlänge für Diagnose
                     
                     # Create point
                     point = qdrant_models.PointStruct(
@@ -340,24 +520,54 @@ class QdrantIndexer:
                     )
                     points.append(point)
                     success_count += 1
+                    
+                    # Batch-Größe überprüfen und bei Bedarf schon jetzt indexieren
+                    if len(points) >= BATCH_SIZE:
+                        self._index_points_batch(points)
+                        points = []
+                        
                 except Exception as e:
                     logger.error(f"Error processing document {doc.get('id', 'unknown')}: {e}")
                     continue
             
-            if not points:
-                logger.warning("No valid points to index in this batch.")
-                return 0
-                
-            # Store all points in one request
-            self.qdrant_client.upsert(
-                collection_name=COLLECTION_NAME,
-                points=points
-            )
-            logger.info(f"Indexed batch of {len(points)} documents")
+            # Restliche Punkte indexieren
+            if points:
+                self._index_points_batch(points)
+            
+            logger.info(f"Indexed batch with {success_count} documents successfully")
             return success_count
         except Exception as e:
             logger.error(f"Error indexing batch: {e}")
             return 0
+    
+    def _index_points_batch(self, points: List[qdrant_models.PointStruct]) -> None:
+        """Index a batch of points into Qdrant.
+        
+        Args:
+            points: List of points to index
+        """
+        if not points:
+            return
+            
+        try:
+            logger.info(f"Indexing batch of {len(points)} points to Qdrant")
+            self.qdrant_client.upsert(
+                collection_name=COLLECTION_NAME,
+                points=points
+            )
+            logger.info(f"Successfully indexed {len(points)} points")
+        except Exception as e:
+            logger.error(f"Error indexing points batch: {e}")
+            # Bei Fehlern versuchen, die Punkte einzeln zu indexieren
+            for point in points:
+                try:
+                    logger.info(f"Attempting to index point {point.id} individually")
+                    self.qdrant_client.upsert(
+                        collection_name=COLLECTION_NAME,
+                        points=[point]
+                    )
+                except Exception as e2:
+                    logger.error(f"Error indexing individual point {point.id}: {e2}")
 
 
 class SolrDocumentFetcher:
@@ -388,7 +598,8 @@ class SolrDocumentFetcher:
                     "q": "*:*",
                     "rows": rows,
                     "fl": "id,enbez,kurzue,langue,text_content,text_content_html,norm_type,parent_document_id,jurabk,amtabk"
-                }
+                },
+                timeout=60  # Erhöhter Timeout für große Datenmengen
             )
             response.raise_for_status()
             
@@ -398,8 +609,9 @@ class SolrDocumentFetcher:
             
             processed_docs = []
             for doc in docs:
-                # Extract text content preferring HTML version if available
-                text_content = doc.get("text_content_html", doc.get("text_content", ""))
+                # Extract text content preferring clean text version over HTML
+                # FIXED: Use text_content FIRST, then HTML as fallback (not the other way around)
+                text_content = doc.get("text_content", doc.get("text_content_html", ""))
                 
                 # Handle empty content
                 if not text_content:
@@ -423,43 +635,42 @@ class SolrDocumentFetcher:
                     if doc.get("kurzue"):
                         metadata_text.append(f"Kurzüberschrift: {doc.get('kurzue')}")
                     if doc.get("jurabk"):
-                        metadata_text.append(f"Juristische Abkürzung: {doc.get('jurabk')}")
+                        metadata_text.append(f"Jurabk: {doc.get('jurabk')}")
+                    if doc.get("amtabk"):
+                        metadata_text.append(f"Amtabk: {doc.get('amtabk')}")
                     
-                    # Use metadata as content if available
-                    if metadata_text:
-                        clean_text = " ".join(metadata_text)
-                        logger.info(f"Using metadata as text content for document {doc.get('id', 'unknown')}")
+                    clean_text = " ".join(metadata_text)
+                    
+                    if not clean_text.strip():
+                        logger.warning(f"Could not build any text content for document {doc.get('id', 'unknown')}. Skipping.")
+                        continue
                 
-                # Create payload with metadata
-                payload = {
-                    "id": doc.get("id", ""),
-                    "enbez": doc.get("enbez", ""),
-                    "kurzue": doc.get("kurzue", ""),
-                    "langue": doc.get("langue", ""),
-                    "norm_type": doc.get("norm_type", ""),
-                    "parent_document_id": doc.get("parent_document_id", ""),
-                    "jurabk": doc.get("jurabk", ""),
-                    "amtabk": doc.get("amtabk", ""),
+                # Create a document with text and payload
+                processed_doc = {
+                    "id": doc["id"],
+                    "text": clean_text,
+                    "payload": {
+                        "enbez": doc.get("enbez", ""),
+                        "kurzue": doc.get("kurzue", ""),
+                        "norm_type": doc.get("norm_type", ""),
+                        "parent_document_id": doc.get("parent_document_id", ""),
+                        "jurabk": doc.get("jurabk", ""),
+                        "amtabk": doc.get("amtabk", ""),
+                        "langue": doc.get("langue", "")
+                    }
                 }
                 
-                # Only include documents with actual content to embed
-                if clean_text.strip():
-                    processed_docs.append({
-                        "id": doc.get("id", ""),
-                        "text": clean_text,
-                        "payload": payload
-                    })
-                else:
-                    logger.warning(f"Skipping document {doc.get('id', 'unknown')} due to empty text content after processing")
-                
+                processed_docs.append(processed_doc)
+            
+            logger.info(f"Processed {len(processed_docs)} documents from Solr")
             return processed_docs
         except requests.exceptions.RequestException as e:
             logger.error(f"Error fetching documents from Solr: {e}")
-            return []
+            sys.exit(1)
 
 
 class XMLDocumentFetcher:
-    """Class to fetch documents from XML source files."""
+    """Class to fetch documents from XML files."""
     
     def __init__(self, xml_dir: str, limit: Optional[int] = None):
         """Initialize the XML document fetcher.
@@ -470,8 +681,135 @@ class XMLDocumentFetcher:
         """
         self.xml_dir = xml_dir
         self.limit = limit
-        # Counter for generating unique IDs
-        self.id_counter = 0
+    
+    def _extract_text_from_element(self, element: ET.Element) -> str:
+        """Extract text from an XML element, including text from children.
+        
+        Args:
+            element: XML element
+            
+        Returns:
+            Extracted text
+        """
+        text = element.text or ""
+        for child in element:
+            child_text = self._extract_text_from_element(child)
+            if child_text:
+                text += " " + child_text
+            if child.tail:
+                text += " " + child.tail
+        return text
+    
+    def _process_xml_file(self, file_path: str) -> List[Dict]:
+        """Process a single XML file.
+        
+        Args:
+            file_path: Path to the XML file
+            
+        Returns:
+            List of extracted documents
+        """
+        try:
+            tree = ET.parse(file_path)
+            root = tree.getroot()
+            
+            documents = []
+            
+            # Extract document metadata from filename
+            import os
+            file_name = os.path.basename(file_path)
+            # Assume filename format is like: "bgbl1_1949_1_bgbl102s0001.xml"
+            # where "bgbl1" is the document type
+            doc_type = file_name.split("_")[0] if "_" in file_name else ""
+            
+            # Find all norm elements (usually contain individual laws/regulations)
+            norm_elements = root.findall(".//norm") or [root]  # Fallback to root if no norm elements
+            
+            for i, norm in enumerate(norm_elements):
+                try:
+                    # Extract metadata from XML
+                    meta = norm.find("./metadaten")
+                    
+                    # Generate an ID
+                    doc_id = f"{file_name}_{i}"
+                    if meta is not None:
+                        enbez_elem = meta.find("./enbez")
+                        if enbez_elem is not None and enbez_elem.text:
+                            doc_id = f"{file_name}_{enbez_elem.text.strip()}"
+                    
+                    # Extract content
+                    content = ""
+                    text_elements = norm.findall(".//text") or [norm]
+                    for text_elem in text_elements:
+                        text_content = self._extract_text_from_element(text_elem)
+                        content += " " + text_content
+                    
+                    # Clean content
+                    content = " ".join(content.split())
+                    
+                    # Extract metadata
+                    enbez = ""
+                    kurzue = ""
+                    jurabk = ""
+                    amtabk = ""
+                    
+                    if meta is not None:
+                        enbez_elem = meta.find("./enbez")
+                        if enbez_elem is not None:
+                            enbez = enbez_elem.text or ""
+                        
+                        kurzue_elem = meta.find("./kurzue")
+                        if kurzue_elem is not None:
+                            kurzue = kurzue_elem.text or ""
+                        
+                        jurabk_elem = meta.find("./jurabk")
+                        if jurabk_elem is not None:
+                            jurabk = jurabk_elem.text or ""
+                        
+                        amtabk_elem = meta.find("./amtabk")
+                        if amtabk_elem is not None:
+                            amtabk = amtabk_elem.text or ""
+                    
+                    # If content is empty, use metadata
+                    if not content.strip():
+                        metadata_text = []
+                        if enbez:
+                            metadata_text.append(f"Titel: {enbez}")
+                        if kurzue:
+                            metadata_text.append(f"Kurzüberschrift: {kurzue}")
+                        if jurabk:
+                            metadata_text.append(f"Jurabk: {jurabk}")
+                        if amtabk:
+                            metadata_text.append(f"Amtabk: {amtabk}")
+                        
+                        content = " ".join(metadata_text)
+                    
+                    # Skip if still no content
+                    if not content.strip():
+                        continue
+                    
+                    # Create document
+                    document = {
+                        "id": doc_id,
+                        "text": content,
+                        "payload": {
+                            "enbez": enbez,
+                            "kurzue": kurzue,
+                            "jurabk": jurabk,
+                            "amtabk": amtabk,
+                            "norm_type": doc_type,
+                            "source_file": file_name
+                        }
+                    }
+                    
+                    documents.append(document)
+                except Exception as e:
+                    logger.error(f"Error processing norm element in {file_path}: {e}")
+            
+            return documents
+        except Exception as e:
+            logger.error(f"Error processing XML file {file_path}: {e}")
+            return []
     
     def fetch_documents(self) -> List[Dict]:
         """Fetch documents from XML files.
@@ -479,206 +817,176 @@ class XMLDocumentFetcher:
         Returns:
             List of documents with their metadata
         """
-        processed_docs = []
-        doc_count = 0
-        
         try:
-            # Find all XML files in the directory
-            xml_files = []
-            for file in os.listdir(self.xml_dir):
-                if file.endswith(".xml"):
-                    xml_files.append(os.path.join(self.xml_dir, file))
+            import os
+            import glob
             
-            logger.info(f"Found {len(xml_files)} XML files")
+            xml_files = glob.glob(os.path.join(self.xml_dir, "**/*.xml"), recursive=True)
             
-            # Process each XML file
-            for xml_file in xml_files:
+            if not xml_files:
+                logger.error(f"No XML files found in {self.xml_dir}")
+                return []
+            
+            logger.info(f"Found {len(xml_files)} XML files in {self.xml_dir}")
+            
+            # Limit number of files if needed
+            if self.limit is not None and self.limit < len(xml_files):
+                xml_files = xml_files[:self.limit]
+                logger.info(f"Limiting to {self.limit} XML files")
+            
+            # Process all files
+            all_documents = []
+            for file_path in xml_files:
                 try:
-                    tree = ET.parse(xml_file)
-                    root = tree.getroot()
-                    
-                    # Extract basic document metadata
-                    doknr = root.find(".//doknr")
-                    amtabk = root.find(".//amtabk")
-                    jurabk = root.find(".//jurabk")
-                    langue = root.find(".//langue")
-                    kurzue = root.find(".//kurzue")
-                    
-                    base_metadata = {
-                        "doknr": doknr.text if doknr is not None else "",
-                        "amtabk": amtabk.text if amtabk is not None else "",
-                        "jurabk": jurabk.text if jurabk is not None else "",
-                        "langue": langue.text if langue is not None else "",
-                        "kurzue": kurzue.text if kurzue is not None else "",
-                    }
-                    
-                    # Process norms (articles, sections, etc.)
-                    for norm in root.findall(".//norm"):
-                        self.id_counter += 1
-                        
-                        # Extract norm metadata
-                        enbez = norm.find("./enbez")
-                        norm_text = norm.find("./textdaten/text/Content")
-                        
-                        # Extract text content
-                        text_content = ""
-                        if norm_text is not None:
-                            # Convert the XML element to a string
-                            text_content = ET.tostring(norm_text, encoding='unicode', method='text')
-                        
-                        # Create a normalized ID
-                        norm_id = f"{base_metadata['doknr']}_{self.id_counter}"
-                        
-                        # Create payload with metadata
-                        payload = {
-                            **base_metadata,
-                            "id": norm_id,
-                            "enbez": enbez.text if enbez is not None else "",
-                            "norm_type": "article",  # Simple assumption, might need more complex logic
-                            "parent_document_id": base_metadata["doknr"],
-                        }
-                        
-                        processed_docs.append({
-                            "id": norm_id,
-                            "text": text_content,
-                            "payload": payload
-                        })
-                        
-                        doc_count += 1
-                        if self.limit and doc_count >= self.limit:
-                            break
-                    
-                    # If we've reached the limit, stop processing
-                    if self.limit and doc_count >= self.limit:
-                        break
-                        
+                    documents = self._process_xml_file(file_path)
+                    all_documents.extend(documents)
+                    logger.info(f"Processed {len(documents)} documents from {file_path}")
                 except Exception as e:
-                    logger.error(f"Error processing XML file {xml_file}: {e}")
+                    logger.error(f"Error processing file {file_path}: {e}")
             
-            logger.info(f"Extracted {len(processed_docs)} norms from XML files")
-            return processed_docs
-            
+            logger.info(f"Processed {len(all_documents)} documents from {len(xml_files)} XML files")
+            return all_documents
         except Exception as e:
-            logger.error(f"Error fetching documents from XML: {e}")
+            logger.error(f"Error fetching documents from XML files: {e}")
             return []
 
 
 def main():
     """Main function to run the indexer."""
-    parser = argparse.ArgumentParser(description="ASRA Qdrant Indexer")
-    parser.add_argument(
-        "--source", 
-        choices=["solr", "xml"], 
-        default="solr",
-        help="Source of documents: 'solr' for Solr index, 'xml' for source XML files"
-    )
-    parser.add_argument(
-        "--limit",
-        type=int,
-        default=None,
-        help="Maximum number of documents to process"
-    )
-    parser.add_argument(
-        "--qdrant",
-        type=str,
-        default=None,
-        help="Qdrant endpoint URL (default: from env or localhost)"
-    )
-    parser.add_argument(
-        "--ollama",
-        type=str,
-        default=None,
-        help="Ollama endpoint URL (default: from env or localhost)"
-    )
-    parser.add_argument(
-        "--solr",
-        type=str,
-        default=None,
-        help="Solr endpoint URL (default: from env or localhost)"
-    )
-    parser.add_argument(
-        "--docker",
-        action="store_true",
-        help="Use Docker network endpoints (ollama, qdrant, solr)"
-    )
-    parser.add_argument(
-        "--recreate",
-        action="store_true",
-        help="Recreate the collection if it exists"
-    )
+    # Declare global variables first
+    global MAX_TEXT_LENGTH, BATCH_SIZE, CHUNK_SIZE
     
+    parser = argparse.ArgumentParser(description="Index documents into Qdrant vector database")
+    parser.add_argument("--source", choices=["solr", "xml"], default="solr",
+                      help="Data source: 'solr' or 'xml' (default: solr)")
+    parser.add_argument("--limit", type=int, default=None,
+                      help="Maximum number of documents to process (default: all)")
+    parser.add_argument("--recreate", action="store_true",
+                      help="Recreate the Qdrant collection if it exists")
+    parser.add_argument("--docker", action="store_true",
+                      help="Use Docker network endpoints instead of localhost")
+    parser.add_argument("--debug", action="store_true",
+                      help="Enable debug logging")
+    parser.add_argument("--max-text-length", type=int, default=MAX_TEXT_LENGTH,
+                      help=f"Maximum text length for embedding generation (default: {MAX_TEXT_LENGTH})")
+    parser.add_argument("--batch-size", type=int, default=BATCH_SIZE,
+                      help=f"Batch size for document processing (default: {BATCH_SIZE})")
+    parser.add_argument("--chunk-size", type=int, default=CHUNK_SIZE,
+                      help=f"Chunk size for text splitting (default: {CHUNK_SIZE})")
     args = parser.parse_args()
     
-    # Set endpoints based on arguments
-    global QDRANT_ENDPOINT, OLLAMA_ENDPOINT, SOLR_ENDPOINT
+    # Update global configuration based on arguments
+    MAX_TEXT_LENGTH = args.max_text_length
+    BATCH_SIZE = args.batch_size
+    CHUNK_SIZE = args.chunk_size
     
+    # Set log level
+    if args.debug:
+        logger.setLevel(logging.DEBUG)
+        logger.debug("Debug logging enabled")
+    
+    # Use Docker endpoints if specified
     if args.docker:
-        logger.info("Using Docker network endpoints")
-        QDRANT_ENDPOINT = DOCKER_QDRANT_ENDPOINT
+        global OLLAMA_ENDPOINT, QDRANT_ENDPOINT, SOLR_ENDPOINT
         OLLAMA_ENDPOINT = DOCKER_OLLAMA_ENDPOINT
+        QDRANT_ENDPOINT = DOCKER_QDRANT_ENDPOINT
         SOLR_ENDPOINT = DOCKER_SOLR_ENDPOINT
-    else:
-        if args.qdrant:
-            QDRANT_ENDPOINT = args.qdrant
-        if args.ollama:
-            OLLAMA_ENDPOINT = args.ollama
-        if args.solr:
-            SOLR_ENDPOINT = args.solr
+        logger.info("Using Docker network endpoints")
     
-    logger.info(f"Using Qdrant endpoint: {QDRANT_ENDPOINT}")
-    logger.info(f"Using Ollama endpoint: {OLLAMA_ENDPOINT}")
-    logger.info(f"Using Solr endpoint: {SOLR_ENDPOINT}")
+    # Log configuration
+    logger.info(f"Configuration: MAX_TEXT_LENGTH={MAX_TEXT_LENGTH}, BATCH_SIZE={BATCH_SIZE}, "
+                f"CHUNK_SIZE={CHUNK_SIZE}, MAX_RETRIES={MAX_RETRIES}")
+    logger.info(f"Endpoints: OLLAMA={OLLAMA_ENDPOINT}, QDRANT={QDRANT_ENDPOINT}, SOLR={SOLR_ENDPOINT}")
     
     try:
-        # Initialize Qdrant indexer
+        # Initialize indexer
         indexer = QdrantIndexer(recreate=args.recreate)
+        
+        # Create collection
         indexer.create_collection_if_not_exists()
         
-        # Fetch documents from source
+        # Fetch documents
+        logger.info(f"Fetching documents from {args.source}")
         if args.source == "solr":
-            logger.info("Fetching documents from Solr...")
             fetcher = SolrDocumentFetcher(limit=args.limit)
         else:  # xml
-            logger.info("Fetching documents from XML files...")
             fetcher = XMLDocumentFetcher(xml_dir=XML_DIR, limit=args.limit)
         
         documents = fetcher.fetch_documents()
+        total_documents = len(documents)
+        logger.info(f"Fetched {total_documents} documents")
         
-        if not documents:
-            logger.warning("No documents found to index")
+        if total_documents == 0:
+            logger.error("No documents to index. Exiting.")
             return
         
-        logger.info(f"Starting to index {len(documents)} documents")
+        # Index documents in batches
+        success_count = 0
+        total_batches = (total_documents + BATCH_SIZE - 1) // BATCH_SIZE
+        
+        logger.info(f"Starting indexing with {total_batches} batches (batch size: {BATCH_SIZE})")
+        
         start_time = time.time()
-        successful_docs = 0
         
-        # Process in batches to improve performance
-        total_batches = (len(documents) - 1) // BATCH_SIZE + 1
-        for i in range(0, len(documents), BATCH_SIZE):
-            batch = documents[i:i+BATCH_SIZE]
-            current_batch = i // BATCH_SIZE + 1
-            logger.info(f"Processing batch {current_batch}/{total_batches} ({i+1}-{min(i+BATCH_SIZE, len(documents))}/{len(documents)})")
+        for i in range(0, total_documents, BATCH_SIZE):
+            batch = documents[i:i + BATCH_SIZE]
+            batch_num = i // BATCH_SIZE + 1
             
-            # Index batch and count successful documents
-            success_count = indexer.index_batch(batch)
-            successful_docs += success_count
+            logger.info(f"Processing batch {batch_num}/{total_batches} with {len(batch)} documents")
+            batch_start_time = time.time()
             
-            # Print progress
-            elapsed = time.time() - start_time
-            docs_per_second = i / elapsed if elapsed > 0 else 0
-            estimated_total = elapsed / i * len(documents) if i > 0 else 0
-            remaining = estimated_total - elapsed if estimated_total > 0 else 0
+            try:
+                batch_success = indexer.index_batch(batch)
+                success_count += batch_success
+                
+                batch_time = time.time() - batch_start_time
+                docs_per_sec = len(batch) / batch_time if batch_time > 0 else 0
+                
+                logger.info(f"Batch {batch_num}/{total_batches}: {batch_success}/{len(batch)} documents indexed "
+                            f"in {batch_time:.2f}s ({docs_per_sec:.2f} docs/s)")
+                
+                # Estimate remaining time
+                elapsed_time = time.time() - start_time
+                progress = batch_num / total_batches
+                if progress > 0:
+                    estimated_total_time = elapsed_time / progress
+                    remaining_time = estimated_total_time - elapsed_time
+                    
+                    logger.info(f"Progress: {progress:.1%} complete. "
+                                f"Est. remaining time: {remaining_time/60:.1f} minutes")
             
-            logger.info(f"Progress: {i+1}/{len(documents)} documents processed "
-                       f"({docs_per_second:.2f} docs/sec, {int(remaining/60)} mins remaining)")
+            except Exception as e:
+                logger.error(f"Error processing batch {batch_num}: {e}")
+                
+                # Attempt to process documents individually if batch fails
+                logger.info("Attempting to process documents individually...")
+                for j, doc in enumerate(batch):
+                    try:
+                        if indexer.index_document(doc["id"], doc["text"], doc["payload"]):
+                            success_count += 1
+                            logger.info(f"Successfully indexed individual document {doc['id']}")
+                        else:
+                            logger.warning(f"Failed to index individual document {doc['id']}")
+                    except Exception as e2:
+                        logger.error(f"Error indexing individual document {doc.get('id', 'unknown')}: {e2}")
         
-        # Print summary
+        # Log final statistics
         total_time = time.time() - start_time
-        logger.info(f"Indexing complete! {successful_docs}/{len(documents)} documents indexed successfully "
-                   f"in {total_time:.2f} seconds ({successful_docs/total_time:.2f} docs/sec)")
+        avg_docs_per_sec = success_count / total_time if total_time > 0 else 0
         
+        logger.info(f"Indexing completed in {total_time:.2f}s ({avg_docs_per_sec:.2f} docs/s average)")
+        logger.info(f"Results: {success_count}/{total_documents} documents indexed successfully "
+                    f"({success_count/total_documents:.1%} success rate)")
+        
+        if success_count == 0:
+            logger.error("No documents were successfully indexed. Please check the logs for errors.")
+            sys.exit(1)
+            
+    except KeyboardInterrupt:
+        logger.info("Indexing interrupted by user")
+        sys.exit(130)
     except Exception as e:
-        logger.error(f"Error in indexing process: {e}")
+        logger.error(f"Unhandled error: {e}")
         sys.exit(1)
 
 
