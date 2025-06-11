@@ -61,7 +61,13 @@ echo "Dies kann je nach Datenmenge einige Zeit dauern."
 
 # Python-Script ausführen mit den angegebenen Parametern
 # Ohne --docker, da wir die lokalen Ports verwenden
-python3 qdrant_indexer.py --recreate "$@"
+# Wenn das erste Argument eine Zahl ist, konvertiere es zu --limit N
+if [[ "$1" =~ ^[0-9]+$ ]]; then
+  echo "Interpretiere erste Argument '$1' als Dokumentlimit"
+  python3 qdrant_indexer.py --recreate --limit "$1" "${@:2}"
+else
+  python3 qdrant_indexer.py --recreate "$@"
+fi
 
 # Prüfe, ob die Indexierung erfolgreich war
 if [ $? -eq 0 ]; then

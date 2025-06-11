@@ -228,6 +228,114 @@ class QdrantIndexer:
         logger.info(f"Split text of {len(text)} chars into {len(optimized_chunks)} chunks")
         return optimized_chunks
     
+    def _smart_truncate_legal_text(self, text: str, max_length: int = MAX_TEXT_LENGTH) -> str:
+        """Intelligently truncate legal text preserving important content.
+        
+        Args:
+            text: Original text to truncate
+            max_length: Maximum length in characters
+            
+        Returns:
+            Truncated text preserving legal structure
+        """
+        if len(text) <= max_length:
+            return text
+        
+        # For legal texts, prioritize:
+        # 1. First paragraph (usually contains the main rule)
+        # 2. Numbered/lettered subsections
+        # 3. Complete sentences
+        
+        paragraphs = text.split('\n\n')
+        result = ""
+        
+        # Always include first paragraph if it fits
+        if paragraphs and len(paragraphs[0]) <= max_length * 0.6:
+            result = paragraphs[0] + "\n\n"
+            remaining_length = max_length - len(result)
+            paragraphs = paragraphs[1:]
+        else:
+            remaining_length = max_length
+        
+        # Add remaining paragraphs by priority
+        for para in paragraphs:
+            # Prioritize paragraphs with numbers, letters, or legal keywords
+            if any(keyword in para.lower() for keyword in ['(1)', '(2)', 'absatz', 'satz', 'nummer']):
+                if len(result + para) <= max_length:
+                    result += para + "\n\n"
+                    continue
+            
+            # For other paragraphs, try to fit complete sentences
+            sentences = para.split('. ')
+            for sentence in sentences:
+                if len(result + sentence + '. ') <= max_length:
+                    result += sentence + '. '
+                else:
+                    break
+            
+            if len(result) >= max_length * 0.9:
+                break
+        
+        return result.strip()
+    
+    def _ai_summarize_text(self, text: str, max_length: int = MAX_TEXT_LENGTH) -> Optional[str]:
+        """Summarize text using AI for very long documents.
+        
+        Args:
+            text: Original text to summarize
+            max_length: Target maximum length
+            
+        Returns:
+            Summarized text or None if summarization failed
+        """
+        if len(text) <= max_length:
+            return text
+        
+        # Only use AI summarization for very long texts (>4000 chars)
+        if len(text) < 4000:
+            return None
+        
+        logger.info(f"Attempting AI summarization for {len(text)} character text")
+        
+        prompt = f"""Fasse den folgenden deutschen Rechtstext präzise zusammen. 
+Bewahre alle wichtigen rechtlichen Bestimmungen, Definitionen und Verweise.
+Zielgröße: maximal {max_length} Zeichen.
+
+Text:
+{text}
+
+Zusammenfassung:"""
+
+        try:
+            response = requests.post(
+                f"{OLLAMA_ENDPOINT}/api/generate",
+                json={
+                    "model": "llama3.2:3b",  # Kleineres Modell für Summarization
+                    "prompt": prompt,
+                    "stream": False,
+                    "options": {
+                        "temperature": 0.1,  # Konservativ für rechtliche Texte
+                        "top_p": 0.9
+                    }
+                },
+                timeout=60
+            )
+            
+            if response.status_code == 200:
+                summary = response.json().get("response", "").strip()
+                if summary and len(summary) <= max_length:
+                    logger.info(f"AI summarization successful: {len(text)} -> {len(summary)} chars")
+                    return summary
+                else:
+                    logger.warning(f"AI summary too long or empty: {len(summary)} chars")
+            else:
+                logger.warning(f"AI summarization failed with status {response.status_code}")
+                
+        except Exception as e:
+            logger.warning(f"Error in AI summarization: {e}")
+        
+        return None
+    
     def _apply_rate_limit(self):
         """Apply rate limiting to avoid overloading the Ollama API."""
         current_time = time.time()
@@ -355,7 +463,22 @@ class QdrantIndexer:
             if embedding:
                 return embedding
         
-        # Für längere Texte: chunking-Verfahren anwenden
+        # Für sehr lange Texte: Versuche zuerst intelligente Kürzung oder AI-Summarization
+        if text_length > MAX_TEXT_LENGTH:
+            # Option 1: AI-Summarization für sehr lange Texte (experimentell)
+            if text_length > 4000:
+                summarized = self._ai_summarize_text(text)
+                if summarized:
+                    logger.info(f"Using AI-summarized text ({len(summarized)} chars)")
+                    return self._progressively_generate_embedding(summarized)
+            
+            # Option 2: Intelligente rechtliche Textkürzung
+            truncated = self._smart_truncate_legal_text(text)
+            if len(truncated) <= MAX_TEXT_LENGTH:
+                logger.info(f"Using smart truncation ({len(truncated)} chars)")
+                return self._progressively_generate_embedding(truncated)
+        
+        # Für mittlere Texte: chunking-Verfahren anwenden
         if text_length > CHUNK_SIZE:
             logger.info(f"Text exceeds chunk size ({text_length} > {CHUNK_SIZE}), using chunked processing")
             return self._generate_chunked_embedding(text)
