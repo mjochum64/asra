@@ -1,6 +1,7 @@
 # ASRA - German Laws
 
 A search engine and display platform for German laws with hybrid search (full-text and semantic).
+![ASRA Starting Page](docs/images/asra-ui-screenshot.png "ASRA Starting Page")
 
 ## Project Structure
 
