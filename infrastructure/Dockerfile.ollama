@@ -1,6 +1,7 @@
 # Custom Dockerfile für Ollama mit verbesserter Stabilität für Embedding-Generierung
 
-FROM ollama/ollama:rocm
+FROM ollama/ollama:latest 
+# rocm
 
 # Installieren notwendiger Werkzeuge für Diagnose und Monitoring
 RUN apt-get update && apt-get install -y \

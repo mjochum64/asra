@@ -3,10 +3,10 @@
 # Deployment-Skript für ASRA – Deutsche Gesetze
 
 # Sicherstellen, dass das Skript mit root-Rechten ausgeführt wird
-if [ "$EUID" -ne 0 ]; then
-  echo "Bitte führen Sie dieses Skript als root aus."
-  exit 1
-fi
+#if [ "$EUID" -ne 0 ]; then
+#  echo "Bitte führen Sie dieses Skript als root aus."
+#  exit 1
+#fi
 
 # In das Projektverzeichnis wechseln
 cd "$(dirname "$0")"
@@ -35,13 +35,12 @@ docker-compose up -d
 echo "Warte auf Solr..."
 until $(curl --output /dev/null --silent --head --fail http://localhost:8983/solr/); do
   printf '.'
-  sleep 2
+  sleep 5
 done
 
 # Daten in Solr laden
 echo -e "\nLade Beispieldaten in Solr..."
-chmod +x ./docker/solr/load_sample_data.py
-python ./docker/solr/load_sample_data.py
+../search-engines/solr/import_demodata.sh
 
 echo "ASRA wurde erfolgreich deployt!"
 echo "Die Anwendung ist unter http://localhost:8080/ verfügbar."

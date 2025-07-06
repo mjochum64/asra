@@ -1,7 +1,7 @@
 services:
   # Solr service (existing)
   solr:
-    image: solr:9.2
+    image: solr:latest
     container_name: asra_solr
     ports:
       - "8983:8983"
@@ -33,9 +33,9 @@ services:
       context: .
       dockerfile: Dockerfile.ollama
     container_name: asra_ollama
-    devices:
-      - /dev/kfd:/dev/kfd
-      - /dev/dri:/dev/dri
+    #devices:
+    #  - /dev/kfd:/dev/kfd
+    #  - /dev/dri:/dev/dri
     ports:
       - "11434:11434"
     volumes:
