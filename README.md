@@ -1,40 +1,38 @@
-# ASRA - Deutsche Gesetze
+# ASRA - German Laws
 
-Eine Suchmaschine und Anzeigeplattform für deutsche Gesetze mit Hybrid-Suche (Volltext und semantisch).
+A search engine and display platform for German laws with hybrid search (full-text and semantic).
 
-## Projektstruktur
+## Project Structure
 
-Das Projekt wurde in eine funktionale Struktur reorganisiert:
+The project has been reorganized into a functional structure:
 
-- `/frontend` - Frontend-Anwendung (React/Vite)
-- `/backend` - Backend-Services (Express API)
-- `/search-engines` - Suchmaschinen (Solr, Qdrant, Hybrid-Suche)
-- `/infrastructure` - Docker-Konfiguration und Deployment-Skripte
-- `/scripts` - Convenience-Skripte für häufige Operationen
-- `/docs` - Projektdokumentation
+- `/frontend` - Frontend application (React/Vite)
+- `/backend` - Backend services (Express API)
+- `/search-engines` - Search engines (Solr, Qdrant, Hybrid Search)
+- `/infrastructure` - Docker configuration and deployment scripts
+- `/scripts` - Convenience scripts for common operations
+- `/docs` - Project documentation
 
-## Schnellstart
+## Quick Start
 
 ```bash
-# Alle Komponenten starten (mit Docker)
+# Start all components (with Docker)
 ./start_all.sh
 
-# Nur Frontend starten (Entwicklung)
+# Start only the frontend (development)
 ./start_frontend.sh
 
-# Nur Backend starten (Entwicklung)
+# Start only the backend (development)
 ./start_backend.sh
 
-# Verfügbare Skripte
-./scripts/reindex_qdrant.sh     # Dokumente in Qdrant neu indexieren
-./scripts/hybrid_search.sh      # Hybrid-Suche in der Kommandozeile
-./scripts/import_solr_data.sh   # Demo-Daten in Solr importieren
-./scripts/reset_solr_data.sh    # Alle Dokumente aus Solr löschen (Vor Neuimport)
-./scripts/reset_qdrant_data.sh  # Alle Kollektionen aus Qdrant löschen (Vor Neuindexierung)
+# Available scripts
+./scripts/reindex_qdrant.sh     # Re-index documents in Qdrant
+./scripts/hybrid_search.sh      # Perform a hybrid search in the command line
+./scripts/import_solr_data.sh   # Import demo data into Solr
+./scripts/reset_solr_data.sh    # Delete all documents from Solr (before re-import)
+./scripts/reset_qdrant_data.sh  # Delete all collections from Qdrant (before re-indexing)
 
-# Hinweis: Die Skripte sind für die Verwendung mit Docker konfiguriert.
-# Die Docker-Konfiguration wurde optimiert und befindet sich im /infrastructure-Verzeichnis.
-# Weitere Informationen finden Sie in /docs/DOCKER_CONFIGURATION.md
+# Note: The scripts are configured for use with Docker.
+# The Docker configuration has been optimized and is located in the /infrastructure directory.
+# For more information, see /docs/DOCKER_CONFIGURATION.md
 ```
-
-

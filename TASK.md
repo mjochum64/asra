@@ -1,82 +1,82 @@
-# Project Tasks: ASRA – Deutsche Gesetze
+# Project Tasks: ASRA – German Laws
 
-## 🎯 Projektstatuts: Phase 1.2 VOLLSTÄNDIG ABGESCHLOSSEN ✅
-**Stand**: 11. Juni 2025
-**Version**: 1.2.0 PRODUCTION READY mit Project Cleanup & Hybrid Search
-**Status**: Vollständige Projektbereinigung und Hybrid Search Restauration abgeschlossen ✅
+## 🎯 Project Status: Phase 1.2 FULLY COMPLETED ✅
+**Date**: June 11, 2025
+**Version**: 1.2.0 PRODUCTION READY with Project Cleanup & Hybrid Search
+**Status**: Complete project cleanup and Hybrid Search restoration finished ✅
 
-### 🏆 Erfolgreich abgeschlossene Hauptziele:
-- ✅ **Konfigurierbare UI-Struktur**: Normal-Modus (5 Felder) vs. Experten-Modus (alle Felder)
-- ✅ **Deutsche Rechtsabkürzungen**: Vollständige Unterstützung ("1. BImSchV", "GG", "BGB")
-- ✅ **Dynamische Facetten-Filter**: Kontextuelle Filter basierend auf Suchergebnissen
-- ✅ **Content-Highlighting**: Hervorhebung von Suchbegriffen in Volltext
-- ✅ **Produktive Docker-Umgebung**: Stabile Container-Architektur
-- ✅ **Finale Verifikation**: 11/11 Tests bestanden, 0 kritische Bugs
-- ✅ **Repository-Organisation**: Dokumentation aufgeräumt, [`docs/`](docs/) Struktur etabliert
-- ✅ **Norm-Level-Indexierung**: Granulare Indexierung einzelner Rechtsnormen mit XHTML-Formatierung
-- ✅ **Export-Funktionalität**: PDF/HTML-Export mit korrekter Absatzformatierung und Inhaltsverzeichnis
-- ✅ **HTML-Felder-Integration**: Optimale Nutzung der text_content_html Felder für perfekte Formatierung
-- ✅ **Projekt-Bereinigung**: 27 leere Dateien entfernt, Docker-Konfiguration vereinheitlicht
-- ✅ **Hybrid Search Restauration**: Vollständige Wiederherstellung der Hybrid-Suchfunktionalität
+### 🏆 Successfully Completed Main Goals:
+- ✅ **Configurable UI Structure**: Normal Mode (5 fields) vs. Expert Mode (all fields)
+- ✅ **German Legal Abbreviations**: Full support ("1. BImSchV", "GG", "BGB")
+- ✅ **Dynamic Facet Filters**: Contextual filters based on search results
+- ✅ **Content Highlighting**: Highlighting of search terms in full text
+- ✅ **Production Docker Environment**: Stable container architecture
+- ✅ **Final Verification**: 11/11 tests passed, 0 critical bugs
+- ✅ **Repository Organization**: Documentation cleaned up, [`docs/`](docs/) structure established
+- ✅ **Norm-Level Indexing**: Granular indexing of individual legal norms with XHTML formatting
+- ✅ **Export Functionality**: PDF/HTML export with correct paragraph formatting and table of contents
+- ✅ **HTML Fields Integration**: Optimal use of text_content_html fields for perfect formatting
+- ✅ **Project Cleanup**: 27 empty files removed, Docker configuration unified
+- ✅ **Hybrid Search Restoration**: Full restoration of hybrid search functionality
 
-### 🎯 Neu abgeschlossen: Norm-Level-Indexierung
-- ✅ **Granulare Suche**: Suchergebnisse zeigen spezifische Artikel/Paragraphen statt ganzer Gesetze
-- ✅ **XHTML-Formatierung erhalten**: Original-Formatierung aus XML-Quellen beibehalten
-- ✅ **Norm-spezifische Badges**: Grüne Badges für Artikel-Identifikation (z.B. "Art 70", "§ 1")
-- ✅ **Erweiterte Metadaten**: Norm-Typ, Quelle, Norm-Nummer für verbesserte Navigation
-- ✅ **Frontend-Integration**: Vollständige Anzeige mit formatierten HTML-Inhalten
+### 🎯 Newly Completed: Norm-Level Indexing
+- ✅ **Granular Search**: Search results show specific articles/paragraphs instead of entire laws
+- ✅ **XHTML Formatting Preserved**: Original formatting from XML sources maintained
+- ✅ **Norm-Specific Badges**: Green badges for article identification (e.g., "Art 70", "§ 1")
+- ✅ **Extended Metadata**: Norm type, source, norm number for improved navigation
+- ✅ **Frontend Integration**: Full display with formatted HTML content
 
-### 📊 Norm-Level-Indexierung Erfolgsstatistik:
-- **Datentransformation**: 2 Dokumente → 263 individuelle Normen
-- **Formatierung**: XHTML-Markup erfolgreich erhalten (`text_content_html`, `fussnoten_content_html`)
-- **Granularität**: Suche findet jetzt spezifische Artikel statt ganzer Gesetzbücher
-- **UI-Integration**: Norm-Badges, Typ-Anzeige und verbesserte Metadaten implementiert
+### 📊 Norm-Level Indexing Success Statistics:
+- **Data Transformation**: 2 documents → 263 individual norms
+- **Formatting**: XHTML markup successfully preserved (`text_content_html`, `fussnoten_content_html`)
+- **Granularity**: Search now finds specific articles instead of entire law books
+- **UI Integration**: Norm badges, type display, and improved metadata implemented
 
-### 🎯 Neu abgeschlossen: Export-Funktionalität & HTML-Felder-Integration (9. Juni 2025)
-- ✅ **PDF-Export-Optimierung**: Korrekte Absatzformatierung mit (1), (2), (3) Nummerierung
-- ✅ **HTML-Export**: Saubere HTML-Ausgabe mit erhaltener Originalformatierung
-- ✅ **Intelligente Content-Konvertierung**: Bevorzugung von `text_content_html` Feldern vor Fallback
-- ✅ **PDF-Navigation**: Detailliertes Inhaltsverzeichnis mit Seitenzahlen für alle PDF-Viewer
-- ✅ **Content-Filtering**: Konsistente Filterung redundanter Inhaltsverzeichnisse zwischen allen Ansichten
-- ✅ **Meaningful Filenames**: Automatische Generierung aussagekräftiger Dateinamen basierend auf Dokument-IDs
-- ✅ **Cross-Platform-Kompatibilität**: Universelle PDF-Navigation ohne proprietäre Features
-- ✅ **Import-Pfad-Korrekturen**: Export-Funktionen nach Refactoring vollständig korrigiert
-- ✅ **Volltextanzeige-Optimierung**: XHTML-Felder werden bevorzugt für perfekte Formatierung
-- ✅ **Dokumenttyp-Unterscheidung**: Korrekte Unterscheidung zwischen Rahmendokument und einzelnen Normen beim Export
+### 🎯 Newly Completed: Export Functionality & HTML Fields Integration (June 9, 2025)
+- ✅ **PDF Export Optimization**: Correct paragraph formatting with (1), (2), (3) numbering
+- ✅ **HTML Export**: Clean HTML output with preserved original formatting
+- ✅ **Intelligent Content Conversion**: Preference for `text_content_html` fields over fallback
+- ✅ **PDF Navigation**: Detailed table of contents with page numbers for all PDF viewers
+- ✅ **Content Filtering**: Consistent filtering of redundant tables of contents between all views
+- ✅ **Meaningful Filenames**: Automatic generation of meaningful filenames based on document IDs
+- ✅ **Cross-Platform Compatibility**: Universal PDF navigation without proprietary features
+- ✅ **Import Path Corrections**: Export functions fully corrected after refactoring
+- ✅ **Full-Text View Optimization**: XHTML fields are preferred for perfect formatting
+- ✅ **Document Type Distinction**: Correct distinction between framework document and individual norms during export
 
-### 🎯 Neu abgeschlossen: Projekt-Bereinigung & Hybrid Search Restauration (11. Juni 2025)
-- ✅ **Massive Datei-Bereinigung**: 27 leere/obsolete Dateien erfolgreich entfernt
-  - 4 leere Shell-Skripte aus Root-Verzeichnis entfernt
-  - 3 leere Docker-Skripte aus scripts/ entfernt  
-  - 2 leere Python-Analyse-Skripte entfernt
-  - 4 redundante Docker-Dateien aus Root entfernt
-  - Komplette obsolete Verzeichnisse entfernt (/api, /docker, /src)
-- ✅ **Docker-Konfiguration vereinheitlicht**: docker-compose-hybrid.yml → docker-compose.yml als Standard
-- ✅ **Frontend-Container-Reparatur**: 500 Internal Server Error behoben durch Container-Rebuild
-- ✅ **API-Route-Wiederherstellung**: POST /api/hybrid/search Route hinzugefügt für Hybrid Search
-- ✅ **Pfad-Korrekturen**: Python-Skript-Pfade von /search-engines/ zu /app/scripts/qdrant/ korrigiert
-- ✅ **Nginx-Proxy-Konfiguration**: API-Proxy-Route für nahtlose Frontend-API-Kommunikation implementiert
-- ✅ **System-Verifikation**: Alle Services (Frontend, API, Solr, Qdrant, Ollama) erfolgreich getestet
-- ✅ **Hybrid Search Funktionalität**: Sowohl GET als auch POST API-Endpunkte vollständig funktionsfähig
-- ✅ **Web-Interface-Validierung**: Browser-Zugriff auf http://localhost:8080 erfolgreich mit korrekter API-Anbindung
+### 🎯 Newly Completed: Project Cleanup & Hybrid Search Restoration (June 11, 2025)
+- ✅ **Massive File Cleanup**: 27 empty/obsolete files successfully removed
+  - 4 empty shell scripts removed from root directory
+  - 3 empty Docker scripts removed from scripts/
+  - 2 empty Python analysis scripts removed
+  - 4 redundant Docker files removed from root
+  - Complete obsolete directories removed (/api, /docker, /src)
+- ✅ **Docker Configuration Unified**: docker-compose-hybrid.yml → docker-compose.yml as standard
+- ✅ **Frontend Container Repair**: 500 Internal Server Error fixed by container rebuild
+- ✅ **API Route Restoration**: POST /api/hybrid/search route added for Hybrid Search
+- ✅ **Path Corrections**: Python script paths corrected from /search-engines/ to /app/scripts/qdrant/
+- ✅ **Nginx Proxy Configuration**: API proxy route implemented for seamless frontend-API communication
+- ✅ **System Verification**: All services (Frontend, API, Solr, Qdrant, Ollama) successfully tested
+- ✅ **Hybrid Search Functionality**: Both GET and POST API endpoints fully functional
+- ✅ **Web Interface Validation**: Browser access to http://localhost:8080 successful with correct API connection
 
-### 📊 Projekt-Bereinigung Erfolgstatistik:
-- **Entfernte Dateien**: 27 total (100% leer oder obsolet)
-- **Bereinigte Verzeichnisse**: 3 komplette obsolete Strukturen entfernt
-- **Docker-Vereinfachung**: Von 2 parallelen docker-compose-Dateien zu 1 Standard-Konfiguration
-- **API-Endpunkte**: Hybrid Search sowohl über GET (Frontend) als auch POST (direkter API-Zugriff) verfügbar
-- **Container-Status**: 6/6 Services laufen stabil (Frontend, API, Solr, Qdrant, Ollama, OpenWebUI)
-- **Proxy-Konfiguration**: Nginx-Reverse-Proxy für /api/ und /solr/ Routen konfiguriert
-- ✅ **Inhaltsverzeichnis-Fehler behoben**: TableOfContents wird jetzt zuverlässig bei Volltextansicht angezeigt
-- ✅ **Import-Fehler korrigiert**: Konsistente ES6-Modul-Syntax in documentService.js statt gemischter Imports
-- ✅ **Defensive Programmierung**: Robuste Null-Checks und Standardwerte für die TableOfContents-Komponente
-- ✅ **Service-Modularisierung**: Spezialisierter documentService.js für zentralisierte Dokumenten-Verarbeitung
-- ✅ **Fehlerbehandlung verbessert**: Vollständiges Error-Handling in loadDocumentContents-Funktion
+### 📊 Project Cleanup Success Statistics:
+- **Removed Files**: 27 total (100% empty or obsolete)
+- **Cleaned Directories**: 3 complete obsolete structures removed
+- **Docker Simplification**: From 2 parallel docker-compose files to 1 standard configuration
+- **API Endpoints**: Hybrid Search available via both GET (frontend) and POST (direct API access)
+- **Container Status**: 6/6 services running stable (Frontend, API, Solr, Qdrant, Ollama, OpenWebUI)
+- **Proxy Configuration**: Nginx reverse proxy configured for /api/ and /solr/ routes
+- ✅ **Table of Contents Bug Fixed**: TableOfContents now reliably displayed in full-text view
+- ✅ **Import Error Corrected**: Consistent ES6 module syntax in documentService.js instead of mixed imports
+- ✅ **Defensive Programming**: Robust null checks and default values for the TableOfContents component
+- ✅ **Service Modularization**: Specialized documentService.js for centralized document processing
+- ✅ **Error Handling Improved**: Complete error handling in loadDocumentContents function
 
-### 🚀 Nächste Phase: Sprint 2 (Auto-Suggest & Sortierung)
-- [ ] Auto-Suggest/Autocomplete-Funktionalität
-- [ ] Erweiterte Sortieroptionen
-- [ ] Suchhistorie mit LocalStorage
+### 🚀 Next Phase: Sprint 2 (Auto-Suggest & Sorting)
+- [ ] Auto-suggest/autocomplete functionality
+- [ ] Advanced sorting options
+- [ ] Search history with LocalStorage
 
 ---
 
@@ -108,421 +108,440 @@
 - [ ] Adapt UI to display combined/RAG results if necessary.
 - [ ] Integrate new API endpoints for hybrid search and RAG.
 
-**📋 Detaillierte Aufgabenliste:**
+**📋 Detailed Task List:**
 
 ---
 
-## 1. Core Application Setup (Abgeschlossen)
+## 1. Core Application Setup (Completed)
 
-- [x] Erstellen des grundlegenden React-Projekts mit Vite
-- [x] Konfigurieren von Tailwind CSS für Styling
-- [x] Einrichten der Projektordnerstruktur
-- [x] Implementieren des React-Komponenten-Basissystems
+- [x] Create basic React project with Vite
+- [x] Configure Tailwind CSS for styling
+- [x] Set up project folder structure
+- [x] Implement React component base system
 
-## 2. Solr-Integration (Abgeschlossen)
+## 2. Solr Integration (Completed)
 
-- [x] Docker-Compose-Konfiguration für Solr
-- [x] Solr-Schema-Definition für Dokumentenindexierung
-- [x] REST API-Verbindung von Frontend zu Solr
-- [x] Start-Skript für Solr mit automatischer Datenladung
+- [x] Docker-Compose configuration for Solr
+- [x] Solr schema definition for document indexing
+- [x] REST API connection from frontend to Solr
+- [x] Start script for Solr with automatic data loading
 
-## 3. Suchfunktionalität (Abgeschlossen)
+## 3. Search Functionality (Completed)
 
-- [x] Implementierung der Suchleiste
-- [x] Implementierung der Ergebnisanzeige
-- [x] Verarbeitung von Suchanfragen an Solr
-- [x] Fehlerbehandlung und Ladezustände
+- [x] Implement search bar
+- [x] Implement results display
+- [x] Process search queries to Solr
+- [x] Error handling and loading states
 
-## 4. Docker-Integration und Deployment (Abgeschlossen)
+## 4. Docker Integration and Deployment (Completed)
 
-- [x] Frontend als Docker-Container konfigurieren
-- [x] Nginx als Reverse-Proxy für Solr einrichten
-- [x] Docker-Compose-Setup für die gesamte Anwendung
-- [x] Deployment-Skripte für Entwicklung und Produktion
-- [x] Konfigurierbare Solr-URL für verschiedene Umgebungen
-- [x] Korrektur der Umgebungserkennung für Vite-Anwendungen (`import.meta.env.MODE`)
-- [x] Implementierung des korrekten Pfads zum Solr-Core (`documents/select`)
+- [x] Configure frontend as a Docker container
+- [x] Set up Nginx as a reverse proxy for Solr
+- [x] Docker-Compose setup for the entire application
+- [x] Deployment scripts for development and production
+- [x] Configurable Solr URL for different environments
+- [x] Correction of environment detection for Vite applications (`import.meta.env.MODE`)
+- [x] Implementation of the correct path to the Solr core (`documents/select`)
 
-## 5. UI/UX-Verbesserungen (Abgeschlossen)
+## 5. UI/UX Improvements (Completed)
 
-- [x] Modernisierung des UI-Designs implementiert (18.05.2025)
-- [x] Responsives Layout mit Sidebar für Filter erstellt (18.05.2025)
-- [x] Paginierung für größere Ergebnismengen (18.05.2025)
-- [x] Verbesserte Ergebnisdarstellung mit Hervorhebungen (18.05.2025)
-- [x] Einfache Suchfilter (Suche nach Titel/Inhalt) implementiert (18.05.2025)
-- [x] Entwickler-Modus mit Mock-Daten für einfacheres Testen (18.05.2025)
-- [x] CORS-Problem im Entwicklungsmodus durch Proxy gelöst (18.05.2025)
-- [x] Grundlegende Filter-UI in Sidebar implementiert (18.05.2025)
+- [x] Modernized UI design implemented (May 18, 2025)
+- [x] Responsive layout with sidebar for filters created (May 18, 2025)
+- [x] Pagination for larger result sets (May 18, 2025)
+- [x] Improved result display with highlighting (May 18, 2025)
+- [x] Simple search filters (search by title/content) implemented (May 18, 2025)
+- [x] Developer mode with mock data for easier testing (May 18, 2025)
+- [x] CORS problem in development mode solved by proxy (May 18, 2025)
+- [x] Basic filter UI implemented in sidebar (May 18, 2025)
 
-## 6. Code-Splitting und Performance (Abgeschlossen)
+## 6. Code Splitting and Performance (Completed)
 
-- [x] React.lazy Import für ResultsDisplay-Komponente implementiert (07.06.2025)
-- [x] Suspense-Wrapper mit Fallback-UI hinzugefügt (07.06.2025)
-- [x] Bundle-Größe-Optimierung durch dynamisches Laden (07.06.2025)
+- [x] React.lazy import for ResultsDisplay component implemented (June 7, 2025)
+- [x] Suspense wrapper with fallback UI added (June 7, 2025)
+- [x] Bundle size optimization through dynamic loading (June 7, 2025)
 
-## 7. Erweiterte Suchfunktionalitäten (In Bearbeitung - Phase 1)
+## 7. Advanced Search Functionalities (In Progress - Phase 1)
 
-### 7.1 Facetten-Filter (✅ VOLLSTÄNDIG ABGESCHLOSSEN - 07.06.2025)
-- [x] Dynamische Facetten aus Solr-Daten abrufen (mit Mock-Fallback)
-- [x] Kategorie-Filter in Sidebar implementiert
-- [x] Autor-Filter mit Zählern hinzugefügt
-- [x] Filter-State-Management zwischen Suchanfragen
-- [x] Filter-Bug behoben: Race-Condition zwischen State-Updates und Suchfunktion gelöst (07.06.2025)
-- [x] Filter funktionieren jetzt sofort nach Auswahl ohne manuellen Suchklick (07.06.2025)
-- [x] Solr DisMax Query Integration für bessere Volltextsuche (07.06.2025)
-- [x] Solr Array-Feld-Normalisierung implementiert (07.06.2025)
-- [x] Kategorie-Mapping von Englisch (Solr) zu Deutsch (UI) implementiert (07.06.2025)
-- [x] Code-Bereinigung: Debug-Logs entfernt (07.06.2025)
-- [x] **KRITISCHE PROBLEME BEHOBEN (07.06.2025)**:
-  - [x] Dynamische, kontextuelle Filter statt statische Filter-Anzeige
-  - [x] Content-Highlighting funktioniert korrekt
-  - [x] Autor-Filter verschwinden nicht mehr
-  - [x] Einheitliche Suchsyntax zwischen Hauptsuche und Facetten
-- [x] **ARCHITEKTUR-ÜBERARBEITUNG (07.06.2025)**:
-  - [x] Kontextuelle Facetten-Funktion `getContextualFacets()` implementiert
-  - [x] Unified Search Response mit `{results, facets, total}` Struktur
-  - [x] Komponentenarchitektur auf Props-basierte Facetten umgestellt
-- [ ] Datum-Range-Filter implementieren (→ Sprint 3)
+### 7.1 Facet Filters (✅ FULLY COMPLETED - June 7, 2025)
+- [x] Retrieve dynamic facets from Solr data (with mock fallback)
+- [x] Category filter implemented in sidebar
+- [x] Author filter with counters added
+- [x] Filter state management between search queries
+- [x] Filter bug fixed: Race condition between state updates and search function resolved (June 7, 2025)
+- [x] Filters now work immediately after selection without a manual search click (June 7, 2025)
+- [x] Solr DisMax Query integration for better full-text search (June 7, 2025)
+- [x] Solr array field normalization implemented (June 7, 2025)
+- [x] Category mapping from English (Solr) to German (UI) implemented (June 7, 2025)
+- [x] Code cleanup: Debug logs removed (June 7, 2025)
+- [x] **CRITICAL ISSUES FIXED (June 7, 2025)**:
+  - [x] Dynamic, contextual filters instead of static filter display
+  - [x] Content highlighting works correctly
+  - [x] Author filters no longer disappear
+  - [x] Uniform search syntax between main search and facets
+- [x] **ARCHITECTURE REVISION (June 7, 2025)**:
+  - [x] Contextual facets function `getContextualFacets()` implemented
+  - [x] Unified Search Response with `{results, facets, total}` structure
+  - [x] Component architecture switched to props-based facets
+- [ ] Implement date range filter (→ Sprint 3)
 
-### 7.2 Deutsche Rechtsabkürzungen-Suche (✅ VOLLSTÄNDIG ABGESCHLOSSEN - 08.06.2025)
-- [x] **KRITISCHES PROBLEM BEHOBEN**: Operator-Präzedenz-Fehler bei deutschen Rechtsabkürzungen mit Leerzeichen
-- [x] Queries wie "1. BImSchV" generieren jetzt korrekte Solr-Syntax mit Klammern: `(amtabk:"1. BImSchV" OR (amtabk:*1* AND amtabk:*BImSchV*))`
-- [x] URL-Kodierungsproblem bei axios-Requests gelöst
-- [x] `buildGermanLegalQuery()` Helper-Funktion für konsistente Abfrageerstellung implementiert
-- [x] Amtliche Abkürzungen (amtabk) und Juristische Abkürzungen (jurabk) funktionieren korrekt
-- [x] 400 Bad Request Fehler bei Leerzeichen in Abkürzungen behoben
-- [x] Minimale URL-Kodierung implementiert: nur Leerzeichen werden kodiert, Solr-Syntax bleibt intakt
+### 7.2 German Legal Abbreviations Search (✅ FULLY COMPLETED - June 8, 2025)
+- [x] **CRITICAL ISSUE FIXED**: Operator precedence error with German legal abbreviations containing spaces
+- [x] Queries like "1. BImSchV" now generate correct Solr syntax with parentheses: `(amtabk:"1. BImSchV" OR (amtabk:*1* AND amtabk:*BImSchV*))`
+- [x] URL encoding problem in axios requests solved
+- [x] `buildGermanLegalQuery()` helper function implemented for consistent query creation
+- [x] Official abbreviations (amtabk) and legal abbreviations (jurabk) work correctly
+- [x] 400 Bad Request error with spaces in abbreviations fixed
+- [x] Minimal URL encoding implemented: only spaces are encoded, Solr syntax remains intact
 
-### 7.3 Konfigurierbare UI-Struktur (🚀 NEUE PRIORITÄT - 08.06.2025) ✅ VOLLSTÄNDIG ABGESCHLOSSEN
-- [x] **PROBLEM**: Aktuelle dynamische Schema-Generierung ist zu komplex für normale Benutzer (37+ Suchfelder)
-- [x] **LÖSUNG**: Strukturierte UI-Konfigurationsdatei mit drei Bereichen:
-  - [x] **SUCHE**: Reduzierte, benutzerfreundliche Suchfelder mit Beschreibungen
-  - [x] **TREFFERLISTE**: Konfigurierbare Anzeige relevanter Felder mit Highlighting-Optionen
-  - [x] **VOLLTEXT**: Strukturierte Dokumentenansicht mit Header, Content und Sidebar
-- [x] **UI-Modi implementieren**:
-  - [x] Normal-Modus: Vereinfachte Suche für allgemeine Benutzer
-  - [x] Experten-Modus: Vollzugriff auf alle Solr-Felder (wie aktuell)
-- [x] **uiConfig.js erstellt** ✅ - Konfigurationsdatei mit strukturierter Definition aller UI-Bereiche
-- [x] **Komponenten-Integration**:
-  - [x] DynamicSearchBar: UI-Konfiguration für Suchfelder verwenden ✅ (08.06.2025)
-  - [x] DynamicResultsDisplay: Konfigurierbare Ergebnis-Anzeige implementieren ✅ (08.06.2025)
-  - [x] DynamicSidebar: UI-konfigurierte Filter mit Modus-Unterstützung ✅ (08.06.2025)
-  - [x] Neue Komponente: DocumentFullView für Volltext-Ansicht ✅ (bereits vorhanden)
-- [x] **Mode-Switcher**: Toggle zwischen Normal- und Expertensuche ✅ (08.06.2025)
-- [x] **Formatierungs-Helper**: Feldwerte nach Konfiguration formatieren (Datum, Sprache, etc.) ✅ (08.06.2025)
+### 7.3 Configurable UI Structure (🚀 NEW PRIORITY - June 8, 2025) ✅ FULLY COMPLETED
+- [x] **PROBLEM**: Current dynamic schema generation is too complex for normal users (37+ search fields)
+- [x] **SOLUTION**: Structured UI configuration file with three sections:
+  - [x] **SEARCH**: Reduced, user-friendly search fields with descriptions
+  - [x] **HIT LIST**: Configurable display of relevant fields with highlighting options
+  - [x] **FULL TEXT**: Structured document view with header, content, and sidebar
+- [x] **Implement UI Modes**:
+  - [x] Normal Mode: Simplified search for general users
+  - [x] Expert Mode: Full access to all Solr fields (as currently)
+- [x] **uiConfig.js created** ✅ - Configuration file with structured definition of all UI areas
+- [x] **Component Integration**:
+  - [x] DynamicSearchBar: Use UI configuration for search fields ✅ (June 8, 2025)
+  - [x] DynamicResultsDisplay: Implement configurable result display ✅ (June 8, 2025)
+  - [x] DynamicSidebar: UI-configured filters with mode support ✅ (June 8, 2025)
+  - [x] New component: DocumentFullView for full-text view ✅ (already present)
+- [x] **Mode-Switcher**: Toggle between Normal and Expert search ✅ (June 8, 2025)
+- [x] **Formatting Helpers**: Format field values according to configuration (date, language, etc.) ✅ (June 8, 2025)
 
-**🎉 IMPLEMENTIERUNG VOLLSTÄNDIG**: Die konfigurierbare UI-Struktur ist erfolgreich implementiert!
-- **Normal-Modus**: Zeigt nur 5 benutzerfreundliche Suchfelder + 3 primäre Filter
-- **Experten-Modus**: Bietet Vollzugriff auf alle Solr-Felder + erweiterte Filter
-- **Alle Komponenten** verwenden jetzt die zentrale UI-Konfiguration aus `uiConfig.js`
-- **Mode-Switcher** ermöglicht einfachen Toggle zwischen den Modi
-- **Icons und Labels** verbessern die Benutzerfreundlichkeit erheblich
+**🎉 IMPLEMENTATION COMPLETE**: The configurable UI structure is successfully implemented!
+- **Normal Mode**: Shows only 5 user-friendly search fields + 3 primary filters
+- **Expert Mode**: Provides full access to all Solr fields + advanced filters
+- **All components** now use the central UI configuration from `uiConfig.js`
+- **Mode-Switcher** allows easy toggling between modes
+- **Icons and labels** significantly improve usability
 
-**🔧 KRITISCHER BUGFIX ABGESCHLOSSEN (08.06.2025)**: Deutsche Rechtsabkürzungssuche repariert
-- **Problem**: "1. BImSchV" Suche gab HTTP 400 Fehler wegen URL-Encoding-Problemen
-- **Lösung**: Parameter-Serializer in solrService.js für korrekte Phrase-Query-Kodierung implementiert
-- **Fixing**: Highlighting-Felder auf existierende Schema-Felder reduziert (entfernte nicht-existierende "content" und "title")
-- **Ergebnis**: ✅ amtabk:"1. BImSchV" funktioniert jetzt vollständig (HTTP 200, 1 Treffer)
-- **Validation**: Alle Suchmodi (feldspezifisch, allgemein, Highlighting) funktionieren korrekt
+**🔧 CRITICAL BUGFIX COMPLETED (June 8, 2025)**: German legal abbreviation search repaired
+- **Problem**: "1. BImSchV" search gave HTTP 400 error due to URL encoding issues
+- **Solution**: Parameter serializer implemented in solrService.js for correct phrase query encoding
+- **Fixing**: Highlighting fields reduced to existing schema fields (removed non-existent "content" and "title")
+- **Result**: ✅ amtabk:"1. BImSchV" now works completely (HTTP 200, 1 hit)
+- **Validation**: All search modes (field-specific, general, highlighting) work correctly
 
-**🧪 FINALE VERIFIKATIONS-SUITE ABGESCHLOSSEN (08.06.2025)**: Komplette Endkontrolle erfolgreich
-- [x] **Infrastruktur-Tests**: Docker-Container, Entwicklungsserver, Solr-Backend (alle ✅)
-- [x] **Funktionalitäts-Tests**: Deutsche Rechtsabkürzungen, Facettierung, Highlighting (alle ✅)
-- [x] **UI-Konfigurations-Tests**: uiConfig.js, Komponenten-Integration, Mode-Switcher (alle ✅)
-- [x] **End-to-End-Tests**: Kombinierte Such-/Filter-/Highlighting-Funktionalität (✅)
-- [x] **Produktionsreife**: 11/11 Tests bestanden, 0 kritische Fehler verbleibend
-- **Dokumentation**: FINAL_VERIFICATION_SUITE_RESULTS.md erstellt
-- **Status**: 🚀 BEREIT FÜR PRODUKTION
+**🧪 FINAL VERIFICATION SUITE COMPLETED (June 8, 2025)**: Complete final check successful
+- [x] **Infrastructure Tests**: Docker containers, development server, Solr backend (all ✅)
+- [x] **Functionality Tests**: German legal abbreviations, faceting, highlighting (all ✅)
+- [x] **UI Configuration Tests**: uiConfig.js, component integration, mode-switcher (all ✅)
+- [x] **End-to-End Tests**: Combined search/filter/highlighting functionality (✅)
+- [x] **Production Readiness**: 11/11 tests passed, 0 critical errors remaining
+- **Documentation**: FINAL_VERIFICATION_SUITE_RESULTS.md created
+- **Status**: 🚀 READY FOR PRODUCTION
 
-### 7.4 Erweiterte Suchoptionen
-- [ ] Auto-Suggest / Autocomplete-Funktionalität
-- [ ] Erweiterte Sortieroptionen (Relevanz, Datum, Titel)
-- [ ] Wildcards und Boolean-Operatoren in Suche
-- [ ] Suchhistorie und gespeicherte Suchen
+### 7.4 Advanced Search Options
+- [ ] Auto-suggest / Autocomplete functionality
+- [ ] Advanced sorting options (relevance, date, title)
+- [ ] Wildcards and Boolean operators in search
+- [ ] Search history and saved searches
 
-### 7.5 Dokumentvorschau und -interaktion
-- [x] Highlight-Funktion für Suchbegriffe im Volltext (✅ ABGESCHLOSSEN - 07.06.2025)
-- [ ] Modal für Dokumentvorschau implementieren
-- [ ] Dokumenten-Download-Funktionalität
-- [ ] Related Documents Feature
+### 7.5 Document Preview and Interaction
+- [x] Highlight function for search terms in full text (✅ COMPLETED - June 7, 2025)
+- [ ] Implement modal for document preview
+- [ ] Document download functionality
+- [ ] Related Documents feature
 
-## 8. Norm-Level-Indexierung (✅ VOLLSTÄNDIG ABGESCHLOSSEN - 08.06.2025)
+## 8. Norm-Level Indexing (✅ FULLY COMPLETED - June 8, 2025)
 
-### 8.1 Architekturelle Probleme identifiziert:
-- [x] **Problem 1 - Granularität**: Suche fand ganze Gesetze statt spezifische Artikel/Paragraphen
-- [x] **Problem 2 - Formatierungsverlust**: XHTML-Markup aus XML-Quellen wurde während Import entfernt
+### 8.1 Architectural Problems Identified:
+- [x] **Problem 1 - Granularity**: Search found entire laws instead of specific articles/paragraphs
+- [x] **Problem 2 - Formatting Loss**: XHTML markup from XML sources was removed during import
 
-### 8.2 Solr-Schema-Erweiterung:
-- [x] Neue norm-spezifische Felder hinzugefügt:
-  - [x] `norm_doknr` - Eindeutige Norm-Identifikation
-  - [x] `norm_builddate` - Erstellungsdatum der Norm
-  - [x] `parent_document_id` - Verweis auf übergeordnetes Dokument
-  - [x] `norm_type` - Typ der Norm (article, section, etc.)
-  - [x] `text_content_html` - Erhaltene XHTML-Formatierung
-  - [x] `fussnoten_content_html` - Formatierte Fußnoten
+### 8.2 Solr Schema Extension:
+- [x] New norm-specific fields added:
+  - [x] `norm_doknr` - Unique norm identification
+  - [x] `norm_builddate` - Creation date of the norm
+  - [x] `parent_document_id` - Reference to parent document
+  - [x] `norm_type` - Type of the norm (article, section, etc.)
+  - [x] `text_content_html` - Preserved XHTML formatting
+  - [x] `fussnoten_content_html` - Formatted footnotes
 
-### 8.3 Neuer Import-Algorithmus:
-- [x] **`solr_import_norms.py`** erstellt - verarbeitet `<norm>`-Elemente einzeln
-- [x] **XHTML-Formatierung erhalten**: Keine Textextraktion, direktes HTML-Mapping
-- [x] **Metadaten-Vererbung**: Gesetzes-Level-Metadaten (jurabk, amtabk) an individuelle Normen vererbt
-- [x] **Dokumentbeziehungen**: Eltern-Kind-Beziehungen via `parent_document_id` beibehalten
+### 8.3 New Import Algorithm:
+- [x] **`solr_import_norms.py`** created - processes `<norm>` elements individually
+- [x] **XHTML Formatting Preserved**: No text extraction, direct HTML mapping
+- [x] **Metadata Inheritance**: Law-level metadata (jurabk, amtabk) inherited by individual norms
+- [x] **Document Relationships**: Parent-child relationships maintained via `parent_document_id`
 
-### 8.4 Datentransformation erfolgreich:
-- [x] **Vor**: 2 Dokument-Level-Einträge (ganze Gesetze)
-- [x] **Nach**: 263 individuelle Norm-Einträge (spezifische Artikel/Paragraphen)
-- [x] **Granularität erreicht**: Suche findet z.B. "Art 70", "Art 79", "Art 83" einzeln
-- [x] **Formatierung erhalten**: HTML-Markup aus XML-Quellen beibehalten
+### 8.4 Data Transformation Successful:
+- [x] **Before**: 2 document-level entries (entire laws)
+- [x] **After**: 263 individual norm entries (specific articles/paragraphs)
+- [x] **Granularity Achieved**: Search now finds e.g., "Art 70", "Art 79", "Art 83" individually
+- [x] **Formatting Preserved**: HTML markup from XML sources maintained
 
-### 8.5 Frontend-Integration:
-- [x] **UI-Konfiguration erweitert**: `uiConfig.js` um norm-spezifische Anzeigefelder
-- [x] **Norm-Badges implementiert**: Grüne Badges für Artikel-Identifikation (`enbez`-Feld)
-- [x] **Display-Types erweitert**: `norm-badge`, `small-badge` für spezialisierte Anzeige
-- [x] **DynamicResultsDisplay erweitert**: `renderFieldBadge()` für norm-spezifische Darstellung
-- [x] **DocumentFullView aktualisiert**: HTML-Formatierung wird korrekt gerendert
-- [x] **Metadaten-Integration**: Norm-Typ, Quelle, Norm-Nummer in Sidebar-Anzeige
+### 8.5 Frontend Integration:
+- [x] **UI Configuration Extended**: `uiConfig.js` with norm-specific display fields
+- [x] **Norm Badges Implemented**: Green badges for article identification (`enbez` field)
+- [x] **Display Types Extended**: `norm-badge`, `small-badge` for specialized display
+- [x] **DynamicResultsDisplay Extended**: `renderFieldBadge()` for norm-specific representation
+- [x] **DocumentFullView Updated**: HTML formatting is rendered correctly
+- [x] **Metadata Integration**: Norm type, source, norm number in sidebar display
 
-### 8.6 Erfolgsmessung:
-- [x] **Granulare Suchergebnisse**: "Verantwortung" findet spezifische Artikel (Art 65, Art 20a, Art 46)
-- [x] **XHTML-Formatierung erhalten**: `text_content_html` enthält `<p>`-Tags und andere Formatierung
-- [x] **Norm-Identifikation**: `enbez`-Feld zeigt "Art 70", "Eingangsformel", "Präambel"
-- [x] **Typ-Unterscheidung**: `norm_type` unterscheidet "article", "norm", etc.
-- [x] **Volltext-Anzeige**: HTML-Formatierung wird in DocumentFullView korrekt gerendert
+### 8.6 Success Measurement:
+- [x] **Granular Search Results**: "Verantwortung" finds specific articles (Art 65, Art 20a, Art 46)
+- [x] **XHTML Formatting Preserved**: `text_content_html` contains `<p>` tags and other formatting
+- [x] **Norm Identification**: `enbez` field shows "Art 70", "Eingangsformel", "Präambel"
+- [x] **Type Distinction**: `norm_type` distinguishes "article", "norm", etc.
+- [x] **Full-Text View**: HTML formatting is rendered correctly in DocumentFullView
 
-**🎯 ERGEBNIS**: Norm-Level-Indexierung vollständig implementiert - Benutzer finden jetzt spezifische Rechtsnormen statt ganzer Gesetzbücher, mit erhaltener Originalformatierung.
+**🎯 RESULT**: Norm-level indexing fully implemented - users now find specific legal norms instead of entire law books, with original formatting preserved.
 
-## 9. Zukünftige Features (Nach Phase 1)
+## 9. Future Features (After Phase 1)
 
-- [ ] Benutzerverwaltung und Authentifizierung
-- [ ] Gespeicherte Suchanfragen für angemeldete Benutzer
-- [ ] Exportmöglichkeiten (PDF, CSV)
-- [ ] Erweiterte Suchstatistiken und -analytik
-- [ ] Webcrawler für Gesetze-im-Internet.de Integration
+- [ ] User management and authentication
+- [ ] Saved searches for logged-in users
+- [ ] Export options (PDF, CSV)
+- [ ] Advanced search statistics and analytics
+- [ ] Web crawler for Gesetze-im-Internet.de integration
 
-## 10. Dokumentation und Tests (Teilweise abgeschlossen)
+## 10. Documentation and Tests (Partially Completed)
 
-- [x] Aktualisierung von `README.md` mit:
-  - [x] Projektübersicht
-  - [x] Installationsanleitung
-  - [x] Technologie-Stack-Details
-  - [x] Docker-Deployment-Anweisungen
-- [x] Dokumentation der Solr-Konfiguration
-- [x] Einführung von CHANGELOG.md für Versionierung
-- [ ] Inline-Code-Dokumentation für alle Module und Funktionen
-- [ ] Einheit- und Integrationstests für:
-  - [ ] React-Komponenten
-  - [ ] Solr-Service-Funktionen
-  - [ ] End-to-End-Suchfluss
+- [x] Update `README.md` with:
+  - [x] Project overview
+  - [x] Installation instructions
+  - [x] Technology stack details
+  - [x] Docker deployment instructions
+- [x] Documentation of Solr configuration
+- [x] Introduction of CHANGELOG.md for versioning
+- [ ] Inline code documentation for all modules and functions
+- [ ] Unit and integration tests for:
+  - [ ] React components
+  - [ ] Solr service functions
+  - [ ] End-to-end search flow
 
-## 11. DevOps und Bereitstellung (Teilweise abgeschlossen)
+## 11. DevOps and Deployment (Partially Completed)
 
-- [x] Produktions-Deployment mit Docker Compose
-- [x] Nginx-Konfiguration für Frontend und Proxy
-- [ ] CI/CD-Pipeline für automatisierte Builds
-- [ ] Monitoring und Logging-Setup
-- [ ] Leistungsoptimierung für größere Datenmengen
+- [x] Production deployment with Docker Compose
+- [x] Nginx configuration for frontend and proxy
+- [ ] CI/CD pipeline for automated builds
+- [ ] Monitoring and logging setup
+- [ ] Performance optimization for larger data sets
 
-## 12. Systemverbesserungen (Geplant)
+## 12. System Improvements (Planned)
 
-- [x] Refactoring der API-Service-Schicht für konfigurierbare Endpunkte
-- [x] Implementierung von umgebungsspezifischen Konfigurationen
-- [ ] Fehlerberichterstattung und Telemetrie
-- [ ] Internationalisierungsunterstützung
-- [ ] Erweiterte Sicherheitskonfiguration (HTTPS, CSP)
+- [x] Refactoring of the API service layer for configurable endpoints
+- [x] Implementation of environment-specific configurations
+- [ ] Error reporting and telemetry
+- [ ] Internationalization support
+- [ ] Advanced security configuration (HTTPS, CSP)
 
-## Entdeckt während der Arbeit
+## Discovered During Work
 
-- [x] Verbindungsprobleme bei langsamen Netzwerken erfordern verbesserte Timeout-Behandlung (18.05.2025) - Gelöst durch konfigurierbare Timeouts in Nginx
-- [x] Bedarf an einer konfigurierbaren Solr-URL für verschiedene Umgebungen (18.05.2025) - Implementiert mit Umgebungsvariablen
-- [x] Fehler in der Umgebungserkennung von Vite und im Solr-Core-Pfad (18.05.2025) - Gelöst durch Anpassung von solrService.js
-- [x] CORS-Probleme im Entwicklungsmodus (18.05.2025) - Gelöst durch Einrichtung eines Proxys in der Vite-Konfiguration
-- [x] (HOCH) Optimierung der Ladezeiten durch Implementierung von Code-Splitting erforderlich (18.05.2025) - **Abgeschlossen (07.06.2025)**
-- [x] (HOCH) TableOfContents funktioniert nicht in der Dokumentenansicht (10.06.2025) - **Gelöst durch Korrektur der Import-Methoden in documentService.js und robustere Implementierung**
-- [ ] (HOCH) Bessere Fehlerbehandlung für Netzwerkprobleme einbauen (18.05.2025)
-- [ ] (MITTEL) Solr-Schema-Aktualisierungen ohne Container-Neustart ermöglichen (18.05.2025)
-- [x] (MITTEL) Integration der Sidebar-Filter mit Solr-Facetten für dynamische Filterung (19.05.2025) - **✅ VOLLSTÄNDIG ABGESCHLOSSEN (07.06.2025)**
-- [ ] (NIEDRIG) Möglichkeit zum Exportieren von Suchergebnissen als CSV oder JSON (19.05.2025)
-- [ ] (NIEDRIG) Implementierung eines Theme-Wechslers für hellen/dunklen Modus (19.05.2025)
+- [x] Connection problems on slow networks require improved timeout handling (May 18, 2025) - Solved by configurable timeouts in Nginx
+- [x] Need for a configurable Solr URL for different environments (May 18, 2025) - Implemented with environment variables
+- [x] Error in Vite's environment detection and in the Solr core path (May 18, 2025) - Solved by adjusting solrService.js
+- [x] CORS problems in development mode (May 18, 2025) - Solved by setting up a proxy in the Vite configuration
+- [x] (HIGH) Optimization of loading times by implementing code splitting required (May 18, 2025) - **Completed (June 7, 2025)**
+- [x] (HIGH) TableOfContents does not work in the document view (June 10, 2025) - **Solved by correcting import methods in documentService.js and more robust implementation**
+- [ ] (HIGH) Implement better error handling for network problems (May 18, 2025)
+- [ ] (MEDIUM) Allow Solr schema updates without container restart (May 18, 2025)
+- [x] (MEDIUM) Integration of sidebar filters with Solr facets for dynamic filtering (May 19, 2025) - **✅ FULLY COMPLETED (June 7, 2025)**
+- [ ] (LOW) Possibility to export search results as CSV or JSON (May 19, 2025)
+- [ ] (LOW) Implement a theme switcher for light/dark mode (May 19, 2025)
 
-## Aktueller Sprint: Export-Korrektur und Expertensuche-Überarbeitung (✅ VOLLSTÄNDIG ABGESCHLOSSEN - 10.06.2025)
+## Current Sprint: Export Correction and Expert Search Revision (✅ FULLY COMPLETED - June 10, 2025)
 
-### 8.1 Export-Funktionen Korrektur (✅ ABGESCHLOSSEN - 10.06.2025)
-- [x] **Import-Pfade korrigiert**: DocumentExport.jsx verwendet nun korrekte modulare Import-Pfade
-- [x] **Export-Logik überarbeitet**: Unterscheidung zwischen Rahmendokument vs. einzelne Norm
-- [x] **Dateinamen-Problem behoben**: generateFilename() nutzt erstes Dokument als Fallback
-- [x] **Volltextanzeige optimiert**: getContentForDisplay() priorisiert HTML-Felder
-- [x] **HTML-Tag-Bereinigung**: formatFieldValue() entfernt unerwünschte `<mark>`-Tags
-- [x] **UI-Verbesserungen**: Rahmendokument-Link als Icon im Header
+### 8.1 Export Functions Correction (✅ COMPLETED - June 10, 2025)
+- [x] **Import Paths Corrected**: DocumentExport.jsx now uses correct modular import paths
+- [x] **Export Logic Revised**: Distinction between framework document vs. individual norm
+- [x] **Filename Problem Fixed**: generateFilename() uses the first document as a fallback
+- [x] **Full-Text View Optimized**: getContentForDisplay() prioritizes HTML fields
+- [x] **HTML Tag Cleanup**: formatFieldValue() removes unwanted `<mark>` tags
+- [x] **UI Improvements**: Framework document link as an icon in the header
 
-### 8.2 Stopword-Problem behoben (✅ ABGESCHLOSSEN - 10.06.2025)
-- [x] **Root-Cause identifiziert**: Frontend-Validierung blockierte kurze Begriffe
-- [x] **Lösung implementiert**: `.trim()` Validierung gelockert für Stopword-Tests
-- [x] **Funktionalität bestätigt**: Deutsche Artikel "der", "die", "das" können getestet werden
+### 8.2 Stopword Problem Fixed (✅ COMPLETED - June 10, 2025)
+- [x] **Root Cause Identified**: Frontend validation blocked short terms
+- [x] **Solution Implemented**: `.trim()` validation relaxed for stopword tests
+- [x] **Functionality Confirmed**: German articles "der", "die", "das" can be tested
 
-### 8.3 Expertensuche-Überarbeitung (✅ ABGESCHLOSSEN - 10.06.2025)
-- [x] **Layout vereinfacht**: Suchfeld-Auswahl-Karten im Experten-Modus entfernt
-- [x] **Direkte Solr-Syntax**: Unterstützung für `field:"value" AND/OR ...` Queries
-- [x] **Automatische Multi-Feld-Suche**: Suche über alle deutschen Rechtsfelder
-- [x] **Erweiterte Highlighting**: Zusätzliche Felder für Experten-Modus
-- [x] **Syntax-Hilfe**: Benutzerfreundliche Anleitung mit Beispielen
-- [x] **Build-Optimierung**: Mixed import warnings behoben
+### 8.3 Expert Search Revision (✅ COMPLETED - June 10, 2025)
+- [x] **Layout Simplified**: Search field selection cards in expert mode removed
+- [x] **Direct Solr Syntax**: Support for `field:"value" AND/OR ...` queries
+- [x] **Automatic Multi-Field Search**: Search across all German legal fields
+- [x] **Advanced Highlighting**: Additional fields for expert mode
+- [x] **Syntax Help**: User-friendly guide with examples
+- [x] **Build Optimization**: Mixed import warnings fixed
 
-### 8.4 Expert Search Beispiele Korrektur (✅ ABGESCHLOSSEN - 12.01.2025)
-- [x] **Problem erkannt**: Syntax-Hilfe verwendete leere Felder `kurzue` und `amtabk`
-- [x] **Datenanalyse**: Verfügbare Felder identifiziert: `jurabk:"GG"`, `langue:"Grundgesetz"`
-- [x] **Beispiele aktualisiert**: Syntax-Hilfe zeigt jetzt funktionierende Beispiele mit tatsächlichen Daten
-- [x] **Benutzerfreundlichkeit verbessert**: Nutzer sehen sofort Ergebnisse bei Demo-Queries
+### 8.4 Expert Search Examples Correction (✅ COMPLETED - Jan 12, 2025)
+- [x] **Problem Recognized**: Syntax help used empty fields `kurzue` and `amtabk`
+- [x] **Data Analysis**: Available fields identified: `jurabk:"GG"`, `langue:"Grundgesetz"`
+- [x] **Examples Updated**: Syntax help now shows working examples with actual data
+- [x] **Usability Improved**: Users see results immediately with demo queries
 
-**Ergebnis**: Alle Export- und Anzeigefunktionen funktionieren korrekt. Expertensuche bietet professionelle Solr-Query-Syntax mit erweiterten Funktionen und funktionierenden Beispielen.
+**Result**: All export and display functions work correctly. Expert search offers professional Solr query syntax with advanced features and working examples.
 
-### Sprint 1: Facetten-Filter (KW 23-24) - ✅ VOLLSTÄNDIG ABGESCHLOSSEN
-**Ziel**: Dynamische Filter-Funktionalität mit Solr-Integration
+### Sprint 1: Facet Filters (CW 23-24) - ✅ FULLY COMPLETED
+**Goal**: Dynamic filter functionality with Solr integration
 
-**Alle Prioritäten erfolgreich abgeschlossen**:
-- [x] Solr-Facetten-API-Endpunkt implementiert
-- [x] Kategorie-Filter in Sidebar mit echten Daten
-- [x] Autor-Filter mit Dokumentzählern
-- [x] Filter-State-Management für Suchanfragen
-- [x] Filter-Race-Condition-Bug behoben
-- [x] Solr DisMax Query Integration
-- [x] Array-Feld-Normalisierung für Solr-Antworten
-- [x] Multi-Filter-Kombinationen
-- [x] **KRITISCHE BUGFIXES**: Kontextuelle Filter, Content-Highlighting, Filter-Persistenz
-- [x] **ARCHITEKTUR-VERBESSERUNG**: Unified Search Response, Props-basierte Facetten
+**All priorities successfully completed**:
+- [x] Solr facets API endpoint implemented
+- [x] Category filter in sidebar with real data
+- [x] Author filter with document counters
+- [x] Filter state management for search queries
+- [x] Filter race condition bug fixed
+- [x] Solr DisMax Query integration
+- [x] Array field normalization for Solr responses
+- [x] Multi-filter combinations
+- [x] **CRITICAL BUGFIXES**: Contextual filters, content highlighting, filter persistence
+- [x] **ARCHITECTURE IMPROVEMENT**: Unified Search Response, props-based facets
 
-**Sprint-Ergebnis**: Vollständig funktionsfähige dynamische Facetten mit kontextueller Filterung
+**Sprint Result**: Fully functional dynamic facets with contextual filtering
 
-### 7.4 Deutsche Rechtsdokument-Unterstützung (✅ VOLLSTÄNDIG ABGESCHLOSSEN - 12.01.2025)
-- [x] **Problem-Diagnose**: Deutsche Rechtsdokumente wurden bei spezifischen Suchen nicht gefunden (nur bei *:* Wildcard)
-- [x] **Schema-Analyse**: Deutsche Rechtsdokument-Felder identifiziert:
-  - `kurzue`, `langue`, `text_content`: `text_de` (deutsche Textanalyse)
-  - `amtabk`, `jurabk`: `string` (exakte Strings)
-- [x] **Schema-Service erweitert** (`schemaService.js`):
-  - `analyzeSchemaForUI()` erkennt `text_de` und `text_de_exact` Feldtypen
-  - `getDisplayFields()` priorisiert deutsche Rechtsdokument-Felder
-  - `getContextualFacets()` verwendet deutsche Felder in expliziter OR-Query
-- [x] **Solr-Service angepasst** (`solrService.js`):
-  - Explizite OR-Query für kombinierte Text- und String-Feld-Suche
-  - Text-Felder: `kurzue:(${query}) OR langue:(${query}) OR text_content:(${query})`
-  - String-Felder: `amtabk:"${query}" OR jurabk:"${query}"`
-  - Highlighting-Felder um deutsche Felder erweitert
-- [x] **URL-Kodierungsprobleme behoben**: 400 Bad Request Fehler durch korrekte `encodeURIComponent()` Verwendung
-- [x] **Query-Syntax optimiert**: Von DisMax/eDisMax zu expliziter OR-Query für bessere String-Feld-Kontrolle
-- [x] **Erfolgreiche Suche**: Suche nach "BImSchV" und anderen deutschen Rechtsbegriffen funktioniert vollständig
-- [x] **Feldspezifische Wildcard-Unterstützung**: String-Felder (`amtabk`, `jurabk`) verwenden Wildcard-Matching
+### 7.4 German Legal Document Support (✅ FULLY COMPLETED - Jan 12, 2025)
+- [x] **Problem Diagnosis**: German legal documents were not found in specific searches (only with *:* wildcard)
+- [x] **Schema Analysis**: German legal document fields identified:
+  - `kurzue`, `langue`, `text_content`: `text_de` (German text analysis)
+  - `amtabk`, `jurabk`: `string` (exact strings)
+- [x] **Schema Service Extended** (`schemaService.js`):
+  - `analyzeSchemaForUI()` recognizes `text_de` and `text_de_exact` field types
+  - `getDisplayFields()` prioritizes German legal document fields
+  - `getContextualFacets()` uses German fields in an explicit OR query
+- [x] **Solr Service Adjusted** (`solrService.js`):
+  - Explicit OR query for combined text and string field search
+  - Text fields: `kurzue:(${query}) OR langue:(${query}) OR text_content:(${query})`
+  - String fields: `amtabk:"${query}" OR jurabk:"${query}"`
+  - Highlighting fields extended with German fields
+- [x] **URL Encoding Problems Fixed**: 400 Bad Request error fixed by correct `encodeURIComponent()` usage
+- [x] **Query Syntax Optimized**: From DisMax/eDisMax to explicit OR query for better string field control
+- [x] **Successful Search**: Search for "BImSchV" and other German legal terms works completely
+- [x] **Field-Specific Wildcard Support**: String fields (`amtabk`, `jurabk`) use wildcard matching
 
-**Ergebnis**: Deutsche Rechtsdokument-Suche vollständig funktionsfähig mit korrekter Feldpriorisierung und Wildcard-Unterstützung
+**Result**: German legal document search fully functional with correct field prioritization and wildcard support
 
-### 7.5 Deutsche Rechtsdokument-Abkürzungen Fix (✅ VOLLSTÄNDIG ABGESCHLOSSEN - 12.01.2025)
-- [x] **Problem identifiziert**: Komplette deutsche Rechtsabkürzungen wie "1. BImSchV" lieferten keine Suchergebnisse
-- [x] **Filter-Problem diagnostiziert**: Filter funktionierten nur im "Alle Felder" Modus, nicht bei feldspezifischen Suchen
-- [x] **Root-Cause-Analyse**: Wildcard-Queries mit Leerzeichen (`amtabk:*1. BImSchV*`) scheitern in Solr String-Feldern
-- [x] **Solr-Query-Tests**: Validierung verschiedener Query-Muster:
-  - `amtabk:"1. BImSchV"` (exakt) ✅
-  - `amtabk:*BImSchV*` (einfach) ✅
-  - `amtabk:*1.*` (einfach) ✅
-  - `amtabk:*1. BImSchV*` (mit Leerzeichen) ❌
+### 7.5 German Legal Document Abbreviations Fix (✅ FULLY COMPLETED - Jan 12, 2025)
+- [x] **Problem Identified**: Complete German legal abbreviations like "1. BImSchV" yielded no search results
+- [x] **Filter Problem Diagnosed**: Filters only worked in "All Fields" mode, not in field-specific searches
+- [x] **Root Cause Analysis**: Wildcard queries with spaces (`amtabk:*1. BImSchV*`) fail in Solr string fields
+- [x] **Solr Query Tests**: Validation of different query patterns:
+  - `amtabk:"1. BImSchV"` (exact) ✅
+  - `amtabk:*BImSchV*` (simple) ✅
+  - `amtabk:*1.*` (simple) ✅
+  - `amtabk:*1. BImSchV*` (with space) ❌
   - `amtabk:*1.* AND amtabk:*BImSchV*` (compound AND) ✅
-- [x] **Helper-Funktion implementiert**: `buildGermanLegalQuery()` in beiden Services:
-  - Erkennt Leerzeichen in Queries automatisch
-  - Splittet Queries mit Leerzeichen in compound AND-Patterns
-  - Unterstützt sowohl exakte Matches als auch Wildcard-Varianten
-- [x] **SolrService aktualisiert**:
-  - Feldspezifische Suchen für `amtabk` und `jurabk` verwenden compound queries
-  - Allgemeine Suche nutzt Helper-Funktion für deutsche Rechtsfelder
-  - Kombiniert exakte und Wildcard-Ansätze: `exact OR wildcard`
-- [x] **SchemaService aktualisiert**:
-  - Gleiche Helper-Funktion für Konsistenz implementiert
-  - `getContextualFacets()` nutzt Helper-Funktion für deutsche Rechtsfelder
-- [x] **UI-Tests erfolgreich**: Web-Interface zeigt korrekte Suchergebnisse für "1. BImSchV"
-- [x] **Filter-Funktionalität validiert**: Filter arbeiten korrekt in feldspezifischen Modi
+- [x] **Helper Function Implemented**: `buildGermanLegalQuery()` in both services:
+  - Automatically detects spaces in queries
+  - Splits queries with spaces into compound AND patterns
+  - Supports both exact matches and wildcard variants
+- [x] **SolrService Updated**:
+  - Field-specific searches for `amtabk` and `jurabk` use compound queries
+  - General search uses helper function for German legal fields
+  - Combines exact and wildcard approaches: `exact OR wildcard`
+- [x] **SchemaService Updated**:
+  - Same helper function implemented for consistency
+  - `getContextualFacets()` uses helper function for German legal fields
+- [x] **UI Tests Successful**: Web interface shows correct search results for "1. BImSchV"
+- [x] **Filter Functionality Validated**: Filters work correctly in field-specific modes
 
-**Query-Pattern-Lösung**: `amtabk:*1.* AND amtabk:*BImSchV*` für Queries mit Leerzeichen
-**Ergebnis**: Deutsche Rechtsabkürzungen mit Leerzeichen funktionieren vollständig in allen Suchmodi
+**Query Pattern Solution**: `amtabk:*1.* AND amtabk:*BImSchV*` for queries with spaces
+**Result**: German legal abbreviations with spaces work completely in all search modes
 
-## 8. Norm-Level-Indexierung (✅ VOLLSTÄNDIG ABGESCHLOSSEN - 08.06.2025)
+## 8. Norm-Level Indexing (✅ FULLY COMPLETED - June 8, 2025)
 
-### 8.1 Architekturelle Probleme identifiziert
-- [x] **Problem 1 - Granularität**: Suche fand ganze Gesetze statt spezifische Artikel/Paragraphen
-- [x] **Problem 2 - Formatierungsverlust**: XHTML-Markup aus XML-Quellen wurde während Import entfernt
+### 8.1 Architectural Problems Identified
+- [x] **Problem 1 - Granularity**: Search found entire laws instead of specific articles/paragraphs
+- [x] **Problem 2 - Formatting Loss**: XHTML markup from XML sources was removed during import
 
-### 8.2 Solr-Schema-Erweiterung
-- [x] Neue norm-spezifische Felder hinzugefügt:
-  - [x] `norm_doknr` - Eindeutige Norm-Identifikation
-  - [x] `norm_builddate` - Erstellungsdatum der Norm
-  - [x] `parent_document_id` - Verweis auf übergeordnetes Dokument
-  - [x] `norm_type` - Typ der Norm (article, section, etc.)
-  - [x] `text_content_html` - Erhaltene XHTML-Formatierung
-  - [x] `fussnoten_content_html` - Formatierte Fußnoten
+### 8.2 Solr Schema Extension
+- [x] New norm-specific fields added:
+  - [x] `norm_doknr` - Unique norm identification
+  - [x] `norm_builddate` - Creation date of the norm
+  - [x] `parent_document_id` - Reference to parent document
+  - [x] `norm_type` - Type of the norm (article, section, etc.)
+  - [x] `text_content_html` - Preserved XHTML formatting
+  - [x] `fussnoten_content_html` - Formatted footnotes
 
-### 8.3 Neuer Import-Algorithmus
-- [x] **`solr_import_norms.py`** erstellt - verarbeitet `<norm>`-Elemente einzeln
-- [x] **XHTML-Formatierung erhalten**: Keine Textextraktion, direktes HTML-Mapping
-- [x] **Metadaten-Vererbung**: Gesetzes-Level-Metadaten (jurabk, amtabk) an individuelle Normen vererbt
-- [x] **Dokumentbeziehungen**: Eltern-Kind-Beziehungen via `parent_document_id` beibehalten
+### 8.3 New Import Algorithm
+- [x] **`solr_import_norms.py`** created - processes `<norm>` elements individually
+- [x] **XHTML Formatting Preserved**: No text extraction, direct HTML mapping
+- [x] **Metadata Inheritance**: Law-level metadata (jurabk, amtabk) inherited by individual norms
+- [x] **Document Relationships**: Parent-child relationships maintained via `parent_document_id`
 
-### 8.4 Datentransformation erfolgreich
-- [x] **Vor**: 2 Dokument-Level-Einträge (ganze Gesetze)
-- [x] **Nach**: 263 individuelle Norm-Einträge (spezifische Artikel/Paragraphen)
-- [x] **Granularität erreicht**: Suche findet z.B. "Art 70", "Art 79", "Art 83" einzeln
-- [x] **Formatierung erhalten**: HTML-Markup aus XML-Quellen beibehalten
+### 8.4 Data Transformation Successful
+- [x] **Before**: 2 document-level entries (entire laws)
+- [x] **After**: 263 individual norm entries (specific articles/paragraphs)
+- [x] **Granularity Achieved**: Search now finds e.g., "Art 70", "Art 79", "Art 83" individually
+- [x] **Formatting Preserved**: HTML markup from XML sources maintained
 
-### 8.5 Frontend-Integration
-- [x] **UI-Konfiguration erweitert**: `uiConfig.js` um norm-spezifische Anzeigefelder
-- [x] **Norm-Badges implementiert**: Grüne Badges für Artikel-Identifikation (`enbez`-Feld)
-- [x] **Display-Types erweitert**: `norm-badge`, `small-badge` für spezialisierte Anzeige
-- [x] **DynamicResultsDisplay erweitert**: `renderFieldBadge()` für norm-spezifische Darstellung
-- [x] **DocumentFullView aktualisiert**: HTML-Formatierung wird korrekt gerendert
-- [x] **Metadaten-Integration**: Norm-Typ, Quelle, Norm-Nummer in Sidebar-Anzeige
+### 8.5 Frontend Integration
+- [x] **UI Configuration Extended**: `uiConfig.js` with norm-specific display fields
+- [x] **Norm Badges Implemented**: Green badges for article identification (`enbez` field)
+- [x] **Display Types Extended**: `norm-badge`, `small-badge` for specialized display
+- [x] **DynamicResultsDisplay Extended**: `renderFieldBadge()` for norm-specific representation
+- [x] **DocumentFullView Updated**: HTML formatting is rendered correctly
+- [x] **Metadata Integration**: Norm type, source, norm number in sidebar display
 
-### 8.6 Erfolgsmessung
-- [x] **Granulare Suchergebnisse**: "Verantwortung" findet spezifische Artikel (Art 65, Art 20a, Art 46)
-- [x] **XHTML-Formatierung erhalten**: `text_content_html` enthält `<p>`-Tags und andere Formatierung
-- [x] **Norm-Identifikation**: `enbez`-Feld zeigt "Art 70", "Eingangsformel", "Präambel"
-- [x] **Typ-Unterscheidung**: `norm_type` unterscheidet "article", "norm", etc.
-- [x] **Volltext-Anzeige**: HTML-Formatierung wird in DocumentFullView korrekt gerendert
+### 8.6 Success Measurement
+- [x] **Granular Search Results**: "Verantwortung" finds specific articles (Art 65, Art 20a, Art 46)
+- [x] **XHTML Formatting Preserved**: `text_content_html` contains `<p>` tags and other formatting
+- [x] **Norm Identification**: `enbez` field shows "Art 70", "Eingangsformel", "Präambel"
+- [x] **Type Distinction**: `norm_type` distinguishes "article", "norm", etc.
+- [x] **Full-Text View**: HTML formatting is rendered correctly in DocumentFullView
 
-**🎯 ERGEBNIS**: Norm-Level-Indexierung vollständig implementiert - Benutzer finden jetzt spezifische Rechtsnormen statt ganzer Gesetzbücher, mit erhaltener Originalformatierung.
+**🎯 RESULT**: Norm-level indexing fully implemented - users now find specific legal norms instead of entire law books, with original formatting preserved.
 
-### Sprint 2: Auto-Suggest und Sortierung (KW 25-26)
-**Ziel**: Verbesserte Benutzererfahrung bei der Suche
+### Sprint 2: Auto-Suggest and Sorting (CW 25-26)
+**Goal**: Improved user experience during search
 
 **Features**:
-- [ ] Autocomplete-Funktionalität basierend auf Solr-Begriffen
-- [ ] Erweiterte Sortieroptionen in ResultsDisplay
-- [ ] Suchhistorie im LocalStorage
+- [ ] Autocomplete functionality based on Solr terms
+- [ ] Advanced sorting options in ResultsDisplay
+- [ ] Search history in LocalStorage
 
-## 13. Code Quality & Refactoring (Hinzugefügt am 2025-06-09)
+## 13. Code Quality & Refactoring (Added on 2025-06-09)
 
-### 13.1 Frontend Modularization (✅ VOLLSTÄNDIG ABGESCHLOSSEN - 2025-06-09)
-- **Ziel**: Verbesserung der Code-Struktur, Lesbarkeit und Wartbarkeit durch Modularisierung.
+### 13.1 Frontend Modularization (✅ FULLY COMPLETED - 2025-06-09)
+- **Goal**: Improve code structure, readability, and maintainability through modularization.
 - [x] **DocumentExport.jsx Refactoring**:
-    - [x] HTML-Export-Logik nach `src/lib/htmlExporter.js` extrahiert.
-    - [x] PDF-Export-Logik nach `src/lib/pdfExporter.js` extrahiert.
-    - [x] Zugehörige Textformatierungs- und Datei-Utilities nach `src/utils/textFormatters.jsx` und `src/utils/fileUtils.js` verschoben.
+    - [x] HTML export logic extracted to `src/lib/htmlExporter.js`.
+    - [x] PDF export logic extracted to `src/lib/pdfExporter.js`.
+    - [x] Related text formatting and file utilities moved to `src/utils/textFormatters.jsx` and `src/utils/fileUtils.js`.
 - [x] **DynamicResultsDisplay.jsx Refactoring**:
-    - [x] `ResultItem.jsx` Komponente für einzelne Suchergebnisse erstellt.
-    - [x] Text-Utilities (`highlightSearchTerms`, `truncateText`) nach `src/utils/textFormatters.jsx` verschoben.
+    - [x] `ResultItem.jsx` component created for individual search results.
+    - [x] Text utilities (`highlightSearchTerms`, `truncateText`) moved to `src/utils/textFormatters.jsx`.
 - [x] **DocumentFullView.jsx Refactoring**:
-    - [x] Text-Formatierungshelfer (`getContentForDisplay`, `formatLegalTextAsFallback`) nach `src/utils/textFormatters.jsx` verschoben.
-- [x] **Zentralisierung von Utility-Funktionen**:
-    - [x] `src/utils/queryUtils.js` für `buildGermanLegalQuery` erstellt.
-    - [x] `src/utils/documentUtils.js` für Dokument-spezifische Helfer (aus `uiHelpers`).
-    - [x] `src/utils/formatUtils.js` für `formatFieldValue` (aus `uiHelpers`).
-    - [x] `uiHelpers` in `src/config/uiConfig.js` bereinigt.
-- [x] **Service-Klärung**:
-    - [x] Kommentare in `schemaService.js` zur Verdeutlichung der Rollenverteilung ggü. `uiConfig.js` hinzugefügt.
-- [x] **Build-Fix**:
-    - [x] `textFormatters.js` zu `textFormatters.jsx` umbenannt und Importe korrigiert, um Build-Fehler zu beheben.
-- **Ergebnis**: Deutlich verbesserte Code-Organisation, Reduktion von Duplikaten und klarere Verantwortlichkeiten der Module.
+    - [x] Text formatting helpers (`getContentForDisplay`, `formatLegalTextAsFallback`) moved to `src/utils/textFormatters.jsx`.
+- [x] **Centralization of Utility Functions**:
+    - [x] `src/utils/queryUtils.js` created for `buildGermanLegalQuery`.
+    - [x] `src/utils/documentUtils.js` for document-specific helpers (from `uiHelpers`).
+    - [x] `src/utils/formatUtils.js` for `formatFieldValue` (from `uiHelpers`).
+    - [x] `uiHelpers` in `src/config/uiConfig.js` cleaned up.
+- [x] **Service Clarification**:
+    - [x] Comments added in `schemaService.js` to clarify the division of roles vs. `uiConfig.js`.
+- [x] **Build Fix**:
+    - [x] `textFormatters.js` renamed to `textFormatters.jsx` and imports corrected to fix build errors.
+- **Result**: Significantly improved code organization, reduction of duplicates, and clearer module responsibilities.
 
-### 13.2 Bugfixes und Robustheit (✅ VOLLSTÄNDIG ABGESCHLOSSEN - 2025-06-10)
-- **Ziel**: Stabilität der Anwendung verbessern und kritische Bugs beheben.
-- [x] **TableOfContents-Bugfix**:
-    - [x] Problem identifiziert: Inhaltsverzeichnis verschwand beim Öffnen der Volltextansicht mit TypeError "Cannot read properties of undefined (reading 'map')".
-    - [x] Ursache diagnostiziert: Mischung aus ES Modul-Imports und CommonJS-Require in documentService.js.
-    - [x] Lösung implementiert: 
-        - [x] Neuer documentService.js mit konsequenter ES-Modul-Syntax erstellt.
-        - [x] Import von isFrameworkDocument korrigiert (von require zu import).
-        - [x] Defensive Programmierung mit Null-Checks und Standardwerten in TableOfContents.jsx hinzugefügt.
-    - [x] Tests durchgeführt: Vollständige Funktion des Inhaltsverzeichnisses bestätigt.
-- **Ergebnis**: Volltextanzeige funktioniert jetzt stabil mit korrekt angezeigtem Inhaltsverzeichnis.
+### 13.2 Bugfixes and Robustness (✅ FULLY COMPLETED - 2025-06-10)
+- **Goal**: Improve application stability and fix critical bugs.
+- [x] **TableOfContents Bugfix**:
+    - [x] Problem identified: Table of contents disappeared when opening the full-text view with TypeError "Cannot read properties of undefined (reading 'map')".
+    - [x] Cause diagnosed: Mix of ES Module imports and CommonJS require in documentService.js.
+    - [x] Solution implemented:
+        - [x] New documentService.js created with consistent ES module syntax.
+        - [x] Import of isFrameworkDocument corrected (from require to import).
+        - [x] Defensive programming with null checks and default values added in TableOfContents.jsx.
+    - [x] Tests performed: Full functionality of the table of contents confirmed.
+- **Result**: Full-text view now works stably with a correctly displayed table of contents.
+
+
+### 13.3 Project Cleanup & Hybrid Search Restoration (✅ FULLY COMPLETED - 2025-06-11)
+- **Goal**: Remove obsolete files, unify Docker configuration, and restore Hybrid Search.
+- [x] **File Cleanup**:
+    - [x] 27 empty/obsolete files removed (shell scripts, Docker files, Python scripts).
+    - [x] Obsolete directories (`/api`, `/docker`, `/src`) removed.
+- [x] **Docker Configuration**:
+    - [x] `docker-compose-hybrid.yml` renamed to `docker-compose.yml` as standard.
+    - [x] Frontend container rebuild to fix the 500 Internal Server Error.
+- [x] **API Restoration**:
+    - [x] POST `/api/hybrid/search` route added in `backend/api/routes/hybrid.js`.
+    - [x] Path corrections in Python scripts (`/search-engines/` -> `/app/scripts/qdrant/`).
+    - [x] Nginx proxy configuration for `/api/` route implemented.
+- [x] **System Verification**:
+    - [x] All 6 services (Frontend, API, Solr, Qdrant, Ollama, OpenWebUI) successfully tested.
+    - [x] Hybrid Search validated via GET (frontend) and POST (API).
+    - [x] Web interface on `http://localhost:8080` successfully connected.
+- **Result**: A clean, lean repository with a single, working Docker configuration and fully restored hybrid search functionality.
