@@ -1,94 +1,92 @@
-# GitHub Copilot Anweisungen für ASRA – Deutsche Gesetze
+# GitHub Copilot Instructions for ASRA – German Laws
 
-Diese Anweisungen dienen als Leitfaden für die Entwicklung mit GitHub Copilot im ASRA – Deutsche Gesetze-Projekt.
+These instructions serve as a guide for development with GitHub Copilot in the ASRA – German Laws project.
 
-## Externe Dokumentation
+## External Documentation
 
-- **Für Apache Solr Dokumentation** verwende die offizielle Dokumentation unter solr.apache.org.
-- **Für React und Vite Fragen** nutze die jeweiligen offiziellen Dokumentationen.
-- **Bei komplexen Solr-Abfragen** verwende die Solr Query Syntax Reference.
+- **For Apache Solr documentation**, use the official documentation at solr.apache.org.
+- **For React and Vite questions**, use the respective official documentation.
+- **For complex Solr queries**, use the Solr Query Syntax Reference.
 
 ### Project Awareness & Context
 
-1. **Lies `PLANNING.md`** zu Beginn einer neuen Konversation, um die Architektur, Ziele, den Stil und die Einschränkungen des Projekts zu verstehen.
+1.  **Read `PLANNING.md`** at the beginning of a new conversation to understand the project's architecture, goals, style, and constraints.
 
-2. **Überprüfe `TASK.md`** vor Beginn einer neuen Aufgabe:
-   - Wenn die Aufgabe nicht aufgelistet ist, füge sie mit einer kurzen Beschreibung und dem aktuellen Datum hinzu.
+2.  **Review `TASK.md`** before starting a new task:
+    - If the task is not listed, add it with a brief description and the current date.
 
-3. **Folge den einheitlichen Namenskonventionen, Dateistrukturen und Architekturmustern** wie in `PLANNING.md` beschrieben.
+3.  **Follow the consistent naming conventions, file structures, and architectural patterns** as described in `PLANNING.md`.
 
-4. **Beachte die bestehende Struktur des ASRA-Projekts**:
-   - Frontend mit React/Vite
-   - Apache Solr als Suchbackend
-   - Docker für die Containerverwaltung
+4.  **Adhere to the existing structure of the ASRA project**:
+    - Frontend with React/Vite
+    - Apache Solr as the search backend
+    - Docker for container management
 
 ### Code Structure & Modularity
 
-1. **Halte Dateien unter 500 Codezeilen.** Wenn eine Datei diese Grenze erreicht, refaktoriere sie in kleinere Module oder Hilfsdateien.
+1.  **Keep files under 500 lines of code.** If a file reaches this limit, refactor it into smaller modules or helper files.
 
-2. **Verwende klare, konsistente Imports:**
-   - Bevorzuge absolute Imports für Klarheit.
-   - Vermeide relative Imports wie `.` oder `..`.
+2.  **Use clear, consistent imports:**
+    - Prefer absolute imports for clarity.
+    - Avoid relative imports like `.` or `..`.
 
-3. **Folge dem bestehenden Komponentenmodell:**
-   - Funktionale React-Komponenten mit Hooks
-   - Services für API-Interaktionen
-   - Klare Trennung von UI-Logik und Datenverarbeitung
+3.  **Follow the existing component model:**
+    - Functional React components with Hooks
+    - Services for API interactions
+    - Clear separation of UI logic and data processing
 
 ### Testing & Reliability
 
-1. **Schreibe Unit-Tests für alle neuen Features**, wie Funktionen, Komponenten und Services.
+1.  **Write unit tests for all new features**, such as functions, components, and services.
 
-2. **Aktualisiere bestehende Unit-Tests**, wenn Logik modifiziert wird.
+2.  **Update existing unit tests** when logic is modified.
 
-3. **Organisiere Tests in einem `/tests`-Ordner**, der die Struktur der Hauptanwendung spiegelt. Jedes Feature sollte folgendes enthalten:
-   - 1 Test für erwartetes Verhalten
-   - 1 Test für Randwerte/Edge Cases
-   - 1 Test für Fehlerfälle
+3.  **Organize tests in a `/tests` folder** that mirrors the structure of the main application. Each feature should include:
+    - 1 test for expected behavior
+    - 1 test for edge cases
+    - 1 test for error cases
 
-4. **Teste alle Solr-Anfragefunktionen** individuell, sowohl mit Mock-Daten als auch mit einer echten Solr-Instanz.
+4.  **Test all Solr query functions** individually, both with mock data and a real Solr instance.
 
 ### Task Management
 
-1. **Markiere Aufgaben in `TASK.md` als abgeschlossen**, unmittelbar nach ihrer Fertigstellung.
+1.  **Mark tasks in `TASK.md` as complete** immediately after their completion.
 
-2. **Dokumentiere neue Teilaufgaben oder TODOs**, die während der Entwicklung entdeckt werden, im Abschnitt "Entdeckt während der Arbeit" von `TASK.md`.
+2.  **Document new subtasks or TODOs** discovered during development in the "Discovered during work" section of `TASK.md`.
 
-3. **Halte die Projektplanung aktuell**, indem du Änderungen am Projektumfang oder an der Zeitleiste in `PLANNING.md` aktualisierst.
+3.  **Keep the project plan up-to-date** by updating changes to the project scope or timeline in `PLANNING.md`.
 
 ### Style & Conventions
 
-1. **Befolge die Tailwind CSS Naming-Konventionen** und verwende die im Projekt definierten Farbvariablen.
+1.  **Follow the Tailwind CSS naming conventions** and use the color variables defined in the project.
 
-2. **Verwende konsistente Namenskonventionen:**
-   - PascalCase für Komponenten
-   - camelCase für Variablen und Funktionen
-   - kebab-case für CSS-Klassen (wenn nicht Tailwind)
+2.  **Use consistent naming conventions:**
+    - PascalCase for components
+    - camelCase for variables and functions
+    - kebab-case for CSS classes (if not using Tailwind)
 
-3. **Formatiere den Code mit der bestehenden Einrückung** von 2 Leerzeichen.
+3.  **Format the code with the existing indentation** of 2 spaces.
 
-4. **Verwende funktionale Komponenten und React Hooks** statt Klassenkomponenten.
-
+4.  **Use functional components and React Hooks** instead of class components.
 
 ### Documentation & Explainability
 
-1. **Aktualisiere `README.md`**, wenn Features hinzugefügt, Abhängigkeiten geändert oder Setup-Schritte modifiziert werden.
+1.  **Update `README.md`** when features are added, dependencies are changed, or setup steps are modified.
 
-2. **Kommentiere nicht-offensichtlichen Code**, um sicherzustellen, dass er für Entwickler verständlich ist.
+2.  **Comment non-obvious code** to ensure it is understandable for developers.
 
-3. **Füge `// Grund:` Kommentare hinzu**, um komplexe Logik zu erklären, und konzentriere dich dabei auf das "Warum" statt nur auf das "Was".
+3.  **Add `// Reason:` comments** to explain complex logic, focusing on the "why" instead of just the "what".
 
-4. **Dokumentiere die Solr-Schema-Änderungen** in einer separaten Datei, wenn Feldtypen oder Indexkonfigurationen geändert werden.
-
+4.  **Document Solr schema changes** in a separate file when field types or index configurations are changed.
 
 ### AI Behavior Rules
 
-1. **Stelle Fragen, wenn Kontext fehlt**—triff keine Annahmen.
+1.  **Ask questions when context is missing**—do not make assumptions.
 
-2. **Überprüfe Pfade und Modulnamen** vor deren Verwendung.
+2.  **Verify paths and module names** before using them.
 
-3. **Lösche oder überschreibe keinen existierenden Code**, es sei denn, dies wurde ausdrücklich angewiesen oder ist Teil einer definierten Aufgabe.
+3.  **Do not delete or overwrite existing code** unless explicitly instructed or as part of a defined task.
 
-4. **Berücksichtige die Docker-Umgebung** bei der Entwicklung von Services und API-Endpunkten.
+4.  **Consider the Docker environment** when developing services and API endpoints.
 
-5. **Verwende Solr Query Parameter bewusst** und dokumentiere komplexe Abfragen.
+5.  **Use Solr Query Parameters deliberately** and document complex queries.
